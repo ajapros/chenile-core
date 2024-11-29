@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flows>
+	<flow id='flow1'>
+		
+		<chain id='chain2' componentName='org.chenile.owiz.impl.Chain'>
+			<attach-to-module-router route='mod2'/>
+		</chain>
+		
+		<mock21>
+			<attach-to-chain2/>
+		</mock21>
+		
+		<mock22>
+			<attach-to-chain2/>
+		</mock22>
+		
+		<mock23>
+			<attach-to-chain2 />
+		</mock23>
+	</flow>
+</flows>
