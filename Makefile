@@ -16,7 +16,7 @@
 # for pushing tags
 
 # export version := $(shell git describe --tag --abbrev=0)
-export version := $(shell cat chenile-version.txt)
+export version := $(shell cat chenile-core-version.txt)
 # export version := 1.2.4
 .DEFAULT_GOAL := help
 

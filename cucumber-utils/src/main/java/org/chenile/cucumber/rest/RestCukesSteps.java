@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.JsonPathResultMatchers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,7 @@ import java.util.Map.Entry;
 
 import static org.chenile.testutils.SpringMvcUtils.assertErrors;
 import static org.chenile.testutils.SpringMvcUtils.assertWarnings;
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -176,6 +177,13 @@ public class RestCukesSteps {
         response.andExpect(jsonPath("$.payload." + key).value(containsString(
                 substituteVariables(value)
         )));
+    }
+
+    @And("the REST response key {string} collection has an item with key {string} and value {string}")
+    public void theRESTResponseKeyCollectionContainsKeyWithValue(String keyCollection, String key, String value) throws Exception {
+        ResultActions response = (ResultActions) context.get("actions");
+        response.andExpect(jsonPath("$.payload." + keyCollection).
+                value(hasItem(hasProperty(key,equalTo(substituteVariables(value))))));
     }
 
     @Then("the REST response does not contain key {string}")
