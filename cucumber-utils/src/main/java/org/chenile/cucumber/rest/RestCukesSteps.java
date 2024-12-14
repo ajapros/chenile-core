@@ -182,8 +182,8 @@ public class RestCukesSteps {
     @And("the REST response key {string} collection has an item with key {string} and value {string}")
     public void theRESTResponseKeyCollectionContainsKeyWithValue(String keyCollection, String key, String value) throws Exception {
         ResultActions response = (ResultActions) context.get("actions");
-        response.andExpect(jsonPath("$.payload." + keyCollection).
-                value(hasItem(hasProperty(key,equalTo(substituteVariables(value))))));
+        response.andExpect(jsonPath("$.payload." + keyCollection + "[*]." + key)
+                .value(substituteVariables(value)));
     }
 
     @Then("the REST response does not contain key {string}")
