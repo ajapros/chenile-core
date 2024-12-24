@@ -10,10 +10,11 @@ public class Transition extends EventInformation {
 	
 	public Transition fromEventInformation(EventInformation eventInformation) {
 		this.eventId = eventInformation.eventId;
-		this.metadata = eventInformation.metadata;
+		this.metadata.putAll(eventInformation.metadata);
 		this.transitionAction = eventInformation.transitionAction;
-		if (eventInformation.metadata.get("acls") != null){
-			String acls = eventInformation.metadata.get("acls");
+
+		if (eventInformation.getMetadata().get("acls") != null){
+			String acls = eventInformation.getMetadata().get("acls");
 			setAclString(acls);
 		}
 		return this;
@@ -98,7 +99,7 @@ public class Transition extends EventInformation {
 		return "Transition [eventId=" + eventId + ", newStateId=" + newStateId
 				+ ", newFlowId=" + newFlowId + ", retrievalTransition="
 				+ retrievalTransition + ", transitionAction="
-				+ transitionAction + ", metadata=" + metadata + "]";
+				+ transitionAction + ", metadata=" + getMetadata() + "]";
 	}
 	
 	public String[] getAcls() {

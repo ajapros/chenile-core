@@ -93,7 +93,7 @@ public class DataFlowReader extends FlowReaderBase {
 				stateDescriptor = statetags.get(stateInfo.getStateType())
 						.getDescriptorClass().getDeclaredConstructor().newInstance();
 				stateDescriptor.setId(stateInfo.getStateName());
-				stateDescriptor.setFinalState(stateInfo.getIsFinalState());
+				// stateDescriptor.setFinalState(stateInfo.getIsFinalState());
 				stateDescriptor.setFlowId(flowInfo.getFlowName());
 				stateDescriptor.setExitAction(setEntryExitAction(
 						stateInfo.getExitAction(), true));

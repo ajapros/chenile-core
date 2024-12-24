@@ -87,7 +87,11 @@ public class STMActionsInfoProvider{
 		return metadata.get(metaId);
 	}
 	public EventInformation getEventInformation(String eventId) {
-		return stmFlowStore.getEventInformation(eventId);
+		EventInformation eventInformation = stmFlowStore.getEventInformation(eventId);
+		if (eventInformation == null){
+			return stmFlowStore.getEventInformation(EventInformation.GENERIC_EVENT_ID);
+		}
+		return eventInformation;
 	}
 	public List<String> getStatesAllowedForCurrentUser(){
 		Set<StateDescriptor> allowedStates = new HashSet<>();

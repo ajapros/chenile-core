@@ -17,14 +17,13 @@ import org.chenile.stm.action.STMTransitionAction;
  *
  */
 public class EventInformation {
-
+	public static final String GENERIC_EVENT_ID = "__GENERIC_EVENT__";
 	protected String eventId;
 	protected STMTransitionAction<?> transitionAction;
 
 	public String getEventId() {
 		return eventId;
 	}
-
 	public void setEventId(String eventId) {
 		this.eventId = eventId;
 	}

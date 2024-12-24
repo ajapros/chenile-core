@@ -1,6 +1,7 @@
 package org.chenile.stm.impl;
 
 import org.chenile.stm.STMFlowStore;
+import org.chenile.stm.State;
 import org.chenile.stm.model.AutomaticStateDescriptor;
 import org.chenile.stm.model.StateDescriptor;
 import org.chenile.stm.model.Transition;
@@ -9,12 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Generates a PLANT UML state diagram for the STate Transition Diagram
+ * Generates a PLANT UML state diagram for the State Transition Diagram
  */
 public class STMPlantUmlSDGenerator {
 
-
-    private STMFlowStore stmFlowStore ;
+    private final STMFlowStore stmFlowStore ;
+    private final Map<String,Boolean> notOrphaned = new HashMap<>();
     public STMPlantUmlSDGenerator(STMFlowStore flowStore){
         this.stmFlowStore = flowStore;
         findIncomingForAllStates();
@@ -23,64 +24,152 @@ public class STMPlantUmlSDGenerator {
     private static final String ENDUML = "@enduml\n";
     public static final String STATE = "state ";
     private static final String AUTO_STATE = " <<choice>> ";
+    private static final String MAIN_PATH_STEREOTYPE = " <<MAIN_PATH>> ";
     public static final String NOTE_RIGHT_OF_ = "note right of ";
     private static final String TERMINAL = "[*]";
+    private static final String MAIN_PATH = "mainPath";
+    private static final String BOLD_LINE = "[thickness=4,#Peru]";
 
     public String toStateDiagram(){
-        StringBuilder stringBuilder = new StringBuilder(STARTUML);
-        printStyles(stringBuilder);
-
-        for(StateDescriptor sd: stmFlowStore.getAllStates()) {
-            stringBuilder.append(STATE).append(sd.getId());
-            if (!notOrphaned.get(sd.getId())){
-                stringBuilder.append(" <<orphaned>> ").append("\n");
-            }
-            if (!sd.isManualState()){
-                stringBuilder.append(AUTO_STATE).append("\n");
-                stringBuilder.append(NOTE_RIGHT_OF_).append(sd.getId())
-                        .append(" : **").append(sd.getId()).append("**");
-                Map<String, String> metadata = sd.getMetadata();
-                if (metadata != null && !metadata.isEmpty()){
-                    for (Map.Entry<String,String> md: metadata.entrySet()){
-                        stringBuilder.append("\\n").append(md.getKey()).append(":").append(md.getValue());
-                    }
-                }
-                printComponentProperties(stringBuilder,sd);
-            }
-            stringBuilder.append("\n");
-        }
-        for(StateDescriptor sd: stmFlowStore.getAllStates()) {
-            if (sd.isInitialState()){
-                stringBuilder.append(TERMINAL).append(" --> ").
-                        append(sd.getId()).append("\n");
-            }
-            if (sd.getTransitions().isEmpty()){
-               stringBuilder.append(sd.getId()).append(" --> ").
-                       append(TERMINAL).append("\n");
-            }
-            StringBuilder selfNote = new StringBuilder();
-            for(Transition t: sd.getTransitions().values()){
-                if(t.getNewStateId().equals(sd.getId())){
-                    selfNote.append(t.getEventId()).append("\n");
-                }else {
-                    stringBuilder.append(sd.getId()).append(" --> ").
-                            append(t.getNewStateId())
-                            .append(" : ")
-                            .append(t.getEventId())
-                            .append("\n");
-                }
-            }
-            if (!selfNote.isEmpty()){
-                stringBuilder.append(sd.getId()).append(" --> ").append(sd.getId()).append("\n");
-                stringBuilder.append("note on link #LightBlue\n").append(selfNote.toString()).append("end note\n");
-            }
-        }
-        printLegend(stringBuilder);
-        stringBuilder.append(ENDUML);
-        return stringBuilder.toString();
+        return new StateStringBuilder().
+            printStyles().
+            renderStates().
+            renderTransitions().
+            printLegend().
+            end().
+            toString();
     }
 
-    Map<String,Boolean> notOrphaned = new HashMap<>();
+    private class StateStringBuilder {
+        StringBuilder stringBuilder;
+        public StateStringBuilder(){
+            this.stringBuilder = new StringBuilder(STARTUML);
+        }
+        public StateStringBuilder end(){
+            stringBuilder.append(ENDUML);
+            return this;
+        }
+        public String toString(){
+            return stringBuilder.toString();
+        }
+        public  StateStringBuilder printStyles(){
+            stringBuilder.append(""" 
+               <style>
+                    diamond {
+                    BackgroundColor #palegreen
+                    LineColor #green
+                    LineThickness 2.5
+                    }
+                 </style>
+                 skinparam state  {
+                  BorderThickness<<MAIN_PATH>> 2.5
+                  BorderColor<<MAIN_PATH>> Peru
+                  BackgroundColor<<MAIN_PATH>> Bisque
+                 }
+                 skinparam state {
+                    BackgroundColor<<orphaned>> OrangeRed
+                 }
+               """);
+            return this;
+        }
+        public StateStringBuilder renderStates(){
+            for(StateDescriptor sd: stmFlowStore.getAllStates()) {
+                stringBuilder.append(STATE).append(sd.getId());
+                if (!notOrphaned.get(sd.getId())){
+                    stringBuilder.append(" <<orphaned>> ").append("\n");
+                }
+                else if (!sd.isManualState()){
+                    stringBuilder.append(AUTO_STATE).append("\n");
+                    stringBuilder.append(NOTE_RIGHT_OF_).append(sd.getId())
+                            .append(" : **").append(sd.getId()).append("**");
+                    Map<String, String> metadata = sd.getMetadata();
+                    if (metadata != null && !metadata.isEmpty()){
+                        for (Map.Entry<String,String> md: metadata.entrySet()){
+                            stringBuilder.append("\\n").append(md.getKey()).append(":").append(md.getValue());
+                        }
+                    }
+                    printComponentProperties(sd);
+                }
+                else if (isInMainPath(sd)){
+                    stringBuilder.append(MAIN_PATH_STEREOTYPE);
+                }
+                stringBuilder.append("\n");
+            }
+            return this;
+        }
+        private StateStringBuilder renderTransitions(){
+            for(StateDescriptor sd: stmFlowStore.getAllStates()) {
+                Map<String, Transition> transitions = sd.getTransitions();
+                if (sd.isInitialState()){
+                    stringBuilder.append(TERMINAL);
+                    paintTerminal(sd).append(sd.getId()).append("\n");
+                }
+                if (transitions.isEmpty()){
+                    stringBuilder.append(sd.getId());
+                    paintTerminal(sd).append(TERMINAL).append("\n");
+                }
+                StringBuilder selfNote = new StringBuilder();
+                for(Transition t: transitions.values()){
+                    if(t.getNewStateId().equals(sd.getId())){
+                        selfNote.append(t.getEventId()).append("\n");
+                    }else {
+                        stringBuilder.append(sd.getId());
+                        paintConnection(t).append(t.getNewStateId()).append(" : ");
+                        if (isInMainPath(t)){
+                            stringBuilder.append("<color:Peru>**").append(t.getEventId()).append("**");
+                        }else {
+                            stringBuilder.append(t.getEventId());
+                        }
+                        stringBuilder.append("\n");
+                    }
+                }
+                if (!selfNote.isEmpty()){
+                    stringBuilder.append(sd.getId()).append(" --> ").append(sd.getId()).append("\n");
+                    stringBuilder.append("note on link #LightBlue\n").append(selfNote).append("end note\n");
+                }
+            }
+            return this;
+        }
+
+        public StateStringBuilder printLegend(){
+            stringBuilder.append("""
+                legend right
+                <#GhostWhite,#GhostWhite>|        |= __Legend__ |
+                |<#OrangeRed>   | Orphaned State|
+                |<#Peru>   | Main Path|
+                |<#LightBlue> |Transitions without state change|
+                |<#PaleGreen> |Automatic State Computations|
+                endlegend
+                """);
+            return this;
+        }
+
+        private StringBuilder paintTerminal(StateDescriptor sd) {
+            stringBuilder.append(" -");
+            if (isInMainPath(sd)){
+                stringBuilder.append(BOLD_LINE);
+            }
+
+            return stringBuilder.append("-> ");
+        }
+
+        private StringBuilder paintConnection(Transition t){
+            stringBuilder.append(" -");
+            if (isInMainPath(t)) {
+                stringBuilder.append(BOLD_LINE);
+            }
+            return stringBuilder.append("-> ");
+        }
+
+        private void printComponentProperties(StateDescriptor sd){
+            if( sd instanceof AutomaticStateDescriptor asd){
+                Map<String, Object> props = asd.getComponentProperties();
+                for (Map.Entry<String,Object> prop: props.entrySet()){
+                    stringBuilder.append("\\n**").append(prop.getKey()).append(":**").append(prop.getValue());
+                }
+            }
+        }
+    }
     private void findIncomingForAllStates(){
 
         for(StateDescriptor sd: stmFlowStore.getAllStates()) {
@@ -98,38 +187,23 @@ public class STMPlantUmlSDGenerator {
         }
     }
 
-    private void printStyles(StringBuilder stringBuilder){
-        stringBuilder.append("""
-                skinparam state {
-                BackgroundColor<<orphaned>> Orange
-                }
-                <style>
-                    diamond {
-                    BackgroundColor #palegreen
-                    LineColor #green
-                    LineThickness 2.5
-                    }
-                 </style>
-                """);
+    private boolean isInMainPath(StateDescriptor sd){
+        if (sd == null) return false;
+        String mainPath = sd.getMetadata().get(MAIN_PATH);
+        return Boolean.parseBoolean(mainPath);
     }
 
-    private void printComponentProperties(StringBuilder stringBuilder, StateDescriptor sd){
-        if( sd instanceof AutomaticStateDescriptor asd){
-            Map<String, Object> props = asd.getComponentProperties();
-            for (Map.Entry<String,Object> prop: props.entrySet()){
-                stringBuilder.append("\\n**").append(prop.getKey()).append(":**").append(prop.getValue());
-            }
-        }
+    private boolean isInMainPath(Transition t){
+        String mainPath = t.getMetadata().get(MAIN_PATH);
+        if (mainPath == null) return checkForStates(t);
+        return Boolean.parseBoolean(mainPath);
     }
 
-    private void printLegend(StringBuilder stringBuilder){
-        stringBuilder.append("""
-                legend right
-                <#GhostWhite,#GhostWhite>|        |= __Legend__ |
-                |<#orange>   | Orphaned State|
-                |<#LightBlue> |Transitions without state change|
-                |<#PaleGreen> |Automatic State Computations|
-                endlegend
-                """);
+    private boolean checkForStates(Transition t){
+        State fromState = new State(t.getStateId(), t.getFlowId());
+        State toState = new State(t.getNewStateId(), t.getNewFlowId());
+        StateDescriptor fromSd = stmFlowStore.getStateInfo(fromState);
+        StateDescriptor toSd = stmFlowStore.getStateInfo(toState);
+        return isInMainPath(fromSd) && isInMainPath(toSd);
     }
 }

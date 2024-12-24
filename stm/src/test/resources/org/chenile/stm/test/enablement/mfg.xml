@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Simple manufacturing process with an assembly line that consists of Steps S1 and S2 -->
+<states>
+	<default-transition-action componentName="defaultTransitionAction"/>
+	<enablement-strategy componentName="configBasedEnablementStrategy"/>
+	<flow id='MFG_FLOW' default='true'>
+		<entry-action componentName="entryAction" />
+		<exit-action componentName="exitAction" />
+		<manual-state id='CREATED' initialState='true'>
+			<on eventId='doS1' newStateId='S1'/>
+		</manual-state>
+		<manual-state id='S1' >
+			<on eventId='doS2' newStateId='S2'/>
+		</manual-state>
+
+		<manual-state id="S2"/>
+	</flow>
+	
+</states>

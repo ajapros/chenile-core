@@ -122,9 +122,6 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		sd.setFlow(this);
 		if (sd.isInitialState())
 			initialState = sd.getId();
-		if (sd.getTransitions() == null || sd.getTransitions().size() == 0){
-			sd.setFinalState(true);
-		}
 		sd.validate();
 		
 	}

@@ -123,6 +123,10 @@ public class XmlFlowReader extends FlowReaderBase {
 				"setScriptingStrategy", 1, new Class<?>[] { String.class });
 		digester.addCallParam("states/scripting-strategy", 0, COMPONENT_NAME);
 
+		digester.addCallMethod("states/enablement-strategy",
+				"setEnablementStrategy", 1, new Class<?>[] { String.class });
+		digester.addCallParam("states/enablement-strategy", 0, COMPONENT_NAME);
+
 		digester.addRule("states/entry-action",
 				new AddTransitionActionToTransientActionAwareDescriptorRule());
 		digester.addRule("states/exit-action",
@@ -220,7 +224,7 @@ public class XmlFlowReader extends FlowReaderBase {
 
 			String eventId = attributes.getValue("eventId");
 			EventInformation eventInfo = stmFlowStoreImpl.getEventInformation(eventId);
-			
+			StateDescriptor sd = (StateDescriptor) digester.peek();
 			Transition transition;
 			if (eventInfo != null) 
 				transition = new Transition(eventInfo);	
@@ -229,6 +233,8 @@ public class XmlFlowReader extends FlowReaderBase {
 			digester.push(transition);
 
 			transition.setEventId(eventId);
+			transition.setFlowId(sd.getFlowId());
+			transition.setStateId(sd.getId());
 			transition.setNewFlowId(attributes.getValue("newFlowId"));
 			transition.setNewStateId(attributes.getValue("newStateId"));
 			// transition.setAclString(attributes.getValue("acls"));

@@ -1,5 +1,6 @@
 package org.chenile.stm.dummy;
 
+import org.chenile.stm.EnablementStrategy;
 import org.chenile.stm.exception.STMException;
 import org.chenile.stm.impl.STMFlowStoreImpl;
 
@@ -10,6 +11,7 @@ public class DummyStore extends STMFlowStoreImpl {
     DummyAutomaticStateComputation dummyAutomaticStateComputation = new DummyAutomaticStateComputation();
     DummySecurityStrategy dummySecurityStrategy = new DummySecurityStrategy();
     DummyRetrievalStrategy dummyRetrievalStrategy = new DummyRetrievalStrategy();
+    DummyEnablementStrategy dummyEnablementStrategy = new DummyEnablementStrategy();
     @Override
     public Object makeTransitionAction(String componentName,boolean enable) throws STMException {
         return  dummyTransitionAction;
@@ -38,5 +40,10 @@ public class DummyStore extends STMFlowStoreImpl {
     @Override
     public Object makeSecurityStrategy(String componentName) throws STMException {
         return dummySecurityStrategy;
+    }
+
+    @Override
+    public EnablementStrategy makeEnablementStrategy(String componentName) throws STMException {
+        return dummyEnablementStrategy;
     }
 }

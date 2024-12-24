@@ -4,10 +4,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.chenile.stm.STMFlowStore;
-import org.chenile.stm.STMSecurityStrategy;
-import org.chenile.stm.State;
-import org.chenile.stm.StateEntity;
+import org.chenile.stm.*;
 import org.chenile.stm.action.ComponentPropertiesAware;
 import org.chenile.stm.action.STMAction;
 import org.chenile.stm.action.STMTransitionAction;
@@ -63,6 +60,7 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 	private ComponentPropertiesHelper componentPropertiesHelper;
 
 	protected STMTransitionAction<?> defaultTransitionAction;
+	private EnablementStrategy enablementStrategy;
 
 	/**
 	 * Always initialize the action tags first
@@ -229,6 +227,16 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 		componentPropertiesHelper.setFlowConfigurator(this);
 	}
 
+	public EnablementStrategy makeEnablementStrategy(String componentName) throws STMException {
+		return (EnablementStrategy)makeComponent(componentName);
+	}
+	public void setEnablementStrategy(String componentName) throws STMException {
+		setEnablementStrategy(makeEnablementStrategy(componentName));
+	}
+	public void setEnablementStrategy(EnablementStrategy enablementStrategy) {
+		this.enablementStrategy = enablementStrategy;
+	}
+
 	/**
 	 * 
 	 */
@@ -305,7 +313,15 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 		state = correctState(state);
 		if (state == null)
 			return null;
-		return flows.get(state.getFlowId()).getStates().get(state.getStateId());
+		StateDescriptor sd = flows.get(state.getFlowId()).getStates().get(state.getStateId());
+		if (enablementStrategy != null) {
+			if (sd == null) {
+				sd = enablementStrategy.getStateInfo(state, flows.get(state.getFlowId()));
+			}else {
+				enablementStrategy.addMetadataToState(sd);
+			}
+		}
+		return sd;
 	}
 
 	public State getInitialState(State state) throws STMException {
@@ -368,7 +384,22 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 
 	@Override
 	public Collection<StateDescriptor> getAllStates() {
-		return getFlowInfo().getStates().values();
+		List<StateDescriptor> list = new ArrayList<>(getFlowInfo().getStates().values().stream().
+                filter((sd) -> {
+                    if (getEnablementStrategy() == null) return true;
+                    return getEnablementStrategy().isStateEnabled(sd);
+                }).peek((sd)-> {
+			if (getEnablementStrategy() != null){
+				getEnablementStrategy().addMetadataToState(sd);
+			}
+        }).toList());
+		list.addAll(obtainDynamicStates());
+		return list;
+	}
+
+	private Collection<StateDescriptor> obtainDynamicStates(){
+		if (enablementStrategy == null) return List.of();
+		return enablementStrategy.addDynamicStates(getFlowInfo());
 	}
 
 	@Override
@@ -377,4 +408,7 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 	}
 
 
+	public EnablementStrategy getEnablementStrategy() {
+		return enablementStrategy;
+	}
 }

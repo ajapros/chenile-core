@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.chenile.stm.EnablementStrategy;
 import org.chenile.stm.STMFlowStore;
 import org.chenile.stm.State;
 import org.chenile.stm.action.STMAction;
 import org.chenile.stm.exception.STMException;
+import org.chenile.stm.impl.STMFlowStoreImpl;
 
 import java.util.Set;
 
@@ -18,11 +20,10 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 	protected String id;
 	protected boolean initialState;
 	protected STMAction<?> entryAction;
-	protected boolean finalState;
 	protected Map<String,String> metadata = new HashMap<String, String>();
 	
 	public boolean isFinalState() {
-		return finalState;
+		return getTransitions().isEmpty();
 	}
 	
 	public StateDescriptor addMetaData(String name, String value){
@@ -32,15 +33,6 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 
 	public Map<String, String> getMetadata(){
 		return Collections.unmodifiableMap(metadata);
-	}
-
-	public void setFinalState(boolean endState) {
-		this.finalState = endState;
-	}
-	
-	public StateDescriptor makeFinalState() {
-		this.finalState = true;
-		return this;
 	}
 
 	public STMAction<?> getEntryAction() {
@@ -139,7 +131,29 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 
 	// @XmlTransient
 	public Map<String,Transition> getTransitions() {
-		return transitions;
+		EnablementStrategy enablementStrategy = null;
+		STMFlowStoreImpl flowStore = getFlow().getFlowStore();
+		if (flowStore != null)
+			enablementStrategy = flowStore.getEnablementStrategy();
+		if (enablementStrategy == null) return transitions;
+		Map<String,Transition> map = new HashMap<>();
+		for (Transition t: transitions.values()){
+			if(!enablementStrategy.isEventEnabled(this,t))
+				continue;
+			// find the new state
+			StateDescriptor sd = getFlow().getStates().get(t.getNewStateId());
+			if (!enablementStrategy.isStateEnabled(sd))
+				continue;
+			enablementStrategy.addMetadataToTransition(t,this);
+			map.put(t.getEventId(),t);
+		}
+		addDynamicTransitions(enablementStrategy,map);
+		return map;
+	}
+
+	private void addDynamicTransitions(EnablementStrategy  enablementStrategy,Map<String,Transition> map){
+		Map<String, Transition> t = enablementStrategy.addDynamicTransitions(this);
+		map.putAll(t);
 	}
 
 	public StateDescriptor addTransition(Transition transition) throws STMException {
@@ -153,7 +167,6 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 					STMException.INVALID_TRANSITION);
 		}
 		transitions.put(transition.getEventId(), transition);
-		this.finalState = false;
 		return this;
 	}
 	
@@ -167,9 +180,6 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 		return transition;
 	}
 
-	
-	
-	
 	@Override
 	public String toString() {
 		return "StateDescriptor [id=" + id + ", initialState=" + initialState
@@ -204,7 +214,7 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 	}
 	
 	public Set<String> getAllTransitionsIds(){
-		return transitions.keySet();
+		return getTransitions().keySet();
 	}
 	
 	public void merge(StateDescriptor sd) {
@@ -213,10 +223,6 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 		}
 		if (sd.getTransitions() != null)
 			this.transitions.putAll(sd.getTransitions()); // merge the transitions
-		if (transitions != null && transitions.size() > 0 )
-			this.finalState = false;
-		else
-			this.finalState = true;
 	}
 	
 	public String toXml(){

@@ -1,18 +1,20 @@
 package org.chenile.stm.cli;
 
+import org.chenile.stm.ConfigProvider;
+import org.chenile.stm.EnablementStrategy;
 import org.chenile.stm.STMFlowStore;
 import org.chenile.stm.State;
 import org.chenile.stm.dummy.DummyStore;
-import org.chenile.stm.impl.STMActionsInfoProvider;
-import org.chenile.stm.impl.STMFlowStoreImpl;
-import org.chenile.stm.impl.STMPlantUmlSDGenerator;
-import org.chenile.stm.impl.XmlFlowReader;
+import org.chenile.stm.exception.STMException;
+import org.chenile.stm.impl.*;
 import picocli.CommandLine;
 import static picocli.CommandLine.*;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 @Command(name = "stm-cli", mixinStandardHelpOptions = true, version = "stm-cli 1.0",
         description = "Reads a State Definition file and allows a few operations on it. STM is not created. Hence components don't have to be in the class path.")
@@ -25,6 +27,10 @@ public class CLI implements Runnable {
     private String stateForAllowedActions;
     @Option(names = {"-o", "--output"},paramLabel = "output-file", description = "Writes output to the specified file")
     private String outputFile;
+    @Option(names = {"-e", "--enablement-properties-file"},paramLabel = "enablement-properties-file", description = "Use the properties file for enablement properties")
+    private File enablementPropertiesFile;
+    @Option(names = {"-p", "--prefix"},paramLabel = "prefix", description = "The prefix for all properties")
+    private String prefix;
     @Spec
     Model.CommandSpec spec;
 
@@ -78,12 +84,33 @@ public class CLI implements Runnable {
     }
     public void processStream() throws Exception {
         try (InputStream inputStream = Files.newInputStream(xmlFileName.toPath())) {
-            STMFlowStoreImpl stmFlowStoreImpl = new DummyStore();
+            STMFlowStoreImpl stmFlowStoreImpl = obtainFlowStore();
             XmlFlowReader xfr = new XmlFlowReader(stmFlowStoreImpl);
             xfr.parse(inputStream);
             initProcessors(stmFlowStoreImpl);
         }
     }
+
+    private STMFlowStoreImpl obtainFlowStore() {
+        if (enablementPropertiesFile == null) return new DummyStore();
+        return new DummyStore(){
+
+            @Override
+            public EnablementStrategy makeEnablementStrategy(String componentName) throws STMException {
+                try{
+                    return new ConfigBasedEnablementStrategy(obtainConfigProvider(),prefix);
+                }catch(Exception e){
+                    throw new STMException("Cannot create enablement strategy", 5000, e);
+                }
+            }
+        };
+    }
+    private ConfigProvider obtainConfigProvider() throws Exception{
+        try (InputStream inputStream = Files.newInputStream(enablementPropertiesFile.toPath())){
+            return new ConfigProviderImpl(inputStream);
+        }
+    }
+
     private void initProcessors(STMFlowStoreImpl stmFlowStoreImpl) {
         this.generator = new STMPlantUmlSDGenerator(stmFlowStoreImpl);
         this.infoProvider = new STMActionsInfoProvider(stmFlowStoreImpl);
