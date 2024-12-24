@@ -7,6 +7,7 @@ import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import io.cucumber.datatable.DataTable;
 import org.apache.commons.text.StringSubstitutor;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.base.response.ResponseMessage;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.JsonPathResultMatchers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -184,6 +186,34 @@ public class RestCukesSteps {
         ResultActions response = (ResultActions) context.get("actions");
         response.andExpect(jsonPath("$.payload." + keyCollection + "[*]." + key)
                 .value(substituteVariables(value)));
+    }
+
+    @And("the REST response key {string} collection has an item with keys and values:")
+    public void theRESTResponseKeyCollectionContainsKeyWithKeysAndValues(String keyCollection,
+                                 DataTable dataTable ) throws Exception {
+        List<Map<String, String>> mapOfLists = dataTable.asMaps();
+        String key1 = null,value1 = null,key2 = null,value2 = null;
+        int index = 0;
+        for (Map<String,String> map: mapOfLists){
+            if (index == 0){
+                key1 = map.get("key");
+                value1 = map.get("value");
+                index++;
+            }else if (index == 1){
+                key2 = map.get("key");
+                value2 = map.get("value");
+            }
+        }
+        ResultActions response = (ResultActions) context.get("actions");
+        value1 = substituteVariables(value1);
+        value2 = substituteVariables(value2);
+        System.err.println("key1, value1  is " + key1 + "," + value1);
+        System.err.println("key2, value2  is " + key2 + "," + value2);
+        String expression = "$.payload." + keyCollection + "[?(@." + key1 + "=='" + value1 + "')]." + key2;
+        System.err.println("Expression  is " + expression);
+        response.andExpect(jsonPath("$.payload." + keyCollection + "[?(@." + key1 + "=='" +
+                        value1 + "')]." + key2)
+                .value(substituteVariables(value2)));
     }
 
     @Then("the REST response does not contain key {string}")
