@@ -5,8 +5,4 @@ package org.chenile.stm.model;
  *
  */
 
-public class ManualStateDescriptor extends StateDescriptor {
-
-
-	
-}
+public class ManualStateDescriptor extends StateDescriptor {}

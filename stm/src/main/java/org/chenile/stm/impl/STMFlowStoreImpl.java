@@ -374,7 +374,10 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 	}
 
 	public void addEventInformation(EventInformation eventInformation) {
-		eventInfos.put(eventInformation.getEventId(), eventInformation);		
+		if (eventInformation.tagDefinition)
+			eventInfos.put(eventInformation.getTag(),eventInformation);
+		else
+			eventInfos.put(eventInformation.getEventId(), eventInformation);
 	}
 	
 	@Override

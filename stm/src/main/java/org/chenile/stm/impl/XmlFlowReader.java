@@ -1,9 +1,5 @@
 package org.chenile.stm.impl;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.ExtendedBaseRules;
 import org.apache.commons.digester.Rule;
@@ -14,37 +10,44 @@ import org.chenile.stm.action.STMAutomaticStateComputation;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.action.StateEntityRetrievalStrategy;
 import org.chenile.stm.exception.STMException;
-import org.chenile.stm.model.AutomaticStateDescriptor;
-import org.chenile.stm.model.EventInformation;
-import org.chenile.stm.model.FlowDescriptor;
-import org.chenile.stm.model.StateDescriptor;
-import org.chenile.stm.model.StateTagDescriptor;
-import org.chenile.stm.model.TransientActionsAwareDescriptor;
-import org.chenile.stm.model.Transition;
+import org.chenile.stm.model.*;
 import org.xml.sax.Attributes;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 
 /**
  * 
  * Provides an xml implementation of the FlowStoreReader. Supports flexible
  * custom xml tags for specific action state components. Custom properties are
  * made available to actions registered. These two features provide a powerful
- * extension making this parser support an xml based DSL.
+ * extension making this parser support an XML based DSL.
  * 
  * @author Raja Shankar Kolluru
  */
 public class XmlFlowReader extends FlowReaderBase {
 
 	private static final String STATES_ADD_STATE_TAG = "states/add-state-tag";
+	private static final String STATES_ADD_TRANSITION_TAG = "states/add-transition-tag";
+	public static final String ENTRY_ACTION = "/entry-action";
+	public static final String EXIT_ACTION = "/exit-action";
+	String EVENT_ID_TAG = "eventIdTag";
+	String COMPONENT_NAME_TAG = "componentNameTag";
 	private static final String COMPONENT_NAME = "componentName";
+	private static final String EVENT_ID = "eventId";
 	private static final String STATES_FLOW_TAG = "states/flow";
 	private static final String STATES_FLOW = "states/flow/";
 	private static final String COMPONENT_PROPERTIES = "/component-properties/?";
 	private Digester digester;
 	public static final String META_PREFIX = "meta-";
-
+	public static final String NEW_FLOW_ID = "newFlowId";
+	public static final String NEW_STATE_ID = "newStateId";
+	public static final String NEW_FLOW_ID_TAG = "newFlowIdTag";
+	public static final String NEW_STATE_ID_TAG = "newStateIdTag";
 	/**
 	 * 
-	 * @param stmFlowStoreImpl
+	 * @param stmFlowStoreImpl the store
 	 */
 	public XmlFlowReader(STMFlowStoreImpl stmFlowStoreImpl) {
 		super(stmFlowStoreImpl);
@@ -60,8 +63,8 @@ public class XmlFlowReader extends FlowReaderBase {
 
 	/**
 	 * 
-	 * @param filename
-	 * @throws Exception
+	 * @param filename the XML file name
+	 * @throws Exception if it cannot read the file
 	 */
 	public void setFilename(String filename) throws Exception {
 		// discover all the streams that correspond to this filename.
@@ -72,18 +75,11 @@ public class XmlFlowReader extends FlowReaderBase {
 			parse(u.openStream()); 
 		}
 	}
-	
-	/**
-	 * 
-	 */
-	public void init(){
-		// does nothing since the work is done by setFilename itself
-	}
 
 	/**
 	 * 
-	 * @param inputStream
-	 * @throws Exception
+	 * @param inputStream the input stream to parse
+	 * @throws Exception if any error occurs in parsing the stream
 	 */
 	public void parse(InputStream inputStream) throws Exception {
 		digester.push(stmFlowStoreImpl);
@@ -100,11 +96,15 @@ public class XmlFlowReader extends FlowReaderBase {
 			StateTagDescriptor std = new StateTagDescriptor();
 
 			std.setComponentName(attributes.getValue("componentName"));
-			String dc = attributes.getValue("descriptorClass");
-			std.setDescriptorClass((Class<? extends StateDescriptor>)Class.forName(dc));
 			String x = attributes.getValue("manualState");
-			
-			std.setManualState(Boolean.parseBoolean(x));
+			boolean manualState = Boolean.parseBoolean(x);
+			std.setManualState(manualState);
+			String dc = attributes.getValue("descriptorClass");
+			if (dc == null){
+				dc = manualState?"org.chenile.stm.model.ManualStateDescriptor":
+						"org.chenile.stm.model.AutomaticStateDescriptor";
+			}
+			std.setDescriptorClass((Class<? extends StateDescriptor>)Class.forName(dc));
 			std.setTag(attributes.getValue("tag"));
 			XmlFlowReader.this.stmFlowStoreImpl.addStateTag(std);
 			setRulesForStateTag(std.getTag());
@@ -118,6 +118,7 @@ public class XmlFlowReader extends FlowReaderBase {
 
 
 		digester.addRule(STATES_ADD_STATE_TAG, new AddStateRule());
+		digester.addRule(STATES_ADD_TRANSITION_TAG, new AddEventInformationRule());
 
 		digester.addCallMethod("states/scripting-strategy",
 				"setScriptingStrategy", 1, new Class<?>[] { String.class });
@@ -127,9 +128,9 @@ public class XmlFlowReader extends FlowReaderBase {
 				"setEnablementStrategy", 1, new Class<?>[] { String.class });
 		digester.addCallParam("states/enablement-strategy", 0, COMPONENT_NAME);
 
-		digester.addRule("states/entry-action",
+		digester.addRule("states" + ENTRY_ACTION,
 				new AddTransitionActionToTransientActionAwareDescriptorRule());
-		digester.addRule("states/exit-action",
+		digester.addRule("states" + EXIT_ACTION,
 				new AddTransitionActionToTransientActionAwareDescriptorRule());
 		digester.addCallMethod("states/default-transition-action", "setDefaultTransitionAction",1);
 		digester.addCallParam("states/default-transition-action", 0, "componentName");
@@ -156,9 +157,9 @@ public class XmlFlowReader extends FlowReaderBase {
 		digester.addRule(STATES_FLOW + tag,
 				new StateDescriptorAttributesRule());
 
-		digester.addRule(STATES_FLOW + tag + "/entry-action",
+		digester.addRule(STATES_FLOW + tag + ENTRY_ACTION,
 				new AddTransitionActionToTransientActionAwareDescriptorRule());
-		digester.addRule(STATES_FLOW + tag + "/exit-action",
+		digester.addRule(STATES_FLOW + tag + EXIT_ACTION,
 				new AddTransitionActionToTransientActionAwareDescriptorRule());
 
 		digester.addCallMethod(
@@ -170,8 +171,7 @@ public class XmlFlowReader extends FlowReaderBase {
 		digester.addCallParam(STATES_FLOW + tag + COMPONENT_PROPERTIES,
 				1);
 
-		digester.addRule(STATES_FLOW + tag + "/on", new AddTransitionRule());
-		// digester.addSetNext(STATES_FLOW + tag + "/on", "addTransition");
+		digester.addRule(STATES_FLOW + tag + "/*", new AddTransitionRule());
 
 		digester.addSetNext(STATES_FLOW + tag, "addsd");
 
@@ -182,16 +182,38 @@ public class XmlFlowReader extends FlowReaderBase {
 		public void begin(String namespace, String xmlElementName,
 				Attributes attributes) throws Exception {
 			EventInformation eventInformation = new EventInformation();
-			eventInformation.setEventId(attributes.getValue("eventId"));
-			digester.push(eventInformation);
+			String tag = attributes.getValue("tag");
+			if (tag != null)
+				eventInformation.tagDefinition = true;
+			eventInformation.eventIdTag = attributes.getValue(EVENT_ID_TAG);
+			if (eventInformation.eventIdTag == null) eventInformation.eventIdTag = EVENT_ID;
+			eventInformation.componentNameTag = attributes.getValue(COMPONENT_NAME_TAG);
+			if (eventInformation.componentNameTag == null)eventInformation.componentNameTag = COMPONENT_NAME;
+			eventInformation.newFlowIdTag = attributes.getValue(NEW_FLOW_ID_TAG);
+			if (eventInformation.newFlowIdTag == null)eventInformation.newFlowIdTag = NEW_FLOW_ID;
+			eventInformation.newStateIdTag = attributes.getValue(NEW_STATE_ID_TAG);
+			if (eventInformation.newStateIdTag == null)eventInformation.newStateIdTag = NEW_STATE_ID;
+			String eventId = attributes.getValue(eventInformation.eventIdTag);
+			if(eventId == null){
+				eventId = transformTag(tag);
+			}
+			eventInformation.setTag(tag);
+			if (eventId == null){
+				throw new STMException("Invalid event-information or add-transition-tag: " +
+						"eventId or tag name is mandatory",STMException.INVALID_CONFIGURATION);
+			}
+			eventInformation.setEventId(eventId);
+			eventInformation.newFlowId = attributes.getValue(eventInformation.newFlowIdTag);
+			eventInformation.newStateId = attributes.getValue(eventInformation.newStateIdTag);
 			processTransitionAction(eventInformation,attributes);
 			processMetaAttributes(eventInformation, attributes);
+			stmFlowStoreImpl.addEventInformation(eventInformation);
 		}
 		
 		protected void processTransitionAction(EventInformation eventInformation, Attributes attributes) throws Exception {
-			if (attributes.getValue(COMPONENT_NAME) == null) return;
+			if (attributes.getValue(eventInformation.componentNameTag) == null) return;
 			eventInformation.setTransitionAction((STMTransitionAction<?>) stmFlowStoreImpl.
-					                 makeTransitionAction(attributes.getValue(COMPONENT_NAME),true));
+					                 makeTransitionAction(attributes.getValue(eventInformation.componentNameTag),true));
 		}
 
 		protected void processMetaAttributes(EventInformation eventInformation,
@@ -209,35 +231,37 @@ public class XmlFlowReader extends FlowReaderBase {
 				}
 			}
 		}
-		
-		public void end() throws Exception {
-			EventInformation eventInformation = (EventInformation) digester.pop(); // pop the Transition from the digester stack.			
-			stmFlowStoreImpl.addEventInformation(eventInformation);
-		}
 	}
-	
-	
-	public class AddTransitionRule extends AddEventInformationRule {
+
+	public class AddTransitionRule extends AddEventInformationRule{
 		@Override
 		public void begin(String namespace, String xmlElementName,
 				Attributes attributes) throws Exception {
-
-			String eventId = attributes.getValue("eventId");
+			EventInformation transitionTagDefinition = stmFlowStoreImpl.getEventInformation(xmlElementName);
+			if (transitionTagDefinition == null) {
+				// no need to process this tag since it is not a registered transition tag.
+				return;
+			}
+			// Event ID can either be set when the tag is used. It will be set as an attribute
+			// of the tag. If not set, it can be picked up from the tag definition.
+			String eventId = attributes.getValue(transitionTagDefinition.eventIdTag);
+			if(eventId == null) {
+				eventId = transitionTagDefinition.getEventId();
+			}
 			EventInformation eventInfo = stmFlowStoreImpl.getEventInformation(eventId);
+			EventInformation mergedEventInfo = transitionTagDefinition;
+			if (eventInfo != null) {
+				mergedEventInfo = transitionTagDefinition.mergeTagDefinitionWithEventInformation(eventInfo);
+			}
 			StateDescriptor sd = (StateDescriptor) digester.peek();
-			Transition transition;
-			if (eventInfo != null) 
-				transition = new Transition(eventInfo);	
-			else
-				transition = new Transition();
-			digester.push(transition);
-
+			Transition transition = new Transition(mergedEventInfo);
 			transition.setEventId(eventId);
 			transition.setFlowId(sd.getFlowId());
 			transition.setStateId(sd.getId());
-			transition.setNewFlowId(attributes.getValue("newFlowId"));
-			transition.setNewStateId(attributes.getValue("newStateId"));
-			// transition.setAclString(attributes.getValue("acls"));
+			if (attributes.getValue(mergedEventInfo.newFlowIdTag) != null)
+				transition.setNewFlowId(attributes.getValue(mergedEventInfo.newFlowIdTag));
+			if (attributes.getValue(mergedEventInfo.newStateIdTag) != null)
+				transition.setNewStateId(attributes.getValue(mergedEventInfo.newStateIdTag));
 			String invokableOnlyFromStm = attributes.getValue("invokableOnlyFromStm");
 			if (invokableOnlyFromStm != null)
 				transition.setInvokableOnlyFromStm(Boolean.parseBoolean(invokableOnlyFromStm));
@@ -246,14 +270,6 @@ public class XmlFlowReader extends FlowReaderBase {
 				transition.setRetrievalTransition(Boolean.parseBoolean(rt));
 			processTransitionAction(transition,attributes);
 			processMetaAttributes(transition, attributes);
-		}
-		
-		/**
-		 * 
-		 */
-		public void end() throws Exception {
-			Transition transition = (Transition) digester.pop(); // pop the Transition from the digester stack.
-			StateDescriptor sd = (StateDescriptor) digester.peek();			
 			sd.addTransition(transition);
 		}
 	}
@@ -372,10 +388,9 @@ public class XmlFlowReader extends FlowReaderBase {
 				enable = Boolean.getBoolean(enableInlineScripts);
 			STMAction<?> transitionAction = (STMAction<?>) stmFlowStoreImpl
 					.makeAction(componentName, enable);
-			if (xmlElementName != null && "entry-action".equals(xmlElementName))
+			if ( "entry-action".equals(xmlElementName))
 				taad.setEntryAction(transitionAction);
-			else if (xmlElementName != null
-					&& ("exit-action").equals(xmlElementName))
+			else if ( ("exit-action").equals(xmlElementName))
 				taad.setExitAction(transitionAction);
 		}
 	}
@@ -417,14 +432,34 @@ public class XmlFlowReader extends FlowReaderBase {
 		}
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	public String toXml() {
-		StringBuilder sb = new StringBuilder();
+	public static String transformTag(String tagName){
+		if (tagName == null)return null;
+		int index = tagName.indexOf('-');
+		while (index != -1){
+			if (index == (tagName.length()-1)){
+				tagName = tagName.substring(0,index);
+			}else {
+				tagName = tagName.substring(0, index) + tagName.substring(index + 1, index + 2).toUpperCase()
+						+ tagName.substring(index + 2);
+			}
+			index = tagName.indexOf('-');
+		}
+		return tagName;
+	}
 
-		return sb.toString();
+	public static void main(String[] args){
+		String tag = "event-id";
+		System.out.println("tag = " + tag + " transformed event id is " + transformTag(tag));
+		tag = "abc";
+		System.out.println("tag = " + tag + " transformed event id is " + transformTag(tag));
+		tag = "abc-";
+		System.out.println("tag = " + tag + " transformed event id is " + transformTag(tag));
+		tag = "abc-def-ghi";
+		System.out.println("tag = " + tag + " transformed event id is " + transformTag(tag));
+		tag = "-abc-def-ghi";
+		System.out.println("tag = " + tag + " transformed event id is " + transformTag(tag));
+		tag = "-abc-def-ghi-";
+		System.out.println("tag = " + tag + " transformed event id is " + transformTag(tag));
 	}
 
 }

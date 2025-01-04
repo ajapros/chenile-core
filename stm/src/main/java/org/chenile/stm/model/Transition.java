@@ -2,14 +2,27 @@ package org.chenile.stm.model;
 
 import org.chenile.stm.action.STMTransitionAction;
 
+import java.util.Arrays;
+
 public class Transition extends EventInformation {
-	
+	private String tag;
+	public String getTag(){
+		return tag;
+	}
+	public void setTag(String tag){
+		this.tag = tag;
+	}
 	public Transition(EventInformation eventInformation) {
 		fromEventInformation(eventInformation);
 	}
 	
-	public Transition fromEventInformation(EventInformation eventInformation) {
+	private void fromEventInformation(EventInformation eventInformation) {
+		this.tag = eventInformation.tag;
+		this.eventIdTag = eventInformation.eventIdTag;
+		this.componentNameTag = eventInformation.componentNameTag;
 		this.eventId = eventInformation.eventId;
+		this.newFlowId = eventInformation.newFlowId;
+		this.newStateId = eventInformation.newStateId;
 		this.metadata.putAll(eventInformation.metadata);
 		this.transitionAction = eventInformation.transitionAction;
 
@@ -17,7 +30,6 @@ public class Transition extends EventInformation {
 			String acls = eventInformation.getMetadata().get("acls");
 			setAclString(acls);
 		}
-		return this;
 	}
 	
 	public Transition() {}
@@ -96,12 +108,20 @@ public class Transition extends EventInformation {
 
 	@Override
 	public String toString() {
-		return "Transition [eventId=" + eventId + ", newStateId=" + newStateId
-				+ ", newFlowId=" + newFlowId + ", retrievalTransition="
-				+ retrievalTransition + ", transitionAction="
-				+ transitionAction + ", metadata=" + getMetadata() + "]";
+		return "Transition{" +
+				"tag='" + tag + '\'' +
+				", eventId ='" + eventId + '\'' +
+				", stateId='" + stateId + '\'' +
+				", flowId='" + flowId + '\'' +
+				", acls=" + Arrays.toString(acls) +
+				", isInvokableOnlyFromStm=" + isInvokableOnlyFromStm +
+				", newStateId='" + newStateId + '\'' +
+				", newFlowId='" + newFlowId + '\'' +
+				", retrievalTransition=" + retrievalTransition +
+				", transitionAction= " + transitionAction +
+				'}';
 	}
-	
+
 	public String[] getAcls() {
 		return acls;
 	}
@@ -140,14 +160,13 @@ public class Transition extends EventInformation {
 	}
 	
 	public String toXml(){
-		StringBuilder sb = new StringBuilder();
-		sb.append("<transition eventId='" + eventId + "' >\n");
-		sb.append("<newStateId>" + newStateId + "</newStateId>\n");
-		sb.append("<newFlowId>" + newFlowId + "</newFlowId>\n");
-		sb.append("<retrievalTransition>" + retrievalTransition + "</retrievalTransition>\n");
-		sb.append("<transitionAction>" + transitionAction + "</transitionAction>\n");
-		sb.append("</transition>\n");
-		return sb.toString();
+		return "<transition eventId='" + eventId + "' >\n" +
+                "<newStateId>" + newStateId + "</newStateId>\n" +
+                "<newFlowId>" + newFlowId + "</newFlowId>\n" +
+                "<retrievalTransition>" + retrievalTransition + "</retrievalTransition>\n" +
+                "<transitionAction>" + transitionAction + "</transitionAction>\n" +
+                "</transition>\n";
+
 	}
 
 	public Transition transitionTo(String stateId, String... flowId) {

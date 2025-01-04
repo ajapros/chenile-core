@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Simple manufacturing process with an assembly line that consists of Steps S1 and S2 -->
+<states>
+    <default-transition-action componentName="defaultTransitionAction"/>
+    <enablement-strategy componentName="configBasedEnablementStrategy"/>
+    <add-state-tag tag="stage" manualState="true"/>
+    <add-transition-tag tag="step" eventIdTag="id"/>
+    <add-transition-tag tag="do-s2" />
+    <add-transition-tag tag="reject" newStateId="REJECTED"/>
+    <add-transition-tag tag="succeed" newStateId="SUCCESS"/>
+    <flow id='AssemblyLineFlow' default='true'>
+        <entry-action componentName="entryAction" />
+        <exit-action componentName="exitAction" />
+        <stage id='CREATED' initialState='true'>
+            <step id='doS1' newStateId='S1'/>
+            <reject/>
+        </stage>
+        <stage id='S1' >
+            <do-s2 newStateId='S2'/>
+            <reject/>
+        </stage>
+        <stage id="REJECTED"/>
+        <stage id="SUCCESS"/>
+        <stage id="S2">
+            <reject/>
+            <succeed/>
+        </stage>
+    </flow>
+
+</states>

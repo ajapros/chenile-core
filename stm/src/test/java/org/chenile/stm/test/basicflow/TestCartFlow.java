@@ -159,18 +159,10 @@ public class TestCartFlow extends TestCase{
 		Cart cart = new Cart();
 		stm.proceed(cart);
 		assertEquals(new State("CREATED","cart-flow"),cart.getCurrentState());
-		try{
-			stm.proceed(cart,"close",null);
-		}catch(STMException e){
-			assertEquals(551,e.getMessageId());
-		}
-		
-		
+
+		stm.proceed(cart,"close",null);
 		// Expected calling sequence as documented in the log.
 		List<String> log = cart.getLog();
-		// System.out.println(log);
-	
-
 		String[] expectedLog = {
 				EntryAction.LOGMESSAGE + ":CREATED",
 				ExitAction.LOGMESSAGE + ":CREATED",

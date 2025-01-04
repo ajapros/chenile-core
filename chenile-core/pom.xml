@@ -39,6 +39,10 @@
 			<artifactId>junit-vintage-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.chenile</groupId>
+            <artifactId>owiz</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

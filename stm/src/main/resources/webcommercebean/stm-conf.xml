@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--  contains default configurations for the State Transition Machine (STM). 
-These configurations can be added to normal STM configurations as well.
-The intent behind this file is to avoid repeating similar configurations.
+These relate to tag configurations and are defined in one place below.
+These tag configurations can exist in any XML file. It is not constrained to be only
+in this file.
  -->
  
- <!--  define out of the box OGNL tags. org.chenile.stm.model-->
+ <!--  define out of the box OGNL tags. -->
 <states>
+	<add-transition-tag tag="on"/>
 	<add-state-tag  tag="auto-state" descriptorClass="org.chenile.stm.model.AutomaticStateDescriptor"/>
 	<add-state-tag  tag="manual-state" manualState='true' descriptorClass="org.chenile.stm.model.ManualStateDescriptor"/>
 	<add-state-tag  tag="if" componentName="org.chenile.stm.action.scriptsupport.IfAction" 

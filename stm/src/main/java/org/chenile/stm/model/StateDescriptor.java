@@ -71,12 +71,9 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 	 * Is this state manual? (or a view state?)
 	 */
 	protected boolean manualState = false;
-
-
 	public boolean isManualState() {
 		return manualState;
 	}
-
 	public void setManualState(boolean manualState) {
 		this.manualState = manualState;
 	}

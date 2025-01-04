@@ -16,6 +16,7 @@ public class STMException extends Exception {
 	public static final int INVALID_EVENTID = 580;
 	public static final int UNDEFINED_INITIAL_STATE_OR_FLOW = 600;
 	public static final int UNABLE_TO_CREATE_COMPONENT = 650;
+	public static final int INVALID_CONFIGURATION = 675;
 	
 	
 	private static final long serialVersionUID = 8741909778071370857L;
