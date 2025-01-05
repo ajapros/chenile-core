@@ -1,5 +1,8 @@
 package org.chenile.stm.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This object stores the various tags that are supported by the XML configurator along
  * with their associated properties. 
@@ -7,6 +10,11 @@ package org.chenile.stm.model;
  *
  */
 public class StateTagDescriptor {
+
+	/**
+	 * The State ID. This is useful if you want to create a specific tag for one state only.
+	 */
+	private String id;
 	/**
 	 * Name of the tag
 	 */
@@ -15,6 +23,19 @@ public class StateTagDescriptor {
 	 * The component name that needs to be instantiated when this tag is encountered.
 	 */
 	private String componentName;
+
+	public boolean isInitialState() {
+		return initialState;
+	}
+
+	public void setInitialState(boolean initialState) {
+		this.initialState = initialState;
+	}
+
+	/**
+	 * Is this the initial state?
+	 */
+	private boolean initialState = false;
 	/**
 	 * Is this tag representing a manual state? (or a view state) 
 	 */
@@ -48,7 +69,12 @@ public class StateTagDescriptor {
 	public boolean isManualState() {
 		return manualState;
 	}
-	
-	
-	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	public Map<String,String> props = new HashMap<>();
 }

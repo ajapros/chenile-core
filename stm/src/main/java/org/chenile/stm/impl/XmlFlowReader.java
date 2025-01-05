@@ -16,6 +16,7 @@ import org.xml.sax.Attributes;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * 
@@ -94,11 +95,14 @@ public class XmlFlowReader extends FlowReaderBase {
 				Attributes attributes) throws Exception {
 
 			StateTagDescriptor std = new StateTagDescriptor();
-
+			std.setId(attributes.getValue("id"));
 			std.setComponentName(attributes.getValue("componentName"));
 			String x = attributes.getValue("manualState");
 			boolean manualState = Boolean.parseBoolean(x);
 			std.setManualState(manualState);
+			x = attributes.getValue("initialState");
+			if (x != null)
+				std.setInitialState(Boolean.parseBoolean(x));
 			String dc = attributes.getValue("descriptorClass");
 			if (dc == null){
 				dc = manualState?"org.chenile.stm.model.ManualStateDescriptor":
@@ -106,8 +110,22 @@ public class XmlFlowReader extends FlowReaderBase {
 			}
 			std.setDescriptorClass((Class<? extends StateDescriptor>)Class.forName(dc));
 			std.setTag(attributes.getValue("tag"));
+			addOtherAttributes(std,attributes);
 			XmlFlowReader.this.stmFlowStoreImpl.addStateTag(std);
 			setRulesForStateTag(std.getTag());
+		}
+
+		private void addOtherAttributes(StateTagDescriptor std,Attributes attributes){
+			for (int i = 0; i < attributes.getLength(); i++) {
+				String name = attributes.getLocalName(i);
+				if ("".equals(name)) {
+					name = attributes.getQName(i);
+				}
+				String value = attributes.getValue(i);
+				if (name.equals(COMPONENT_NAME) || name.equals("initialState") ||
+					name.equals("id")) continue;
+				std.props.put(name, value);
+			}
 		}
 	}
 
@@ -288,29 +306,33 @@ public class XmlFlowReader extends FlowReaderBase {
 				Attributes attributes) throws Exception {
 			FlowDescriptor fd = (FlowDescriptor) digester.peek();
 			StateDescriptor sd;
-			boolean isManualState = stmFlowStoreImpl.actionTagsMap.get(
-					xmlElementName).isManualState();
-			sd = stmFlowStoreImpl.actionTagsMap.get(xmlElementName)
-					.getDescriptorClass().getDeclaredConstructor().newInstance();
+			StateTagDescriptor tagDescriptor = stmFlowStoreImpl.actionTagsMap.get(xmlElementName);
+			boolean isManualState = tagDescriptor.isManualState();
+			sd = tagDescriptor.getDescriptorClass().getDeclaredConstructor().newInstance();
 			sd.setManualState(isManualState);
 			digester.push(sd);
 
 			// id and initialState need to be injected into sd as well.
-			String id = attributes.getValue("id");
+			String id = tagDescriptor.getId();
+			if (attributes.getValue("id") != null){
+				id = attributes.getValue("id");
+			};
 			sd.setId(id);
 			sd.setFlowId(fd.getId());
 
+			sd.setInitialState(tagDescriptor.isInitialState());
 			String initialState = attributes.getValue("initialState");
 			if (initialState != null)
 				sd.setInitialState(Boolean.parseBoolean(initialState));
 			if (sd instanceof AutomaticStateDescriptor)
 				setActionDescriptorProperties((AutomaticStateDescriptor) sd,
-						attributes, xmlElementName);
-			processMetaAttributes(sd, attributes);
+						attributes, tagDescriptor);
+			processMetaAttributes(tagDescriptor,sd, attributes);
 		}
 
-		private void processMetaAttributes(StateDescriptor sd,
-				Attributes attributes) {
+		private void processMetaAttributes(StateTagDescriptor tagDescriptor,
+					    StateDescriptor sd,
+						Attributes attributes) {
 			for (int i = 0; i < attributes.getLength(); i++) {
 				String name = attributes.getLocalName(i);
 				if ("".equals(name)) {
@@ -323,18 +345,26 @@ public class XmlFlowReader extends FlowReaderBase {
 					sd.addMetaData(n, value);
 				}
 			}
+			for (Map.Entry<String,String> entry: tagDescriptor.props.entrySet()){
+				String name = entry.getKey();
+				String value = entry.getValue();
+				if (name.startsWith(META_PREFIX)) {
+					String n = name.substring(META_PREFIX.length());
+					sd.addMetaData(n, value);
+				}
+			}
+
 		}
 
 		private void setActionDescriptorProperties(
 				AutomaticStateDescriptor asd, Attributes attributes,
-				String xmlElementName) throws STMException {
+				StateTagDescriptor tagDescriptor) throws STMException {
 
 			// process componentName either from the attribute or from the
 			// actionTagsMap
 			String componentName = attributes.getValue(COMPONENT_NAME);
 			if (componentName == null) {
-				componentName = stmFlowStoreImpl.actionTagsMap.get(
-						xmlElementName).getComponentName();
+				componentName = tagDescriptor.getComponentName();
 			}
 			String enableInlineScripts = attributes
 					.getValue("enableInlineScripts");
@@ -358,6 +388,13 @@ public class XmlFlowReader extends FlowReaderBase {
 						|| "initialState".equals(name))
 					continue; // processed these already.
 				else {
+					asd.addXmlComponentProperty(name, value);
+				}
+			}
+			for (Map.Entry<String,String> entry: tagDescriptor.props.entrySet()){
+				String name = entry.getKey();
+				String value = entry.getValue();
+				if (!name.startsWith(META_PREFIX)) {
 					asd.addXmlComponentProperty(name, value);
 				}
 			}
