@@ -7,12 +7,11 @@ import org.chenile.stm.impl.STMImpl;
 import org.chenile.stm.model.Transition;
 
 /**
- * This interface is useful to implement the actual logic to update the state to the new state ID.
- * STM calls this method (if set) for every state transition. This can be used for both entry and exit actions.
- * The entry action is called BEFORE the state is entered. The exit method is called at the time the state is exited out of.
- * In an entry action, if the start state is null then the end state would be the initial state for the particular flow.
- * This can be used for making decisions around inserting a new record etc.
- * <p>Please see {@link STMImpl} for more documentation around the exit action.
+ * This interface must be implemented to capture the actual logic to update the state to the new state ID.
+ * STM calls this method (if set) for every state event that occurs. STM also supports the notion
+ * of a default transition action if this action is not explicitly set for a transition. Use the
+ * &lt;default-transition-action componentName=""/&gt; tag to define a default transition action.<br/>
+ * Chenile Workflow uses this to implement more functionality.
  *
  * @param <StateEntityType>
  */

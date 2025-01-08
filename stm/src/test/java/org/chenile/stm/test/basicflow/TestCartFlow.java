@@ -52,8 +52,8 @@ public class TestCartFlow extends TestCase{
 		stm.proceed(cart,"initiatePayment",new Payment("amex"));
 		assertEquals("amex",cart.getPayment().getPayee());
 		assertEquals(new State("PAYMENT_INITIATED","cart-flow"),cart.getCurrentState());
-		
-		cart.setTestObj(1);
+
+		stm.proceed(cart,"approve",null);
 		stm.proceed(cart,"confirmPayment","confirm777");
 		assertEquals("confirm777",cart.getPayment().getConfirmationId());
 		assertEquals(new State("PAYMENT_CONFIRMED","cart-flow"),cart.getCurrentState());
@@ -79,6 +79,9 @@ public class TestCartFlow extends TestCase{
 				EntryAction.LOGMESSAGE + ":CREATED",
 				ExitAction.LOGMESSAGE + ":CREATED",
 				InitiatePayment.LOGMESSAGE,
+				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
+				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
+				ApproveCart.LOGMESSAGE,
 				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ConfirmPayment.LOGMESSAGE,
@@ -115,7 +118,7 @@ public class TestCartFlow extends TestCase{
 		assertEquals("amex",cart.getPayment().getPayee());
 		assertEquals(new State("PAYMENT_INITIATED","cart-flow"),cart.getCurrentState());
 		
-		cart.setTestObj(1);
+		stm.proceed(cart,"approve",null);
 		stm.proceed(cart,"confirmPayment","confirm777");
 		assertEquals("confirm777",cart.getPayment().getConfirmationId());
 		assertEquals(new State("PAYMENT_CONFIRMED","cart-flow"),cart.getCurrentState());
@@ -144,6 +147,9 @@ public class TestCartFlow extends TestCase{
 				EntryAction.LOGMESSAGE + ":CREATED",
 				ExitAction.LOGMESSAGE + ":CREATED",
 				InitiatePayment.LOGMESSAGE,
+				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
+				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
+				ApproveCart.LOGMESSAGE,
 				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ConfirmPayment.LOGMESSAGE,

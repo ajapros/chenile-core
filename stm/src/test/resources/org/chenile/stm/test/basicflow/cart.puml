@@ -1,0 +1,47 @@
+@startuml
+<style>
+     diamond {
+     BackgroundColor #palegreen
+     LineColor #green
+     LineThickness 2.5
+     }
+  </style>
+  skinparam state  {
+   BorderThickness<<MAIN_PATH>> 4
+   BorderColor<<MAIN_PATH>> Peru
+   BackgroundColor<<MAIN_PATH>> Bisque
+  }
+  skinparam state {
+     BackgroundColor<<orphaned>> OrangeRed
+  }
+state CREATED <<MAIN_PATH>> 
+state CLOSED
+state PAYMENT_CONFIRMED <<MAIN_PATH>> 
+state TEST_STATE <<choice>> 
+note right of TEST_STATE : **TEST_STATE**\n**condition:**approved\n**else:**reject\n**descriptorClass:**org.chenile.stm.model.AutomaticStateDescriptor\n**then:**confirm\n**tag:**if
+state PAYMENT_INITIATED <<MAIN_PATH>> 
+[*] -[thickness=4,#Peru]-> CREATED
+CREATED -[thickness=4,#Peru]-> PAYMENT_INITIATED : <color:Peru>**initiatePayment**
+CREATED --> CLOSED : close
+CREATED --> CREATED
+note on link #LightBlue
+userLogin
+addItem
+end note
+CLOSED --> [*]
+PAYMENT_CONFIRMED -[thickness=4,#Peru]-> [*]
+TEST_STATE -[thickness=4,#Peru]-> PAYMENT_CONFIRMED : <color:Peru>**confirm**
+TEST_STATE --> PAYMENT_INITIATED : reject
+PAYMENT_INITIATED -[thickness=4,#Peru]-> TEST_STATE : <color:Peru>**confirmPayment**
+PAYMENT_INITIATED --> PAYMENT_INITIATED
+note on link #LightBlue
+approve
+end note
+legend right
+<#GhostWhite,#GhostWhite>|        |= __Legend__ |
+|<#OrangeRed>   | Orphaned State|
+|<#Peru>   | Main Path|
+|<#LightBlue> |Transitions without state change|
+|<#PaleGreen> |Automatic State Computations|
+endlegend
+@enduml

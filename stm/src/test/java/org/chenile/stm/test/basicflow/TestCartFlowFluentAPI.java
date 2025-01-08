@@ -47,6 +47,9 @@ public class TestCartFlowFluentAPI extends TestCase{
 					state().
 				flow().
 			manualState("PAYMENT_INITIATED").
+				on("approve").
+					transitionAction(new ApproveCart()).
+					state().
 				on("confirmPayment").
 					transitionAction(new ConfirmPayment()).
 					transitionTo("TEST_STATE").
@@ -54,7 +57,7 @@ public class TestCartFlowFluentAPI extends TestCase{
 				flow().
 			autoState("TEST_STATE").
 				component(new IfAction<>()).
-				property("condition","testObj==1").
+				property("condition","approved").
 				property("then","success").
 				property("else","failure").
 				on("success").
@@ -91,8 +94,8 @@ public class TestCartFlowFluentAPI extends TestCase{
 		stm.proceed(cart,"initiatePayment",new Payment("amex"));
 		assertEquals("amex",cart.getPayment().getPayee());
 		assertEquals(new State("PAYMENT_INITIATED","cart-flow"),cart.getCurrentState());
-		
-		cart.setTestObj(1);
+
+		stm.proceed(cart,"approve",null);
 		stm.proceed(cart,"confirmPayment","confirm777");
 		assertEquals("confirm777",cart.getPayment().getConfirmationId());
 		assertEquals(new State("PAYMENT_CONFIRMED","cart-flow"),cart.getCurrentState());
@@ -118,6 +121,9 @@ public class TestCartFlowFluentAPI extends TestCase{
 				EntryAction.LOGMESSAGE + ":CREATED",
 				ExitAction.LOGMESSAGE + ":CREATED",
 				InitiatePayment.LOGMESSAGE,
+				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
+				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
+				ApproveCart.LOGMESSAGE,
 				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ConfirmPayment.LOGMESSAGE,

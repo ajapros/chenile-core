@@ -13,6 +13,7 @@ public class Cart extends BaseStateEntity{
 	private List<String> log = new ArrayList<String>();
 	private static final long serialVersionUID = 8695851110437663595L;
 	private String userId;
+	public boolean approved = false;
 	private int testObj;
 	public int getTestObj() {
 		return testObj;

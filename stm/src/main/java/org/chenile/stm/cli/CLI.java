@@ -20,17 +20,19 @@ import java.util.Properties;
         description = "Reads a State Definition file and allows a few operations on it. STM is not created. Hence components don't have to be in the class path.")
 public class CLI implements Runnable {
     @Parameters(index = "0", paramLabel = "<XML File name>", description = "The XML filename to read. Must be a valid states XML. Component names in file will be ignored.")
-    private File xmlFileName;
+    public File xmlFileName;
     @Option(names = {"-s", "--uml-state-diagram"}, description = "Generate a UML state diagram")
-    private boolean umlStateDiagram;
+    public boolean umlStateDiagram;
     @Option(names = {"-a", "--allowed-actions"},paramLabel = "state", description = "Return allowed actions for a state")
-    private String stateForAllowedActions;
+    public String stateForAllowedActions;
     @Option(names = {"-o", "--output"},paramLabel = "output-file", description = "Writes output to the specified file")
-    private String outputFile;
+    public String outputFile;
+    @Option(names = {"-S", "--styling-properties-file"},paramLabel = "Styling-properties-file", description = "Use the properties file for setting styles according to metadata in states and transitions")
+    public File stylingPropertiesFile;
     @Option(names = {"-e", "--enablement-properties-file"},paramLabel = "enablement-properties-file", description = "Use the properties file for enablement properties")
-    private File enablementPropertiesFile;
+    public File enablementPropertiesFile;
     @Option(names = {"-p", "--prefix"},paramLabel = "prefix", description = "The prefix for all properties")
-    private String prefix;
+    public String prefix;
     @Spec
     Model.CommandSpec spec;
 
@@ -40,9 +42,9 @@ public class CLI implements Runnable {
     @Override
     public void run() {
         try {
-            if (umlStateDiagram)
+            if (umlStateDiagram) {
                 renderStateDiagram();
-            else if (stateForAllowedActions != null && !stateForAllowedActions.isEmpty())
+            } else if (stateForAllowedActions != null && !stateForAllowedActions.isEmpty())
                 allowedActions();
             else {
                 System.err.println("Missing option: at least one of the " +
@@ -51,6 +53,12 @@ public class CLI implements Runnable {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void loadStylingProperties() throws Exception{
+        try (InputStream inputStream = Files.newInputStream(stylingPropertiesFile.toPath())){
+            this.generator.transitionStyler.loadFromXML(inputStream);
         }
     }
 
@@ -79,6 +87,9 @@ public class CLI implements Runnable {
     }
     private void renderStateDiagram() throws Exception {
         processStream();
+        if (stylingPropertiesFile != null){
+            loadStylingProperties();
+        }
         String s = this.generator.toStateDiagram();
         out(s);
     }

@@ -16,6 +16,7 @@ public class STMPlantUmlSDGenerator {
 
     private final STMFlowStore stmFlowStore ;
     private final Map<String,Boolean> notOrphaned = new HashMap<>();
+    public TransitionStyler transitionStyler = new TransitionStyler();
     public STMPlantUmlSDGenerator(STMFlowStore flowStore){
         this.stmFlowStore = flowStore;
         findIncomingForAllStates();
@@ -28,7 +29,7 @@ public class STMPlantUmlSDGenerator {
     public static final String NOTE_RIGHT_OF_ = "note right of ";
     private static final String TERMINAL = "[*]";
     private static final String MAIN_PATH = "mainPath";
-    private static final String BOLD_LINE = "[thickness=4,#Peru]";
+    private static final String MAIN_PATH_LINE_STYLE = "[thickness=4,#Peru]";
 
     public String toStateDiagram(){
         return new StateStringBuilder().
@@ -62,7 +63,7 @@ public class STMPlantUmlSDGenerator {
                     }
                  </style>
                  skinparam state  {
-                  BorderThickness<<MAIN_PATH>> 2.5
+                  BorderThickness<<MAIN_PATH>> 4
                   BorderColor<<MAIN_PATH>> Peru
                   BackgroundColor<<MAIN_PATH>> Bisque
                  }
@@ -147,7 +148,7 @@ public class STMPlantUmlSDGenerator {
         private StringBuilder paintTerminal(StateDescriptor sd) {
             stringBuilder.append(" -");
             if (isInMainPath(sd)){
-                stringBuilder.append(BOLD_LINE);
+                stringBuilder.append(MAIN_PATH_LINE_STYLE);
             }
 
             return stringBuilder.append("-> ");
@@ -156,7 +157,9 @@ public class STMPlantUmlSDGenerator {
         private StringBuilder paintConnection(Transition t){
             stringBuilder.append(" -");
             if (isInMainPath(t)) {
-                stringBuilder.append(BOLD_LINE);
+                stringBuilder.append(MAIN_PATH_LINE_STYLE);
+            }else {
+                stringBuilder.append(getStyle(t));
             }
             return stringBuilder.append("-> ");
         }
@@ -197,6 +200,10 @@ public class STMPlantUmlSDGenerator {
         String mainPath = t.getMetadata().get(MAIN_PATH);
         if (mainPath == null) return checkForStates(t);
         return Boolean.parseBoolean(mainPath);
+    }
+
+    private String getStyle(Transition t) {
+        return transitionStyler.getStyle(t);
     }
 
     private boolean checkForStates(Transition t){

@@ -8,7 +8,7 @@
 		<entry-action componentName="org.chenile.stm.test.basicflow.EntryAction" />
 		<exit-action componentName="org.chenile.stm.test.basicflow.ExitAction" />
 		
-		<manual-state id='CREATED' initialState='true'>
+		<manual-state id='CREATED' initialState='true' meta-mainPath="true">
 			<on eventId='close' newStateId='CLOSED'
 			    invokableOnlyFromStm='true'/>
 			<on eventId='addItem' componentName='org.chenile.stm.test.basicflow.AddItem' />
@@ -17,18 +17,19 @@
 				newStateId='PAYMENT_INITIATED' />
 		</manual-state>
 
-		<manual-state id='PAYMENT_INITIATED'>
+		<manual-state id='PAYMENT_INITIATED'  meta-mainPath="true">
+			<on eventId="approve" componentName="org.chenile.stm.test.basicflow.ApproveCart"   meta-mainPath="true"/>
 			<on eventId="confirmPayment" componentName='org.chenile.stm.test.basicflow.ConfirmPayment'
-				newStateId='TEST_STATE' />
+				newStateId='TEST_STATE'   meta-mainPath="true"/>
 		</manual-state>
 		
-		<if id='TEST_STATE' condition='testObj==1' 
-		 then='xyz' else='abc'>
-		<on eventId='xyz' newStateId='PAYMENT_CONFIRMED'/>
-		<on eventId='abc' newStateId='PAYMENT_INITIATED'/>
+		<if id='TEST_STATE' condition='approved'
+		 then='confirm' else='reject'>
+		<on eventId='confirm' newStateId='PAYMENT_CONFIRMED'  meta-mainPath="true"/>
+		<on eventId='reject' newStateId='PAYMENT_INITIATED'/>
 	    </if>
 
-		<manual-state id='PAYMENT_CONFIRMED' />
+		<manual-state id='PAYMENT_CONFIRMED'  meta-mainPath="true"/>
 		<manual-state id='CLOSED'/>
 	</flow>
 	
