@@ -13,8 +13,6 @@ import static picocli.CommandLine.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 @Command(name = "stm-cli", mixinStandardHelpOptions = true, version = "stm-cli 1.0",
         description = "Reads a State Definition file and allows a few operations on it. STM is not created. Hence components don't have to be in the class path.")
@@ -33,6 +31,16 @@ public class CLI implements Runnable {
     public File enablementPropertiesFile;
     @Option(names = {"-p", "--prefix"},paramLabel = "prefix", description = "The prefix for all properties")
     public String prefix;
+    /**
+     * Use this to specify the contents of the XML file as text.
+     * This is useful if we want to use this class as an internal class and not as a CLI.
+     * This is a 2 way variable and will contain the output as well.
+     */
+    public String text;
+    /**
+     * used to suppress the output to file. Instead, the caller will get the output from text field
+     */
+    public boolean suppressOutput = false;
     @Spec
     Model.CommandSpec spec;
 
@@ -71,6 +79,7 @@ public class CLI implements Runnable {
     }
 
     private void out(String s) throws IOException{
+        if(suppressOutput) return;
         if (outputFile != null && !outputFile.isEmpty()){
             writeFile(s);
         }else {
@@ -78,28 +87,48 @@ public class CLI implements Runnable {
         }
     }
     private void allowedActions() throws Exception {
-        processStream();
+        process();
         String defaultFlowId = this.stmFlowStore.getDefaultFlow();
         State state = new State(stateForAllowedActions, defaultFlowId);
         List<String> allowedActions = this.infoProvider.getAllowedActions(state);
-        String s = allowedActions.toString();
-        out(s);
+        text = allowedActions.toString();
+        out(text);
     }
     private void renderStateDiagram() throws Exception {
-        processStream();
+        process();
         if (stylingPropertiesFile != null){
             loadStylingProperties();
         }
-        String s = this.generator.toStateDiagram();
-        out(s);
+        text = this.generator.toStateDiagram();
+        out(text);
     }
-    public void processStream() throws Exception {
+
+
+    public void process() throws Exception {
+        if (text != null)
+            processText();
+        else if (xmlFileName != null)
+            processXmlFile();
+    }
+
+    private void processXmlFile() throws Exception {
         try (InputStream inputStream = Files.newInputStream(xmlFileName.toPath())) {
-            STMFlowStoreImpl stmFlowStoreImpl = obtainFlowStore();
-            XmlFlowReader xfr = new XmlFlowReader(stmFlowStoreImpl);
-            xfr.parse(inputStream);
-            initProcessors(stmFlowStoreImpl);
+            processStream(inputStream);
         }
+    }
+
+    private void processText() throws Exception {
+        try (InputStream inputStream = new ByteArrayInputStream(text.getBytes())) {
+            processStream(inputStream);
+        }
+    }
+
+
+    private void processStream(InputStream inputStream) throws Exception {
+        STMFlowStoreImpl stmFlowStoreImpl = obtainFlowStore();
+        XmlFlowReader xfr = new XmlFlowReader(stmFlowStoreImpl);
+        xfr.parse(inputStream);
+        initProcessors(stmFlowStoreImpl);
     }
 
     private STMFlowStoreImpl obtainFlowStore() {

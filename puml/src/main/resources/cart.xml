@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<states>
+	<event-information eventId='close' componentName='org.chenile.stm.test.basicflow.CloseCart'/>
+	<event-information eventId="userLogin" meta-acls="USER_MUST_BE_ABLE_TO_LOGIN,USER_CAN_ACCESS_SYSTEM"/>
+	<flow id='cart-flow' default='true'>
+		<security-strategy componentName="org.chenile.stm.test.basicflow.MockSecurityStrategy"/>
+		<entry-action componentName="org.chenile.stm.test.basicflow.EntryAction" />
+		<exit-action componentName="org.chenile.stm.test.basicflow.ExitAction" />
+		
+		<manual-state id='CREATED' initialState='true' meta-mainPath="true">
+			<on eventId='close' newStateId='CLOSED'
+			    invokableOnlyFromStm='true'/>
+			<on eventId='addItem' componentName='org.chenile.stm.test.basicflow.AddItem' />
+			<on eventId='userLogin' componentName='org.chenile.stm.test.basicflow.UserLogin' />
+			<on eventId='initiatePayment' componentName='org.chenile.stm.test.basicflow.InitiatePayment'
+				newStateId='PAYMENT_INITIATED' />
+		</manual-state>
+
+		<manual-state id='PAYMENT_INITIATED'  meta-mainPath="true">
+			<on eventId="approve" componentName="org.chenile.stm.test.basicflow.ApproveCart"   meta-mainPath="true"/>
+			<on eventId="confirmPayment" componentName='org.chenile.stm.test.basicflow.ConfirmPayment'
+				newStateId='TEST_STATE'   meta-mainPath="true"/>
+		</manual-state>
+		
+		<if id='TEST_STATE' condition='approved'
+		 then='confirm' else='reject'>
+		<on eventId='confirm' newStateId='PAYMENT_CONFIRMED'  meta-mainPath="true"/>
+		<on eventId='reject' newStateId='PAYMENT_INITIATED'/>
+	    </if>
+
+		<manual-state id='PAYMENT_CONFIRMED'  meta-mainPath="true"/>
+		<manual-state id='CLOSED'/>
+	</flow>
+	
+</states>
