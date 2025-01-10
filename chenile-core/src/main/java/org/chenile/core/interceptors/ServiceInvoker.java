@@ -35,9 +35,9 @@ public class ServiceInvoker implements Command<ChenileExchange>{
 			invokeApi(chenileExchange);
 		} catch (InvocationTargetException e) {
 			retException = e.getCause();
-			logError(serviceOp, retException.getMessage(), retException.getClass().getName());
+			logError(serviceOp, retException.getMessage(), retException.getClass().getName(),e);
 		} catch(Throwable e) {
-			logError(serviceOp,e.getMessage(), e.getClass().getName());
+			logError(serviceOp,e.getMessage(), e.getClass().getName(),e);
 			retException = e;
 		}
 		if (retException != null){
@@ -45,9 +45,9 @@ public class ServiceInvoker implements Command<ChenileExchange>{
 		}
 	}
 
-	private void logError(String serviceOp,String message, String className){
-		LOG.info("Error while executing service {}. Message = {} (type = {})",serviceOp,
-				message, className);
+	private void logError(String serviceOp, String message, String className, Throwable e){
+		LOG.error("Error while executing service {}. Message = {} (type = {})",serviceOp,
+				message, className, e);
 	}
 
 	private ErrorNumException surroundExceptionIfRequired(Throwable e){

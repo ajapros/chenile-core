@@ -16,6 +16,7 @@
         <module>utils</module>
         <module>jpa-utils</module>
         <module>stm-generate-puml</module>
+        <module>puml</module>
     </modules>
 
     <packaging>pom</packaging>

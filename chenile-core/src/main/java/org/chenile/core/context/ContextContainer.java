@@ -363,6 +363,18 @@ public enum ContextContainer {
 		//getContext().tenant = tenant;
 
 	}
+
+	private void setAuthUser(String userName) {
+		if (userName == null)
+			userName = "";
+		put(HeaderUtils.AUTH_USER_KEY,userName);
+	}
+
+	public String getAuthUser() {
+		String user = get(HeaderUtils.AUTH_USER_KEY);
+		return (null == user) ? "" : user;
+	}
+
 	/**
 	 *
 	 * @return the deviceId
@@ -401,6 +413,7 @@ public enum ContextContainer {
 		setRegion(map.getValue(HeaderUtils.REGION_ID_KEY));
 		setUserId(map.getValue(HeaderUtils.USER_ID_KEY));
 		setEmployeeId(map.getValue(HeaderUtils.EMPLOYEE_ID_KEY));
+		setAuthUser(map.getValue(HeaderUtils.AUTH_USER_KEY));
 		setGroupId(map.getValue(HeaderUtils.GROUP_ID_KEY));
 		setAppType(map.getValue(HeaderUtils.APP_TYPE_KEY));
 		setUserAgent(map.getValue(HeaderUtils.USER_AGENT_KEY));
@@ -408,6 +421,8 @@ public enum ContextContainer {
 		setDeviceId(map.getValue(HeaderUtils.DEVICE_ID));
 		setTenantType(map.getValue(HeaderUtils.TENANT_TYPE));
 	}
+
+
 
 	public interface SimpleMap {
 		public String getValue(String key);

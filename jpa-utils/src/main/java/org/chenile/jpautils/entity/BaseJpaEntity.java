@@ -24,6 +24,7 @@ public  class BaseJpaEntity implements ChenileEntity {
 
     public String tenant;
     public String createdBy;
+    @Transient
     public boolean testEntity = false;
 
     public String getId(){
@@ -98,8 +99,8 @@ public  class BaseJpaEntity implements ChenileEntity {
         }
 
         this.lastModifiedTime = new Date();
-        this.lastModifiedBy = contextContainer.get(HeaderUtils.EMPLOYEE_ID_KEY);
-        this.createdBy = contextContainer.get(HeaderUtils.EMPLOYEE_ID_KEY);
+        this.lastModifiedBy = contextContainer.get(HeaderUtils.AUTH_USER_KEY);
+        this.createdBy = contextContainer.get(HeaderUtils.AUTH_USER_KEY);
         this.tenant = contextContainer.get(HeaderUtils.TENANT_ID_KEY);
         this.testEntity = contextContainer.isTestMode();
     }

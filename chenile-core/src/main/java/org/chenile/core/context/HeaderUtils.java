@@ -13,6 +13,8 @@ public class HeaderUtils {
 	public static final String TENANT_ID_KEY = "x-chenile-tenant-id";
 	public static final String USER_ID_KEY = "x-chenile-uid";
 	public static final String EMPLOYEE_ID_KEY = "x-chenile-eid";
+
+	public static final String AUTH_USER_KEY = "x-chenile-auth-user";
 	public static final String GROUP_ID_KEY = "x-chenile-gid";
 	public static final String APP_TYPE_KEY = "x-chenile-apt";
 	public static final String USER_AGENT_KEY = "user-agent";
