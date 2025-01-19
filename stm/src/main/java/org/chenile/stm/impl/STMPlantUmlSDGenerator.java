@@ -66,9 +66,7 @@ public class STMPlantUmlSDGenerator {
                   BorderThickness<<MAIN_PATH>> 4
                   BorderColor<<MAIN_PATH>> Peru
                   BackgroundColor<<MAIN_PATH>> Bisque
-                 }
-                 skinparam state {
-                    BackgroundColor<<orphaned>> OrangeRed
+                  BackgroundColor<<orphaned>> OrangeRed
                  }
                """);
             return this;

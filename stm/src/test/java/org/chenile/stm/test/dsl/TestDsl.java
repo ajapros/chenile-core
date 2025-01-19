@@ -88,7 +88,7 @@ public class TestDsl extends TestCase {
         configProvider.setProperties("""
 				AssemblyLineFlow.S1.enabled=false
 				# Add transition doS2 to CREATED state that will lead to state S2
-				AssemblyLineFlow.CREATED.transition.add.to.S2=doS2
+				AssemblyLineFlow.CREATED.transition.add.doS2=S2
 				""");
         AssemblyLineModel AssemblyLineModel = new AssemblyLineModel();
         stm.proceed(AssemblyLineModel);

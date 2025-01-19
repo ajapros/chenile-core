@@ -7,18 +7,13 @@ import org.chenile.stm.State;
 import org.chenile.stm.dummy.DummyStore;
 import org.chenile.stm.exception.STMException;
 import org.chenile.stm.impl.*;
+import org.chenile.stm.model.Transition;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
 
 public class CLIHelper {
-
-    private void loadStylingProperties(CLIParams params) throws Exception{
-        try (InputStream inputStream = Files.newInputStream(params.stylingPropertiesFile.toPath())){
-            this.generator.transitionStyler.loadFromXML(inputStream);
-        }
-    }
 
     public void allowedActions(CLIParams params,String outputFile) throws Exception {
         out(allowedActions(params),outputFile);
@@ -34,31 +29,50 @@ public class CLIHelper {
     public void renderStateDiagram(CLIParams params,String outputFile) throws Exception {
         out(renderStateDiagram(params),outputFile);
     }
+    public void renderTestCases(CLIParams params,String outputFile) throws Exception {
+        out(renderTestCases(params),outputFile);
+    }
+
+    public void toJson(CLIParams params,String outputFile) throws Exception {
+        out(toJson(params),outputFile);
+    }
+
+    public String toJson(CLIParams params) throws Exception {
+        process(params);
+        return this.stmFlowStore.toJson();
+    }
 
     public String renderStateDiagram(CLIParams params) throws Exception {
         process(params);
-        if (params.stylingPropertiesFile != null){
+        if (params.stylingPropertiesFile != null || params.stylingPropertiesText != null){
             loadStylingProperties(params);
         }
         return this.generator.toStateDiagram();
     }
 
+    public String renderTestCases(CLIParams params) throws Exception {
+        process(params);
+        if (params.stylingPropertiesFile != null || params.stylingPropertiesText != null){
+            loadStylingProperties(params);
+        }
+        return this.stmTestCaseGenerator.toTestCase();
+    }
 
     public void process(CLIParams params) throws Exception {
-        if (params.text != null)
+        if (params.xmlText != null)
             processText(params);
-        else if (params.xmlFileName != null)
+        else if (params.xmlFile != null)
             processXmlFile(params);
     }
 
     private void processXmlFile(CLIParams params) throws Exception {
-        try (InputStream inputStream = Files.newInputStream(params.xmlFileName.toPath())) {
+        try (InputStream inputStream = Files.newInputStream(params.xmlFile.toPath())) {
             processStream(inputStream,params);
         }
     }
 
     private void processText(CLIParams params) throws Exception {
-        try (InputStream inputStream = new ByteArrayInputStream(params.text.getBytes())) {
+        try (InputStream inputStream = new ByteArrayInputStream(params.xmlText.getBytes())) {
             processStream(inputStream,params);
         }
     }
@@ -87,7 +101,8 @@ public class CLIHelper {
     }
 
     private STMFlowStoreImpl obtainFlowStore(CLIParams params) {
-        if (params.enablementPropertiesFile == null) return new DummyStore();
+        if (params.enablementPropertiesFile == null &&
+                params.enablementPropertiesText == null ) return new DummyStore();
         return new DummyStore(){
 
             @Override
@@ -100,18 +115,54 @@ public class CLIHelper {
             }
         };
     }
-    private ConfigProvider obtainConfigProvider(CLIParams params) throws Exception{
+
+    private ConfigProvider obtainConfigProvider(CLIParams params) throws Exception {
+        if (params.enablementPropertiesFile != null)
+            return obtainConfigProviderFromFile(params);
+        else if (params.enablementPropertiesText != null)
+            return obtainConfigProviderFromText(params);
+        return null;
+    }
+
+    private ConfigProvider obtainConfigProviderFromFile(CLIParams params) throws Exception {
         try (InputStream inputStream = Files.newInputStream(params.enablementPropertiesFile.toPath())){
             return new ConfigProviderImpl(inputStream);
+        }
+    }
+
+    private ConfigProvider obtainConfigProviderFromText(CLIParams params) throws Exception {
+        try (InputStream inputStream = new ByteArrayInputStream(params.enablementPropertiesText.getBytes())){
+            return new ConfigProviderImpl(inputStream);
+        }
+    }
+
+    private void loadStylingProperties(CLIParams params) throws Exception {
+        if (params.stylingPropertiesFile != null)
+            loadStylingPropertiesFromFile(params);
+        else if (params.stylingPropertiesText != null)
+           loadStylingPropertiesFromText(params);
+    }
+
+    private void loadStylingPropertiesFromFile(CLIParams params) throws Exception{
+        try (InputStream inputStream = Files.newInputStream(params.stylingPropertiesFile.toPath())){
+            this.generator.transitionStyler.loadFromXML(inputStream);
+        }
+    }
+
+    private void loadStylingPropertiesFromText(CLIParams params) throws Exception{
+        try (InputStream inputStream = new ByteArrayInputStream(params.stylingPropertiesText.getBytes())){
+            this.generator.transitionStyler.loadFromXML(inputStream);
         }
     }
 
     private void initProcessors(STMFlowStoreImpl stmFlowStoreImpl) {
         this.generator = new STMPlantUmlSDGenerator(stmFlowStoreImpl);
         this.infoProvider = new STMActionsInfoProvider(stmFlowStoreImpl);
+        this.stmTestCaseGenerator = new STMTestCaseGenerator(stmFlowStoreImpl);
         this.stmFlowStore = stmFlowStoreImpl;
     }
     private STMPlantUmlSDGenerator generator;
     private STMActionsInfoProvider infoProvider;
-    private STMFlowStore stmFlowStore;
+    private STMFlowStoreImpl stmFlowStore;
+    private STMTestCaseGenerator stmTestCaseGenerator;
 }

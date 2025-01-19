@@ -20,11 +20,7 @@ import java.util.Base64;
 
 @Controller
 public class UiController {
-
-
     private final CLIHelper cliHelper = new CLIHelper();
-
-
 
     @GetMapping("/")
     public String showSignUpForm(@Valid @ModelAttribute("formData") InputModel inputModel, Model model) {
@@ -32,14 +28,13 @@ public class UiController {
         return "index";
     }
 
-
     @PostMapping("/convert")
     public String convert(@Valid @ModelAttribute("formData") InputModel inputModel,
                           BindingResult result, Model model) {
-        System.out.println(inputModel);
+        // System.out.println(inputModel);
         model.addAttribute("inputModel", inputModel);
         try {
-            model.addAttribute("imageData", getImage(inputModel.getStmXml()));
+            model.addAttribute("imageData", getImage(inputModel));
         }
         catch (Exception e){
             e.printStackTrace();
@@ -48,13 +43,12 @@ public class UiController {
         return "index";
     }
 
-
-    private String getImage(String text){
+    private String getImage(InputModel inputModel){
         String script;
         try {
-            script = generatePuml(text);
+            script = generatePuml(inputModel);
         } catch (Exception e) {
-            throw new FileProcessingException("Error generating UML script. Enter valid stm xml", e);
+            throw new FileProcessingException("Error generating UML script. Message = " + e.getMessage(), e);
         }
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
@@ -63,16 +57,22 @@ public class UiController {
             byte[] array = bos.toByteArray();
 
             ByteArrayResource resource = new ByteArrayResource(array);
-
             return Base64.getEncoder().encodeToString( resource.getByteArray());
         } catch (Exception e) {
             throw new FileProcessingException("Error generating image from UML script.", e);
         }
     }
 
-    private String generatePuml(String text) throws Exception{
+    private String generatePuml(InputModel inputModel) throws Exception{
         CLIParams params = new CLIParams();
-        params.text = text;
+        params.xmlText = inputModel.getStmXml();
+        if (inputModel.getEnablementProperties() != null &&
+                !inputModel.getEnablementProperties().isEmpty())
+            params.enablementPropertiesText = inputModel.getEnablementProperties();
+        if (inputModel.getStylingProperties() != null &&
+                !inputModel.getStylingProperties().isEmpty())
+            params.stylingPropertiesText = inputModel.getStylingProperties();
+        params.prefix = inputModel.getPrefix();
         return cliHelper.renderStateDiagram(params);
     }
 

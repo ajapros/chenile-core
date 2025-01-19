@@ -251,4 +251,27 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 	public void setFlow(FlowDescriptor flow) {
 		this.flow = flow;
 	}
+
+	public String toJson() {
+        return """
+                {
+                    "id": "%s",
+                    "initialState": %s,
+                    "transitions": [
+                    %s
+                    ]
+                }
+                """.formatted(this.id, this.initialState,transitionsAsJson());
+	}
+
+	private String transitionsAsJson() {
+		StringBuilder stringBuilder = new StringBuilder();
+		boolean first = true;
+		for (Transition t: getTransitions().values()){
+			if (!first) stringBuilder.append(",");
+			else first = false;
+			stringBuilder.append(t.toJson());
+		}
+		return stringBuilder.toString();
+	}
 }

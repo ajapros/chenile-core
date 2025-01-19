@@ -34,14 +34,6 @@ public class PlantUMLServerController {
       byte[] array = bos.toByteArray();
 
       ByteArrayResource resource = new ByteArrayResource(array);
-      /*return ResponseEntity.ok()
-              .contentType(MediaType.APPLICATION_OCTET_STREAM)
-              .contentLength(resource.contentLength())
-              .header(HttpHeaders.CONTENT_DISPOSITION,
-                      ContentDisposition.attachment()
-                              .filename("output.png")
-                              .build().toString())
-              .body(resource);*/
       return resource.getByteArray();
     } catch (Exception e) {
       throw new FileProcessingException("Error generating image from UML script.", e);
@@ -50,7 +42,7 @@ public class PlantUMLServerController {
 
   private String generatePuml(String text) throws Exception{
     CLIParams params = new CLIParams();
-    params.text = text;
+    params.xmlText = text;
     return cliHelper.renderStateDiagram(params);
   }
 }

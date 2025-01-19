@@ -39,4 +39,23 @@ public class TransitionStyler {
         }
         return "";
     }
+
+    public static void main(String[] args){
+        String x = """
+                <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+                <properties>
+                    <comment>A Sample Styling Properties file - Use metadata to style transitions </comment>
+                    <entry key="activity==MANDATORY">[thickness=3,#Blue]</entry>
+                    <entry key="activity==OPTIONAL">[thickness=3,#LightBlue]</entry>
+                </properties>
+                """;
+        TransitionStyler styler = new TransitionStyler();
+        try(InputStream stream = new ByteArrayInputStream(x.getBytes())){
+            styler.loadFromXML(stream);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        System.out.println(styler.props);
+
+    }
 }

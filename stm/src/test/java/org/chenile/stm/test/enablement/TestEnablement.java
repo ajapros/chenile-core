@@ -85,7 +85,7 @@ public class TestEnablement extends TestCase{
 		configProvider.setProperties("""
 				MFG_FLOW.S1.enabled=false
 				# Add transition doS2 to CREATED state that will lead to state S2
-				MFG_FLOW.CREATED.transition.add.to.S2=doS2
+				MFG_FLOW.CREATED.transition.add.doS2=S2
 				""");
 		MfgModel mfgModel = new MfgModel();
 		stm.proceed(mfgModel);
@@ -112,7 +112,7 @@ public class TestEnablement extends TestCase{
 				# Add new State S3 to the MFG_FLOW
 				state.add.S3.in=MFG_FLOW
 				# Add transition doS3 to S2 state that will lead to state S3
-				MFG_FLOW.S2.transition.add.to.S3=doS3
+				MFG_FLOW.S2.transition.add.doS3=S3
 				""");
 		MfgModel mfgModel = new MfgModel();
 		stm.proceed(mfgModel);
@@ -162,8 +162,8 @@ public class TestEnablement extends TestCase{
 				state.add.S3.in=MFG_FLOW
 				state.add.S4.in=MFG_FLOW
 				# Add transitions from S2 to S3(doS3) and S3 to S4(doS4)
-				MFG_FLOW.S2.transition.add.to.S3=doS3
-				MFG_FLOW.S3.transition.add.to.S4=doS4
+				MFG_FLOW.S2.transition.add.doS3=S3
+				MFG_FLOW.S3.transition.add.doS4=S4
 				""");
 		MfgModel mfgModel = new MfgModel();
 		stm.proceed(mfgModel);

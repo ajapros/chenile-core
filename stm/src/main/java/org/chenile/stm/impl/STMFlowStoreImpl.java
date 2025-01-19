@@ -186,7 +186,11 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 	
 	public void setDefaultTransitionAction(String componentName) 
 			throws STMException {
-			this.defaultTransitionAction = (STMTransitionAction<?>) makeTransitionAction(componentName, false);
+			setDefaultTransitionAction((STMTransitionAction<?>) makeTransitionAction(componentName, false));
+	}
+
+	public void setDefaultTransitionAction(STMTransitionAction<?> transitionAction){
+		this.defaultTransitionAction = transitionAction;
 	}
 
 	public String getDefaultFlowId() {
@@ -371,6 +375,17 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 	@Override
 	public String toString() {
 		return flows.toString();
+	}
+
+	public String toJson(){
+		StringBuilder stringBuilder = new StringBuilder("{\"flows\": [\n");
+		boolean first = true;
+		for (FlowDescriptor fd: flows.values()){
+			if (!first) stringBuilder.append(",");
+			else first = false;
+			stringBuilder.append(fd.toJson());
+		}
+		return stringBuilder.append("]}\n").toString();
 	}
 
 	public void addEventInformation(EventInformation eventInformation) {

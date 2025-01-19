@@ -182,6 +182,16 @@ public class Transition extends EventInformation {
 	public StateDescriptor state() {
 		return parentState;
 	}
-	
-	
+
+
+	public String toJson() {
+		return """
+				{
+					"eventId": "%s",
+					"newFlowId": "%s",
+					"newStateId" : "%s"
+				}
+				""".formatted(this.getEventId(),
+				this.getNewFlowId(),this.getNewStateId());
+	}
 }

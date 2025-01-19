@@ -43,6 +43,36 @@ public class InputModel {
             "\t\n" +
             "</states>";
 
+
+    public String getEnablementProperties() {
+        return enablementProperties;
+    }
+
+    public void setEnablementProperties(String enablementProperties) {
+        this.enablementProperties = enablementProperties;
+    }
+
+    private String enablementProperties;
+
+    public String getStylingProperties() {
+        return stylingProperties;
+    }
+
+    public void setStylingProperties(String stylingProperties) {
+        this.stylingProperties = stylingProperties;
+    }
+
+    private String stylingProperties;
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    private String prefix;
     @NotBlank(message = "XML is mandatory")
     @Size(min = 1, max = 100)
     private String svg;

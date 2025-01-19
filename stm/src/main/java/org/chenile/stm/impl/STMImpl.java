@@ -374,7 +374,6 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 				throws Exception {
 			STMImpl<STE> stmimpl = (STMImpl<STE>) stm;
 			return stmimpl.internalProceed(stateEntity, startingEventId, transitionParam, false);
-
 		}
 
 	}

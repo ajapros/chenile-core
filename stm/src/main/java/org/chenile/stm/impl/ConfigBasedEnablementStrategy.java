@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class ConfigBasedEnablementStrategy implements EnablementStrategy {
     public static final String ENABLED_PROPERTY = "enabled";
-    public static final String ADD_PROPERTY = "transition.add.to";
+    public static final String ADD_PROPERTY = "transition.add";
     String enabledProperty = ENABLED_PROPERTY;
     String addTransitionProperty = ADD_PROPERTY;
     String prefix = "";
@@ -46,8 +46,8 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
 
     /**
      *
-     * @param sd
-     * @param eventInformation
+     * @param sd state descriptor
+     * @param eventInformation - event information
      * @return
      * <p></p>For every state or event it looks for a property in the configuration which is named after the
      *  * state or event. For example to enable state State1 on entity Entity1, we will need Entity1.State1.enabled = true
@@ -77,14 +77,14 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
         for (Map.Entry<String,String> prop: props.entrySet()){
             String propName = prop.getKey();
             String propValue = prop.getValue();
-            String toState = propName.substring(pfx.length());
+            String eventId = propName.substring(pfx.length());
             Transition transition = new Transition();
             transition.setStateId(sd.getId());
             transition.setFlowId(sd.getFlowId());
-            transition.setEventId(propValue);
-            transition.setNewStateId(toState);
+            transition.setEventId(eventId);
+            transition.setNewStateId(propValue);
             transition.setNewFlowId(sd.getFlowId());
-            transitions.put(propValue,transition);
+            transitions.put(eventId,transition);
             addEventInformationToTransition(transition,sd);
             addMetadataToTransition(transition,sd);
         }

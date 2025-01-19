@@ -15,6 +15,10 @@ public class CLI implements Runnable {
     private boolean umlStateDiagram;
     @Option(names = {"-a", "--allowed-actions"},paramLabel = "state", description = "Return allowed actions for a state")
     private String stateForAllowedActions;
+    @Option(names = {"-j", "--render-json"},paramLabel = "render-json", description = "Return a JSON representation of the XML file")
+    private boolean toJson;
+    @Option(names = {"-t", "--generate-test-cases"},paramLabel = "render-json", description = "Return a JSON representation of the XML file")
+    private boolean genTestCase;
     @Option(names = {"-o", "--output"},paramLabel = "output-file", description = "Writes output to the specified file")
     private String outputFile;
     @Option(names = {"-S", "--styling-properties-file"},paramLabel = "Styling-properties-file", description = "Use the properties file for setting styles according to metadata in states and transitions")
@@ -38,6 +42,10 @@ public class CLI implements Runnable {
                 cliHelper.renderStateDiagram(params,outputFile);
             } else if (stateForAllowedActions != null && !stateForAllowedActions.isEmpty()) {
                 cliHelper.allowedActions(params,outputFile);
+            } else if (toJson) {
+                cliHelper.toJson(params,outputFile);
+            } else if (genTestCase) {
+                cliHelper.renderTestCases(params,outputFile);
             }else {
                 System.err.println("Missing option: at least one of the " +
                         "-s or -a options must be specified");
@@ -54,7 +62,7 @@ public class CLI implements Runnable {
         params.prefix = this.prefix;
         params.stateForAllowedActions = this.stateForAllowedActions;
         params.stylingPropertiesFile = this.stylingPropertiesFile;
-        params.xmlFileName = xmlFileName;
+        params.xmlFile = xmlFileName;
         return params;
     }
 }

@@ -8,10 +8,10 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
-import org.apache.commons.text.StringSubstitutor;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.base.response.ResponseMessage;
 import org.chenile.cucumber.CukesContext;
+import org.chenile.cucumber.VariableHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpMethod;
@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.JsonPathResultMatchers;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.Map.Entry;
 
 import static org.chenile.testutils.SpringMvcUtils.assertErrors;
 import static org.chenile.testutils.SpringMvcUtils.assertWarnings;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,16 +47,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RestCukesSteps {
     @Autowired
     private MockMvc mvc;
-    private ObjectMapper objectMapper = new ObjectMapper();
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
     CukesContext context = CukesContext.CONTEXT;
-    /**
-     * Uses a variable to store the results of a scenario so that it can be used in the next scenario.<br/>
-     * For example, if we create an entity and want to retrieve the same entity by ID, then we can store
-     * the ID as a variable in the varMap. We can use the ID to retrieve the object back in the next scenario<br/>
-     * varMap spans scenarios and hence needs to be stored outside the context.<br/>
-     */
-    private static Map<String, String> varMap = new HashMap<String, String>();
 
     @Before
     public void before() {
@@ -207,10 +198,7 @@ public class RestCukesSteps {
         ResultActions response = (ResultActions) context.get("actions");
         value1 = substituteVariables(value1);
         value2 = substituteVariables(value2);
-        System.err.println("key1, value1  is " + key1 + "," + value1);
-        System.err.println("key2, value2  is " + key2 + "," + value2);
-        String expression = "$.payload." + keyCollection + "[?(@." + key1 + "=='" + value1 + "')]." + key2;
-        System.err.println("Expression  is " + expression);
+        // String expression = "$.payload." + keyCollection + "[?(@." + key1 + "=='" + value1 + "')]." + key2;
         response.andExpect(jsonPath("$.payload." + keyCollection + "[?(@." + key1 + "=='" +
                         value1 + "')]." + key2)
                 .value(substituteVariables(value2)));
@@ -357,23 +345,21 @@ public class RestCukesSteps {
         return result.getResponse().getContentAsString();
     }
 
-    @Then("store {string} from  response to {string}")
+    @Then("store {string} from response to {string}")
     public void store_from_response_to(String expression, String varName) throws Exception {
         String content = extractStringFromResponse();
         String varValue = JsonPath.parse(content).read(expression, String.class);
         // store this value against the name in the context
-        varMap.put(varName, varValue);
-    }
-
-    private String substituteVariables(String s) {
-        if (varMap == null || varMap.isEmpty()) return s;
-        StringSubstitutor sub = new StringSubstitutor(varMap);
-        return sub.replace(s);
+        VariableHelper.put(varName, varValue);
     }
 
     @Given("that {string} equals {string}")
     public void that_varName_equals_varValue(String varName, String varValue) {
-        varMap.put(varName, varValue);
+        VariableHelper.put(varName, varValue);
+    }
+
+    private String substituteVariables(String string){
+        return VariableHelper.substituteVariables(string);
     }
 }
 

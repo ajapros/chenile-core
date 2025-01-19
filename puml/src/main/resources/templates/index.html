@@ -37,6 +37,13 @@
             resize: none;
             height: 80vh; /* Percentage-based height */
         }
+        .textarea-container {
+            flex: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
         .image-container {
             flex: 4;
             display: flex;
@@ -101,13 +108,18 @@
             margin-top: 20px;
         }
     </style>
+    <link rel="stylesheet" href="/styles/styles.css"/>
 </head>
 <body>
 <h1>Welcome to STM XML to Plant UML Converter</h1>
 <form action="#" th:action="@{/convert}" th:object="${formData}" method="post">
     <!-- Textarea Section -->
+    <div class="textarea-container">
+    <input type="text" th:field="*{prefix}" placeholder="prefix"/>
     <textarea th:field="*{stmXml}" id="stmXml" placeholder="Enter STM XML"></textarea>
-
+    <textarea th:field="*{enablementProperties}" id="enablementProperties" placeholder="Enter Enablement Properties (if applicable)"></textarea>
+    <textarea th:field="*{stylingProperties}" id="stylingProperties" placeholder="Enter Styling Properties (if applicable)"></textarea>
+    </div>
     <!-- Submit Button Section -->
     <div class="btn-container">
         <input type="submit" value="Convert">
