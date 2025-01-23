@@ -138,6 +138,10 @@ public class XmlFlowReader extends FlowReaderBase {
 		digester.addRule(STATES_ADD_STATE_TAG, new AddStateRule());
 		digester.addRule(STATES_ADD_TRANSITION_TAG, new AddEventInformationRule());
 
+		digester.addCallMethod("states/include",
+				"include", 1, new Class<?>[] { String.class });
+		digester.addCallParam("states/include", 0, "file");
+
 		digester.addCallMethod("states/scripting-strategy",
 				"setScriptingStrategy", 1, new Class<?>[] { String.class });
 		digester.addCallParam("states/scripting-strategy", 0, COMPONENT_NAME);

@@ -76,6 +76,13 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 		} 
 	}
 
+	public void include(String file) throws Exception{
+		if (file == null) return;
+		XmlFlowReader xmlFlowReader = new XmlFlowReader(this);
+		if (!file.endsWith(".xml"))file = file + ".xml";
+		xmlFlowReader.setFilename(file);
+	}
+
 	public StateDescriptor getStateInfo(String flowId, String stateId) {
 		return flows.get(flowId).getStates().get(stateId);
 	}

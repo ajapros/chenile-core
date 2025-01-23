@@ -33,7 +33,7 @@ import org.chenile.stm.model.Transition;
 public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEntityType> {
 	private STMFlowStore stmFlowStore;
 	@SuppressWarnings("rawtypes")
-	private STMInternalTransitionInvoker<?> stmInternalTransitionInvoker = new STMInternalTransitionInvokerImpl();
+	private final STMInternalTransitionInvoker<?> stmInternalTransitionInvoker = new STMInternalTransitionInvokerImpl();
 
 	public void setStmFlowStore(STMFlowStore stmFlowStore) {
 		this.stmFlowStore = stmFlowStore;
@@ -60,14 +60,16 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 	 * The state reached is a final state. (i.e. a state with no
 	 * transitions) in which case the exit action of the final state is called
 	 * and the call chain ends.
+	 * <p>
 	 * The state reached is a manual state (or a view state) in which case
 	 * the entry action is called for that particular state and the state is
-	 * returned. This method must be reinvoked with a starting event Id to make
+	 * returned. This method must be re-invoked with a starting event Id to make
 	 * it proceed.
+	 * </p>
 	 * <p>
-	 * All states in between would be traversed by the machine recursively. All
-	 * the entry and exit actions would be called along with the action that
-	 * actually computes the event.
+	 * If the event transitions the entity to an auto state then the component attached to the
+	 * auto state is called to compute the next event. The state machine would use this event
+	 * to call itself recursively. The machine only returns for manual states.
 	 * <p>
 	 * If the machine is called again after the final state is reached, it exits
 	 * without doing anything.
@@ -159,7 +161,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 		StateDescriptor retrievedStateDescriptor = stmFlowStore.getStateInfo(retrievedState);
 
 		Map<String, Transition> allowedTransitions = retrievedStateDescriptor.getTransitions();
-		if (allowedTransitions == null || allowedTransitions.size() == 0)
+		if (allowedTransitions == null || allowedTransitions.isEmpty())
 			return retrievalStrategy.merge(originalStateEntity, retrievedEntity, null);
 		if (retrievedStateDescriptor.checkIfonlyRetrievalTransitions()) {
 			if (allowedTransitions.size() != 1)
@@ -225,7 +227,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 	private StateEntityType doEndStateChecks(State endState, StateEntityType stateEntity, Object transitionParam)
 			throws Exception {
 		// check if the new state can also be evaluated recursively. If it is
-		// action state then it can be
+		// auto state then it can be
 		// else we need to just return the entity in the new state
 		StateDescriptor endStateDescriptor = stmFlowStore.getStateInfo(endState);
 
@@ -248,11 +250,11 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 	 * and event Id. Since it returns a tuple, this is accomplished using an
 	 * Object array. The object array is somewhat of a kludge.<br>
 	 * 
-	 * @param stateEntity
-	 * @param startState
-	 * @param startingEventId
-	 * @return
-	 * @throws Exception
+	 * @param stateEntity the state entity
+	 * @param startState starting state
+	 * @param startingEventId the event
+	 * @return a tuple as specified above
+	 * @throws Exception if we cannot find the transition
 	 */
 
 	private Object[] obtainEndStateAndTransition(StateEntityType stateEntity, State startState, String startingEventId,
@@ -265,7 +267,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 					STMException.INVALID_STATE, startState);
 		Map<String, Transition> transitions = startStateDescriptor.getTransitions();
 
-		if (transitions == null || transitions.size() == 0) {
+		if (transitions == null || transitions.isEmpty()) {
 
 			if (startingEventId != null)
 				throw new STMException("Event " + startingEventId + " not valid for state " + startState,
@@ -366,7 +368,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 		return action.execute(stateEntity);
 	}
 
-	private class STMInternalTransitionInvokerImpl<STE extends StateEntity>
+	private static class STMInternalTransitionInvokerImpl<STE extends StateEntity>
 			implements STMInternalTransitionInvoker<STE> {
 
 		@Override

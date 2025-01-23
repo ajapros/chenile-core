@@ -15,15 +15,13 @@
         <module>cucumber-utils</module>
         <module>utils</module>
         <module>jpa-utils</module>
-        <module>stm-generate-puml</module>
-        <module>puml</module>
     </modules>
 
     <packaging>pom</packaging>
     <parent>
         <groupId>org.chenile</groupId>
         <artifactId>chenile-parent</artifactId>
-        <version>2.0.11</version>
+        <version>2.0.12</version>
     </parent>
     <properties>
         <revision>${chenile.core.version}</revision>
