@@ -30,6 +30,7 @@ public class HeaderUtils {
 	public static final String ENTRY_POINT = "chenile-entry-point";
 	public static final String TRAJECTORY_ID = "x-chenile-trajectory-id";
 	public static final String MOCK_HEADER = "x-chenile-mock-mode";
+	public static final String AUTH_TOKEN_HEADER = "Authorization";
 	/**
 	 * If the output must be logged.
 	 */
