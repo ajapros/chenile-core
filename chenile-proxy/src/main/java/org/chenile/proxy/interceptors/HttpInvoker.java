@@ -4,12 +4,14 @@ package org.chenile.proxy.interceptors;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.chenile.base.exception.ErrorNumException;
 import org.chenile.base.exception.ServerException;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.core.context.ChenileExchange;
+import org.chenile.core.context.HeaderUtils;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.owiz.Command;
 import org.chenile.proxy.builder.ProxyBuilder;
@@ -109,12 +111,19 @@ public class HttpInvoker implements Command<ChenileExchange>{
 	
 	private HttpHeaders extractHeaders(ChenileExchange exchange) {
 		HttpHeaders headers = new HttpHeaders();
-	    headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+	    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 	    for (Entry<String, Object> entry: exchange.getHeaders().entrySet()) {
 			String key = entry.getKey();
 			Object obj = entry.getValue();
 			headers.add(key, obj.toString());
+			//Convert x headers into auth header basic auth rule
+			if(key.equalsIgnoreCase(HeaderUtils.AUTH_X_TOKEN_HEADER)){
+				headers.add(HeaderUtils.AUTH_TOKEN_HEADER,obj.toString());
+			}
 		}
+
+
+
 	    return headers;
 	}
 	
