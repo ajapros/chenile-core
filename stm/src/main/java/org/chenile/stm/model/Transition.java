@@ -3,6 +3,8 @@ package org.chenile.stm.model;
 import org.chenile.stm.action.STMTransitionAction;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Transition extends EventInformation {
 	private String tag;
@@ -194,4 +196,12 @@ public class Transition extends EventInformation {
 				""".formatted(this.getEventId(),
 				this.getNewFlowId(),this.getNewStateId());
 	}
+
+    public Map<String, Object> toMap() {
+		Map<String,Object> map = new HashMap<>();
+		map.put("eventId",this.getEventId());
+		map.put("newFlowId",this.getNewFlowId());
+		map.put("newStateId",this.getNewStateId());
+		return map;
+    }
 }

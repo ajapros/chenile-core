@@ -288,4 +288,16 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		}
 		return stringBuilder.append("]}\n").toString();
 	}
+
+    public Map<String, Object> toMap() {
+		Map<String,Object> map = new HashMap<>();
+		map.put("id",this.id);
+		map.put("default",this.isDefault);
+		List<Map<String,Object>> list = new ArrayList<>();
+		for (StateDescriptor sd: states.values()){
+			list.add(sd.toMap());
+		}
+		map.put("states",list);
+		return map;
+    }
 }

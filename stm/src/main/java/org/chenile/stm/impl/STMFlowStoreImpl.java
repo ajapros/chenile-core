@@ -395,6 +395,16 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 		return stringBuilder.append("]}\n").toString();
 	}
 
+	public Map<String,Object> toMap(){
+		Map<String,Object> map = new HashMap<>();
+		List<Map<String,Object>> list = new ArrayList<>();
+		for (FlowDescriptor fd: flows.values()){
+			list.add(fd.toMap());
+		}
+		map.put("flows",list);
+		return map;
+	}
+
 	public void addEventInformation(EventInformation eventInformation) {
 		if (eventInformation.tagDefinition)
 			eventInfos.put(eventInformation.getTag(),eventInformation);

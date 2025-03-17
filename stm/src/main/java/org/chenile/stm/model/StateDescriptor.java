@@ -1,8 +1,6 @@
 package org.chenile.stm.model;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.chenile.stm.EnablementStrategy;
@@ -11,8 +9,6 @@ import org.chenile.stm.State;
 import org.chenile.stm.action.STMAction;
 import org.chenile.stm.exception.STMException;
 import org.chenile.stm.impl.STMFlowStoreImpl;
-
-import java.util.Set;
 
 
 public class StateDescriptor implements TransientActionsAwareDescriptor{
@@ -274,4 +270,16 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 		}
 		return stringBuilder.toString();
 	}
+
+    public Map<String, Object> toMap() {
+		Map<String,Object> map = new HashMap<>();
+		map.put("id",this.id);
+		map.put("initialState",this.initialState);
+		List<Map<String,Object>> list = new ArrayList<>();
+		for (Transition t: getTransitions().values()){
+			list.add(t.toMap());
+		}
+		map.put("transitions",list);
+		return map;
+    }
 }
