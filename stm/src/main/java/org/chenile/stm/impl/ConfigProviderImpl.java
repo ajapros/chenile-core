@@ -15,8 +15,12 @@ public class ConfigProviderImpl implements ConfigProvider {
     public ConfigProviderImpl(Properties properties){
         this.properties = properties;
     }
-    public ConfigProviderImpl(){}
-    private Properties properties = new Properties();;
+    public ConfigProviderImpl(){
+        System.out.println("I am new");
+    }
+
+
+    private Properties properties = new Properties();
 
     @Override
     public String valueOf(String configProperty) {
@@ -43,6 +47,7 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     public void clear(){
+        System.out.println("###### Clear #####");
         this.properties.clear();
     }
 
