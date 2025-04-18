@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 /**
  * Loops through the input stream that has been passed and makes a record for each line in the input stream
@@ -19,6 +20,14 @@ public class Looper {
                         Properties headers, Class<?> recordClass) throws Exception{
         for (Object o: fileReader(inputStream,encodingType,recordClass)) {
             invokeServicesPerRecord(eventId,o,headers);
+        }
+    }
+
+    public void loop( InputStream inputStream, String encodingType,
+                     Properties headers, Class<?> recordClass,
+                      Consumer<Object> consumer) throws Exception{
+        for (Object o: fileReader(inputStream,encodingType,recordClass)) {
+            invokeServicesPerRecord(consumer,o,headers);
         }
     }
 
@@ -38,5 +47,9 @@ public class Looper {
     private void invokeServicesPerRecord(String eventId,
                                          Object record,Properties headers) {
         eventProcessor.handleEvent(eventId, record);
+    }
+    private void invokeServicesPerRecord(Consumer<Object> consumer,
+                                         Object record,Properties headers) {
+        consumer.accept( record);
     }
 }
