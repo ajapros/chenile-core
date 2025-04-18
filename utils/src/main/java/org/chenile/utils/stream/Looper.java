@@ -4,7 +4,6 @@ import org.chenile.core.event.EventProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -33,15 +32,11 @@ public class Looper {
 
     private Iterable<Object> fileReader(
             InputStream inputStream,String encodingType,Class<?> recordClass) throws Exception{
-        switch(encodingType.toUpperCase()) {
-            case "CSV":
-                return new CsvReader(inputStream, recordClass);
-            case "JSON":
-                return new JsonReader(inputStream,recordClass);
-            case "OTHER":
-            default:
-                return List.of();
-        }
+        return switch (encodingType.toUpperCase()) {
+            case "CSV" -> new CsvReader(inputStream, recordClass);
+            case "JSON" -> new JsonReader(inputStream, recordClass);
+            default -> new LineIterable(inputStream);
+        };
     }
 
     private void invokeServicesPerRecord(String eventId,
