@@ -16,13 +16,13 @@ import java.util.List;
  * @author Raja Shankar Kolluru
  *
  */
-public class JsonReader implements Iterable<Object>{
+public class JsonReader<T> implements Iterable<T>{
 
 	ObjectMapper objectMapper = new ObjectMapper();
-	private List<Object> list;
+	private List<T> list;
 	
 
-	public JsonReader(Path path, Class<?> recordClass) throws Exception{
+	public JsonReader(Path path, Class<T> recordClass) throws Exception{
 		this(Files.newInputStream(path),recordClass);
 	}
 
@@ -35,7 +35,7 @@ public class JsonReader implements Iterable<Object>{
 	}
 
 	@Override
-	public Iterator<Object> iterator() {		
+	public Iterator<T> iterator() {
 		return list.iterator();
 	}
 

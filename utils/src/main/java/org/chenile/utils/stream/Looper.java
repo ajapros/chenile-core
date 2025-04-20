@@ -16,24 +16,24 @@ public class Looper {
     @Autowired
     EventProcessor eventProcessor;
     public void loop(String eventId, InputStream inputStream, String encodingType,
-                        Properties headers, Class<?> recordClass) throws Exception{
-        for (Object o: fileReader(inputStream,encodingType,recordClass)) {
-            invokeServicesPerRecord(eventId,o,headers);
+                        Properties properties, Class<?> recordClass) throws Exception{
+        for (Object o: fileReader(inputStream,encodingType,recordClass,properties)) {
+            invokeServicesPerRecord(eventId,o,properties);
         }
     }
 
     public void loop( InputStream inputStream, String encodingType,
-                     Properties headers, Class<?> recordClass,
+                     Properties properties, Class<?> recordClass,
                       Consumer<Object> consumer) throws Exception{
-        for (Object o: fileReader(inputStream,encodingType,recordClass)) {
-            invokeServicesPerRecord(consumer,o,headers);
+        for (Object o: fileReader(inputStream,encodingType,recordClass,properties)) {
+            invokeServicesPerRecord(consumer,o,properties);
         }
     }
 
     private Iterable<Object> fileReader(
-            InputStream inputStream,String encodingType,Class<?> recordClass) throws Exception{
+            InputStream inputStream,String encodingType,Class<?> recordClass,Properties properties) throws Exception{
         return switch (encodingType.toUpperCase()) {
-            case "CSV" -> new CsvReader(inputStream, recordClass);
+            case "CSV" -> new CsvReader(inputStream, recordClass,properties);
             case "JSON" -> new JsonReader(inputStream, recordClass);
             default -> new LineIterable(inputStream);
         };
