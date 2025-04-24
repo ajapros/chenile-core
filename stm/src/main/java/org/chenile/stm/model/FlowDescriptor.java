@@ -1,9 +1,6 @@
 package org.chenile.stm.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.chenile.stm.STMFlowStore;
@@ -164,13 +161,13 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 	public String toXml(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("<flow>");
-		sb.append("<id>" + id + "</id>\n");
-		sb.append("<isDefault>" + isDefault + "</isDefault>\n");
-		sb.append("<initialState>" + initialState + "</initialState>\n");
-		sb.append("<entryAction>" + entryAction + "</entryAction>\n");
-		sb.append("<exitAction>" + exitAction + "</exitAction>\n");
-		sb.append("<retrievalStrategy>" + retrievalStrategy + "</retrievalStrategy>\n");
-		sb.append("<skipEntryExitActionsForAutoStates>" + skipEntryExitActionsForAutoStates + "</skipEntryExitActionsForAutoStates>\n");
+		sb.append("<id>").append(id).append("</id>\n");
+		sb.append("<isDefault>").append(isDefault).append("</isDefault>\n");
+		sb.append("<initialState>").append(initialState).append("</initialState>\n");
+		sb.append("<entryAction>").append(entryAction).append("</entryAction>\n");
+		sb.append("<exitAction>").append(exitAction).append("</exitAction>\n");
+		sb.append("<retrievalStrategy>").append(retrievalStrategy).append("</retrievalStrategy>\n");
+		sb.append("<skipEntryExitActionsForAutoStates>").append(skipEntryExitActionsForAutoStates).append("</skipEntryExitActionsForAutoStates>\n");
 		sb.append("<states>\n");
 		for(StateDescriptor sd: states.values()){
 			sb.append(sd.toXml());
@@ -275,18 +272,56 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		this.initialState = stateDescriptor.getId();		
 	}
 
+	public static class EventI {
+		public String eventId;
+		public EventI(String eventId){
+			this.eventId = eventId;
+		}
+		public String toString(){
+			return toJson();
+		}
+		public String toJson(){
+			return """
+					{"eventId": "%s"}
+					""".formatted(this.eventId);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof EventI eventI)) return false;
+            return Objects.equals(eventId, eventI.eventId);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(eventId);
+		}
+	}
 	public String toJson() {
 		StringBuilder stringBuilder = new StringBuilder("{\n");
 		stringBuilder.append("\"id\":\"").append(this.id).append("\",\n");
 		stringBuilder.append("\"default\":").append(this.isDefault).append(",\n");
 		stringBuilder.append("\"states\": [\n");
 		boolean first = true;
+		Set<EventI> events = new HashSet<>();
 		for (StateDescriptor sd: states.values()){
 			if (!first) stringBuilder.append(",");
 			else first = false;
 			stringBuilder.append(sd.toJson());
+			events.addAll(sd.getTransitions().values().stream().map(t -> {return new EventI(t.getEventId());}).toList());
 		}
-		return stringBuilder.append("]}\n").toString();
+		stringBuilder.append("],\n");
+		stringBuilder.append("\"events\": [\n");
+		first = true;
+		for (EventI t: events){
+			if (!first) stringBuilder.append(",");
+			else first = false;
+			stringBuilder.append(t.toJson());
+		}
+		stringBuilder.append("]}\n");
+
+		return stringBuilder.toString();
 	}
 
     public Map<String, Object> toMap() {
@@ -294,9 +329,12 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		map.put("id",this.id);
 		map.put("default",this.isDefault);
 		List<Map<String,Object>> list = new ArrayList<>();
+		Set<EventI> events = new HashSet<>();
 		for (StateDescriptor sd: states.values()){
 			list.add(sd.toMap());
+			events.addAll(sd.getTransitions().values().stream().map(t -> {return new EventI(t.getEventId());}).toList());
 		}
+		map.put("events",events);
 		map.put("states",list);
 		return map;
     }

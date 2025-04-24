@@ -197,6 +197,8 @@ public class Transition extends EventInformation {
 				this.getNewFlowId(),this.getNewStateId());
 	}
 
+
+
     public Map<String, Object> toMap() {
 		Map<String,Object> map = new HashMap<>();
 		map.put("eventId",this.getEventId());
