@@ -16,7 +16,7 @@ public class ConfigProviderImpl implements ConfigProvider {
         this.properties = properties;
     }
     public ConfigProviderImpl(){
-        System.out.println("I am new");
+
     }
 
 
@@ -47,7 +47,6 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     public void clear(){
-        System.out.println("###### Clear #####");
         this.properties.clear();
     }
 
@@ -57,3 +56,4 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
 }
+
