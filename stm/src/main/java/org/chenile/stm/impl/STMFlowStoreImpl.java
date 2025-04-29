@@ -419,23 +419,9 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 
 	@Override
 	public Collection<StateDescriptor> getAllStates() {
-		List<StateDescriptor> list = new ArrayList<>(getFlowInfo().getStates().values().stream().
-                filter((sd) -> {
-                    if (getEnablementStrategy() == null) return true;
-                    return getEnablementStrategy().isStateEnabled(sd);
-                }).peek((sd)-> {
-			if (getEnablementStrategy() != null){
-				getEnablementStrategy().addMetadataToState(sd);
-			}
-        }).toList());
-		list.addAll(obtainDynamicStates());
-		return list;
+		return new ArrayList<>(getFlowInfo().getStates().values());
 	}
 
-	private Collection<StateDescriptor> obtainDynamicStates(){
-		if (enablementStrategy == null) return List.of();
-		return enablementStrategy.addDynamicStates(getFlowInfo());
-	}
 
 	@Override
 	public String getDefaultFlow(){

@@ -12,30 +12,29 @@ import java.util.function.Consumer;
  * using the encoding type that has been passed. Each line will be converted to a record of type recordClass.
  * For each record, the Chenile Event "eventId" is invoked.
  */
-public class Looper {
+public class Looper<T> {
     @Autowired
     EventProcessor eventProcessor;
     public void loop(String eventId, InputStream inputStream, String encodingType,
-                        Properties properties, Class<?> recordClass) throws Exception{
+                        Properties properties, Class<T> recordClass) throws Exception{
         for (Object o: fileReader(inputStream,encodingType,recordClass,properties)) {
             invokeServicesPerRecord(eventId,o,properties);
         }
     }
 
     public void loop( InputStream inputStream, String encodingType,
-                     Properties properties, Class<?> recordClass,
+                     Properties properties, Class<T> recordClass,
                       Consumer<Object> consumer) throws Exception{
         for (Object o: fileReader(inputStream,encodingType,recordClass,properties)) {
             invokeServicesPerRecord(consumer,o,properties);
         }
     }
-
-    private Iterable<Object> fileReader(
-            InputStream inputStream,String encodingType,Class<?> recordClass,Properties properties) throws Exception{
+    private Iterable<T> fileReader(
+            InputStream inputStream,String encodingType,Class<T> recordClass,Properties properties) throws Exception{
         return switch (encodingType.toUpperCase()) {
-            case "CSV" -> new CsvReader(inputStream, recordClass,properties);
-            case "JSON" -> new JsonReader(inputStream, recordClass);
-            default -> new LineIterable(inputStream);
+            case "CSV" -> new CsvReader<T>(inputStream, recordClass,properties);
+            case "JSON" -> new JsonReader<T>(inputStream, recordClass);
+            default -> new LineIterable<T>(inputStream);
         };
     }
 

@@ -27,7 +27,7 @@ public class HeaderUtils {
 	/**
 	 * Keeps track of the original entry point (HTTP, MQTT etc.) of Chenile.
 	 */
-	public static final String ENTRY_POINT = "chenile-entry-point";
+	public static final String ENTRY_POINT = "x-chenile-entry-point";
 	public static final String TRAJECTORY_ID = "x-chenile-trajectory-id";
 	public static final String MOCK_HEADER = "x-chenile-mock-mode";
 	public static final String AUTH_TOKEN_HEADER = "Authorization";

@@ -19,6 +19,7 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
     public static final String ADD_PROPERTY = "transition.add";
     String enabledProperty = ENABLED_PROPERTY;
     String addTransitionProperty = ADD_PROPERTY;
+    static final String ENABLEMENT = "enablement";
     String prefix = "";
     ConfigProvider configProvider;
     public ConfigBasedEnablementStrategy(ConfigProvider configProvider){
@@ -86,6 +87,7 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
             transition.setNewFlowId(sd.getFlowId());
             transitions.put(eventId,transition);
             addEventInformationToTransition(transition,sd);
+            transition.addMetaData(ENABLEMENT,"true");
             addMetadataToTransition(transition,sd);
         }
         return transitions;
@@ -122,6 +124,7 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
             String value = prop.getValue();
             name = name.substring(p.length());
             t.addMetaData(name,value);
+            t.addMetaData(ENABLEMENT,"true");
         }
     }
 
@@ -140,6 +143,7 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
             sd.setFlowId(flowId);
             sd.setFlow(flowDescriptor);
             addMetadataToState(sd);
+            sd.addMetaData(ENABLEMENT,"true");
             return sd;
         }
         return null;
@@ -161,6 +165,7 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
             sd.setFlowId(propValue);
             sd.setFlow(flowInfo);
             sd.setManualState(true);
+            sd.addMetaData(ENABLEMENT,"true");
             addMetadataToState(sd);
         }
 
@@ -175,6 +180,7 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
             String value = prop.getValue();
             name = name.substring(p.length());
             sd.addMetaData(name,value);
+            sd.addMetaData(ENABLEMENT,"true");
         }
     }
 
