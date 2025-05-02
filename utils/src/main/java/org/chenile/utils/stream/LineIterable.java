@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-class LineIterable implements Iterable<Object> {
+class LineIterable<T> implements Iterable<T> {
     private final InputStream inputStream;
 
     public LineIterable(InputStream inputStream){
@@ -15,7 +15,7 @@ class LineIterable implements Iterable<Object> {
     }
 
 
-    public static class LineIterator implements Iterator<Object> {
+    public static class LineIterator<T> implements Iterator<T> {
         private final BufferedReader reader;
         private String nextLine;
         public LineIterator(InputStream inputStream) {
@@ -33,7 +33,7 @@ class LineIterable implements Iterable<Object> {
         }
 
         @Override
-        public String next() {
+        public T next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -43,12 +43,12 @@ class LineIterable implements Iterable<Object> {
             } catch (IOException e) {
                 nextLine = null;
             }
-            return currentLine;
+            return (T)currentLine;
         }
     }
 
     @Override
-    public Iterator<Object> iterator() {
+    public Iterator<T> iterator() {
         return new LineIterator(inputStream);
     }
 }

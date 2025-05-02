@@ -135,7 +135,7 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 				continue;
 			// find the new state
 			StateDescriptor sd = getFlow().getStates().get(t.getNewStateId());
-			if (!enablementStrategy.isStateEnabled(sd))
+			if (sd == null || !enablementStrategy.isStateEnabled(sd))
 				continue;
 			enablementStrategy.addMetadataToTransition(t,this);
 			map.put(t.getEventId(),t);

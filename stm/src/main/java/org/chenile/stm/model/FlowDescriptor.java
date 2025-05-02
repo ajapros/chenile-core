@@ -2,11 +2,9 @@ package org.chenile.stm.model;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
-import org.chenile.stm.STMFlowStore;
-import org.chenile.stm.STMSecurityStrategy;
-import org.chenile.stm.State;
-import org.chenile.stm.StateEntity;
+import org.chenile.stm.*;
 import org.chenile.stm.action.STMAction;
 import org.chenile.stm.action.StateEntityRetrievalStrategy;
 import org.chenile.stm.exception.STMException;
@@ -102,7 +100,34 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 	}
 
 	public Map<String, StateDescriptor> getStates() {
-		return states;
+		Map<String,StateDescriptor> map = new HashMap<>(states);
+		STMFlowStoreImpl flowStore = getFlowStore();
+		if (flowStore == null) return map;
+		final EnablementStrategy enablementStrategy = flowStore.getEnablementStrategy();
+
+		map = states.entrySet()
+				.stream().
+				filter((sd) -> {
+					if (enablementStrategy == null) return true;
+					return enablementStrategy.isStateEnabled(sd.getValue());
+				}).peek((sd)-> {
+					if (enablementStrategy != null){
+						enablementStrategy.addMetadataToState(sd.getValue());
+					}
+				}) .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		;
+
+		Collection<StateDescriptor> list = obtainDynamicStates(enablementStrategy);
+		if (list == null) return map;
+		for (StateDescriptor sd: list){
+			map.put(sd.getId(),sd);
+		}
+		return map;
+	}
+
+	private Collection<StateDescriptor> obtainDynamicStates(EnablementStrategy enablementStrategy){
+		if (enablementStrategy == null) return null;
+		return enablementStrategy.addDynamicStates(this);
 	}
 
 	
@@ -169,7 +194,7 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		sb.append("<retrievalStrategy>").append(retrievalStrategy).append("</retrievalStrategy>\n");
 		sb.append("<skipEntryExitActionsForAutoStates>").append(skipEntryExitActionsForAutoStates).append("</skipEntryExitActionsForAutoStates>\n");
 		sb.append("<states>\n");
-		for(StateDescriptor sd: states.values()){
+		for(StateDescriptor sd: getStates().values()){
 			sb.append(sd.toXml());
 		}
 		sb.append("</states>\n");
@@ -305,7 +330,7 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		stringBuilder.append("\"states\": [\n");
 		boolean first = true;
 		Set<EventI> events = new HashSet<>();
-		for (StateDescriptor sd: states.values()){
+		for (StateDescriptor sd: getStates().values()){
 			if (!first) stringBuilder.append(",");
 			else first = false;
 			stringBuilder.append(sd.toJson());
@@ -330,7 +355,7 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		map.put("default",this.isDefault);
 		List<Map<String,Object>> list = new ArrayList<>();
 		Set<EventI> events = new HashSet<>();
-		for (StateDescriptor sd: states.values()){
+		for (StateDescriptor sd: getStates().values()){
 			list.add(sd.toMap());
 			events.addAll(sd.getTransitions().values().stream().map(t -> {return new EventI(t.getEventId());}).toList());
 		}
