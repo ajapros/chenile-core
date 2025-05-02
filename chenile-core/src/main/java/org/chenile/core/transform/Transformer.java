@@ -1,5 +1,6 @@
 package org.chenile.core.transform;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.chenile.base.exception.BadRequestException;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.errorcodes.ErrorCodes;
@@ -21,6 +22,7 @@ public class Transformer extends BaseChenileInterceptor {
 
     public Transformer() {
         om = new ObjectMapper();
+        om.registerModule(new JavaTimeModule());
         om.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
