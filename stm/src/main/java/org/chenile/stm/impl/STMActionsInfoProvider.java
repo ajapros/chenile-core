@@ -16,11 +16,11 @@ import org.chenile.stm.model.Transition;
  *
  */
 public class STMActionsInfoProvider{
-	private STMFlowStore stmFlowStore ;
+	private STMFlowStoreImpl stmFlowStore ;
 	/**
 	 * @param stmFlowStore the stmFlowStore to set
 	 */
-	public STMActionsInfoProvider(STMFlowStore stmFlowStore) {
+	public STMActionsInfoProvider(STMFlowStoreImpl stmFlowStore) {
 		this.stmFlowStore = stmFlowStore;
 	}
 	public List<String> getAllowedActions(State state){
@@ -105,5 +105,9 @@ public class STMActionsInfoProvider{
 			}
 		}
 		return allowedStates.stream().map(StateDescriptor::getId).toList();
+	}
+
+	public Map<String,Object> toMap(){
+		return stmFlowStore.toMap();
 	}
 }
