@@ -72,6 +72,12 @@ public class TestHttpHandlers {
     }
 
     @Test @Order(9)
+    @DisplayName("Tests if events trigger a call to the method.")
+    public void testEventWithParam() throws Exception {
+        testUtil.testEventWithIDparam("/c/save");
+    }
+
+    @Test @Order(9)
     @DisplayName("Tests if undefined events trigger a call to the method.")
     public void testUndefinedEvent() throws Exception {
         testUtil.testUndefinedEvent("/c/save");

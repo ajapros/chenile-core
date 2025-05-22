@@ -1,5 +1,7 @@
 package org.chenile.core.event;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.chenile.base.exception.ServerException;
@@ -29,8 +31,12 @@ public class EventProcessor {
 	
 	public EventProcessor() {
 	}
-	
+
 	public void handleEvent(String eventId, Object eventPayload) {
+		handleEvent(eventId, eventPayload, new HashMap<>());
+	}
+
+	public void handleEvent(String eventId, Object eventPayload, Map<String,String> headers) {
 		ChenileEventDefinition ced = chenileServiceConfiguration.getEvents().get(eventId);
 		if (ced == null) {
 			throw new ServerException(ErrorCodes.UNKNOWN_EVENT.getSubError(), new Object[]{eventId});
@@ -45,12 +51,17 @@ public class EventProcessor {
 			ChenileExchange chenileExchange = new ChenileExchange();
 			chenileExchange.setServiceDefinition(subscriber.serviceDefinition);
 			chenileExchange.setOperationDefinition(subscriber.operationDefinition);
-			
+			if(!headers.isEmpty()){
+				chenileExchange.getHeaders().putAll(headers);
+			}
+
 			setHeaders(chenileExchange);
 			chenileExchange.setBody(eventPayload);
 			chenileEntryPoint.execute(chenileExchange);
 		}
 	}
+
+
 
 	public void handleEventAsync(String eventId, Object eventPayload) {
 

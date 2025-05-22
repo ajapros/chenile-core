@@ -32,6 +32,14 @@ public class JsonController extends ControllerSupport{
 			 HttpServletRequest request, @RequestBody JsonData jsonData) {
 		 return process("save",request,jsonData);
 	 }
+
+	@PostMapping("/c/save/{id}")
+	@InterceptedBy("jsonInterceptor")
+	@EventsSubscribedTo({"event1","event2"})
+	public ResponseEntity<GenericResponse<JsonData>> saveWithIdParam(
+			HttpServletRequest request,@PathVariable String id, @RequestBody JsonData jsonData) {
+		return process("save",request,jsonData);
+	}
 	 
 	 @PostMapping("/c/throw-exception") 
 	 public ResponseEntity<GenericResponse<JsonData>> throwException(

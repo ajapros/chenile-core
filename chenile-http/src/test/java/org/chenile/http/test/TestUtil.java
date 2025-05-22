@@ -20,6 +20,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TestUtil {
    @Autowired private MockMvc mvc;
    @Autowired private EventProcessor eventProcessor;
@@ -180,11 +183,7 @@ public class TestUtil {
     }
 
     public void testEvent(String url) throws Exception {
-        String id = "foo";
-        String name = "bar";
-        JsonData jsondata = new JsonData(id, name);
-        eventProcessor.handleEvent("event1",jsondata);
-        Assert.assertEquals(name, JsonServiceImpl.data);
+
     }
 
     public void testUndefinedEvent(String url) throws Exception {
@@ -201,5 +200,19 @@ public class TestUtil {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void testEventWithIDparam(String path) {
+
+        String id = "foo";
+        String name = "bar";
+        String pId = "iAmId";
+        JsonData jsondata = new JsonData(id, name);
+        Map<String,String> map = new HashMap<>();
+        map.put("id",pId);
+        eventProcessor.handleEvent("event1",jsondata,map);
+        Assert.assertEquals(name, JsonServiceImpl.data);
+        Assert.assertEquals(pId, JsonServiceImpl.pId);
+
     }
 }

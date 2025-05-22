@@ -6,6 +6,8 @@ public interface JsonService {
 
     JsonData save(JsonData jsonData);
 
+    JsonData saveWithIdParam(String id, JsonData jsonData);
+
 	JsonData throwException(JsonData jsonData);
 
 	JsonData throwWarning(JsonData jsonData);
