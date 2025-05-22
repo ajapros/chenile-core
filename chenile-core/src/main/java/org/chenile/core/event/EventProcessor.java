@@ -9,9 +9,12 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.context.EventLog;
 import org.chenile.core.entrypoint.ChenileEntryPoint;
 import org.chenile.core.errorcodes.ErrorCodes;
+import org.chenile.core.interceptors.ChenileExceptionHandler;
 import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.model.ChenileEventDefinition;
 import org.chenile.core.model.SubscriberVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -25,6 +28,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * client. This class must not be used.</p>
  */
 public class EventProcessor {
+	Logger logger = LoggerFactory.getLogger(ChenileExceptionHandler.class);
+
 	@Autowired  @Qualifier("chenileServiceConfiguration") ChenileConfiguration chenileServiceConfiguration;
 	@Autowired  ChenileEntryPoint chenileEntryPoint;
 
@@ -39,7 +44,9 @@ public class EventProcessor {
 	public void handleEvent(String eventId, Object eventPayload, Map<String,String> headers) {
 		ChenileEventDefinition ced = chenileServiceConfiguration.getEvents().get(eventId);
 		if (ced == null) {
-			throw new ServerException(ErrorCodes.UNKNOWN_EVENT.getSubError(), new Object[]{eventId});
+			//throw new ServerException(ErrorCodes.UNKNOWN_EVENT.getSubError(), new Object[]{eventId});
+			logger.warn("No event listener found for event {}",eventId);
+			return;
 		}
 
 		Set<SubscriberVO> subscribers = ced.getEventSubscribers();
