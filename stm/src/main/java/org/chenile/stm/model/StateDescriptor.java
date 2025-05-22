@@ -215,7 +215,10 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 			System.err.println("Warning: Exit action of " + sd.getId() + " seems to be duplicated!!");
 		}
 		if (sd.getTransitions() != null)
-			this.transitions.putAll(sd.getTransitions()); // merge the transitions
+			// this.transitions.putAll(sd.getTransitions()); // merge the transitions
+			this.transitions.putAll(sd.transitions); // merge the transitions. Use the transitions instead
+		    // of the getTransitions() since the end state might not have been read yet and the getTransitions()
+		    // will discard the transition if end state is not defined.
 	}
 	
 	public String toXml(){

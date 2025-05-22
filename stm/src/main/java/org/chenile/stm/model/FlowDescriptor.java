@@ -133,6 +133,8 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 	
 	public void addsd(StateDescriptor sd) throws STMException {
 		StateDescriptor currSd = states.get(sd.getId());
+		sd.setFlowId(this.id);
+		sd.setFlow(this);
 		if (currSd != null){
 			currSd.merge(sd);
 			sd = currSd;
@@ -140,8 +142,6 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 			states.put(sd.getId(), sd);
 			sd.setFlowId(this.id);
 		}
-		sd.setFlowId(this.id);
-		sd.setFlow(this);
 		if (sd.isInitialState())
 			initialState = sd.getId();
 		sd.validate();
