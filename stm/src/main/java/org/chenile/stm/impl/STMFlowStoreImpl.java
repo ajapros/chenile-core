@@ -5,18 +5,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.chenile.stm.*;
-import org.chenile.stm.action.ComponentPropertiesAware;
-import org.chenile.stm.action.STMAction;
-import org.chenile.stm.action.STMTransitionAction;
-import org.chenile.stm.action.ScriptingStrategyAware;
-import org.chenile.stm.action.StateEntityRetrievalStrategy;
+import org.chenile.stm.action.*;
 import org.chenile.stm.exception.STMException;
-import org.chenile.stm.model.EventInformation;
-import org.chenile.stm.model.FlowDescriptor;
-import org.chenile.stm.model.StateDescriptor;
-import org.chenile.stm.model.StateTagDescriptor;
-import org.chenile.stm.model.TransientActionsAwareDescriptor;
-import org.chenile.stm.model.Transition;
+import org.chenile.stm.model.*;
 
 /**
  * 
@@ -61,6 +52,7 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 
 	protected STMTransitionAction<?> defaultTransitionAction;
 	private EnablementStrategy enablementStrategy;
+	private STMAutomaticStateComputation<?> defaultAutomaticStateComputation;
 
 	/**
 	 * Always initialize the action tags first
@@ -99,8 +91,7 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 	 * This method is called during STD parsing. Every flow would result in a
 	 * call to this so that the flow gets added to the configuration.
 	 * 
-	 * @param fd
-	 *            flowdescriptor
+	 * @param fd flow descriptor
 	 */
 	public void addFlow(FlowDescriptor fd) {
 		String flowId = fd.getId();
@@ -303,6 +294,12 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 		return defaultTransitionAction;
 	}
 
+	@Override
+	public STMAutomaticStateComputation<?> getAutomaticStateComputation(AutomaticStateDescriptor sd) {
+		STMAutomaticStateComputation<?> action = sd.getComponent();
+		return (action == null)? defaultAutomaticStateComputation : action;
+	}
+
 	private State correctState(State state) {
 		State retState = state;
 		
@@ -431,5 +428,13 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 
 	public EnablementStrategy getEnablementStrategy() {
 		return enablementStrategy;
+	}
+
+	public STMAutomaticStateComputation<?> getDefaultAutomaticStateComputation() {
+		return defaultAutomaticStateComputation;
+	}
+
+	public void setDefaultAutomaticStateComputation(STMAutomaticStateComputation<?> defaultAutomaticStateComputation) {
+		this.defaultAutomaticStateComputation = defaultAutomaticStateComputation;
 	}
 }

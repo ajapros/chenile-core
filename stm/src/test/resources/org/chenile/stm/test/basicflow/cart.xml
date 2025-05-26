@@ -25,7 +25,8 @@
 		
 		<if id='TEST_STATE' condition='approved'
 		 then='confirm' else='reject'>
-		<on eventId='confirm' newStateId='PAYMENT_CONFIRMED'  meta-mainPath="true"/>
+		<on eventId='confirm' newStateId='PAYMENT_CONFIRMED'  meta-mainPath="true"
+				componentName="org.chenile.stm.test.basicflow.ConfirmAutoState"/>
 		<on eventId='reject' newStateId='PAYMENT_INITIATED'/>
 	    </if>
 

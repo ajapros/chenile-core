@@ -6,9 +6,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.chenile.stm.action.STMAction;
+import org.chenile.stm.action.STMAutomaticStateComputation;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.action.StateEntityRetrievalStrategy;
 import org.chenile.stm.exception.STMException;
+import org.chenile.stm.model.AutomaticStateDescriptor;
 import org.chenile.stm.model.EventInformation;
 import org.chenile.stm.model.StateDescriptor;
 import org.chenile.stm.model.Transition;
@@ -51,6 +53,7 @@ public interface STMFlowStore {
 	public STMAction<?> getExitAction(State state);	
 	
 	public STMTransitionAction<?> getTransitionAction(Transition transition);
+	public STMAutomaticStateComputation<?> getAutomaticStateComputation(AutomaticStateDescriptor sd);
 	/**
 	 * 
 	 * @return

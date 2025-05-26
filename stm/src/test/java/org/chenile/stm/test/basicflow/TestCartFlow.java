@@ -61,7 +61,9 @@ public class TestCartFlow extends TestCase{
 		stm.proceed(cart);// redundant call should do nothing.
 		
 		try{
+			// The below code should always err out since addItem is not a valid transition for the current state.
 			stm.proceed(cart,"addItem",item);
+			fail("Error: STM is allowing invalid events for end state");
 		}catch(STMException e){
 			assertTrue(e.getMessage().contains("addItem"));
 			assertEquals(STMException.INVALID_EVENTID,e.getMessageId());
@@ -85,6 +87,7 @@ public class TestCartFlow extends TestCase{
 				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ConfirmPayment.LOGMESSAGE,
+				ConfirmAutoState.LOGMESSAGE,
 				EntryAction.LOGMESSAGE + ":PAYMENT_CONFIRMED",
 				ExitAction.LOGMESSAGE + ":PAYMENT_CONFIRMED"
 		};
@@ -153,6 +156,7 @@ public class TestCartFlow extends TestCase{
 				EntryAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ExitAction.LOGMESSAGE + ":PAYMENT_INITIATED",
 				ConfirmPayment.LOGMESSAGE,
+				ConfirmAutoState.LOGMESSAGE,
 				EntryAction.LOGMESSAGE + ":PAYMENT_CONFIRMED",
 				ExitAction.LOGMESSAGE + ":PAYMENT_CONFIRMED"
 		};

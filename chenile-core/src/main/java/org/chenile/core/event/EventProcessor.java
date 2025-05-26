@@ -23,9 +23,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * each of the event subscribers in a loop. This can be used if a simple SEDA pipeline needs
  * to be established in the same thread within a single transaction. An example of this is
  * logging threads which need to do a bunch of things before a user is considered to be logged in.
- * <p>This should not be used if parallelism is desired. For example, if a Kafka event needs to
- * be handled by multiple subscribers we expect the multi-threading to happen by the Kafka
- * client. This class must not be used.</p>
+ * <p>This should not be used if parallelism is desired. </p>
+ * <p>This is a very handy way of doing testing. It is also internally used by all Chenile subscribers
+ * at the entry point. Chenile file watcher, scheduler etc. use this class internally.</p>
  */
 public class EventProcessor {
 	Logger logger = LoggerFactory.getLogger(ChenileExceptionHandler.class);
