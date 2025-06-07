@@ -110,7 +110,7 @@ public class TestEnablement extends TestCase{
 		configProvider.clear();
 		configProvider.setProperties("""
 				# Add new State S3 to the MFG_FLOW
-				state.add.S3.in=MFG_FLOW
+				MFG_FLOW.state.add.S3=
 				# Add transition doS3 to S2 state that will lead to state S3
 				MFG_FLOW.S2.transition.add.doS3=S3
 				""");
@@ -147,7 +147,7 @@ public class TestEnablement extends TestCase{
 		configProvider.clear();
 		configProvider.setProperties("""
 				# Add new State S3 to the MFG_FLOW
-				state.add.S3.in=MFG_FLOW
+				MFG_FLOW.state.add.S3=
 				# Add meta data to State S3
 				MFG_FLOW.S3.meta.key=value
 				""");
@@ -159,8 +159,8 @@ public class TestEnablement extends TestCase{
 		configProvider.clear();
 		configProvider.setProperties("""
 				# Add new States S3 and S4 to the MFG_FLOW
-				state.add.S3.in=MFG_FLOW
-				state.add.S4.in=MFG_FLOW
+				MFG_FLOW.state.add.S3=
+				MFG_FLOW.state.add.S4=
 				# Add transitions from S2 to S3(doS3) and S3 to S4(doS4)
 				MFG_FLOW.S2.transition.add.doS3=S3
 				MFG_FLOW.S3.transition.add.doS4=S4
@@ -193,6 +193,30 @@ public class TestEnablement extends TestCase{
 				EXIT_ACTION,
 				"doS4",
 				ENTRY_ACTION,
+				EXIT_ACTION
+		};
+
+		assertEquals(Arrays.asList(expectedLog), log);
+	}
+
+	public void testChangeNewStateId() throws Exception{
+		configProvider.clear();
+		configProvider.setProperties("""
+				# Change transitions e1 to goto state S2
+				MFG_FLOW.CREATED.e1.newStateId=S2
+				""");
+		MfgModel mfgModel = new MfgModel();
+		stm.proceed(mfgModel);
+		assertEquals(new State("CREATED","MFG_FLOW"),mfgModel.getCurrentState());
+		stm.proceed(mfgModel,"e1",null);
+		assertEquals(new State("S2","MFG_FLOW"),mfgModel.getCurrentState());
+		List<String> log = mfgModel.log;
+
+		String[] expectedLog = {
+				ENTRY_ACTION ,
+				EXIT_ACTION ,
+				"e1",
+				ENTRY_ACTION ,
 				EXIT_ACTION
 		};
 

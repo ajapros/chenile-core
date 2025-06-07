@@ -10,10 +10,7 @@ import org.chenile.stm.action.STMAutomaticStateComputation;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.action.StateEntityRetrievalStrategy;
 import org.chenile.stm.exception.STMException;
-import org.chenile.stm.model.AutomaticStateDescriptor;
-import org.chenile.stm.model.EventInformation;
-import org.chenile.stm.model.StateDescriptor;
-import org.chenile.stm.model.Transition;
+import org.chenile.stm.model.*;
 
 /**
  * An interface that is used by a State Transition Machine implementation to obtain the
@@ -69,5 +66,7 @@ public interface STMFlowStore {
 	public EventInformation getEventInformation(String eventId);
 	public Collection<StateDescriptor> getAllStates();
 
-	String getDefaultFlow();
+	public String getDefaultFlow();
+	public Collection<FlowDescriptor> getAllFlows();
+
 }

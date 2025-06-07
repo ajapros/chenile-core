@@ -16,9 +16,11 @@ import java.util.*;
  */
 public class ConfigBasedEnablementStrategy implements EnablementStrategy {
     public static final String ENABLED_PROPERTY = "enabled";
-    public static final String ADD_PROPERTY = "transition.add";
+    public static final String ADD_TRANSITION_PROPERTY = "transition.add";
+    public static final String ADD_STATE_PROPERTY = "state.add";
     String enabledProperty = ENABLED_PROPERTY;
-    String addTransitionProperty = ADD_PROPERTY;
+    String addTransitionProperty = ADD_TRANSITION_PROPERTY;
+    String addStateProperty = ADD_STATE_PROPERTY;
     static final String ENABLEMENT = "enablement";
     String prefix = "";
     ConfigProvider configProvider;
@@ -37,6 +39,9 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
     }
     public void setAddTransitionProperty(String addTransitionProperty){
         this.addTransitionProperty = addTransitionProperty;
+    }
+    public void setAddStateProperty(String p){
+        this.addStateProperty = p;
     }
 
     @Override
@@ -66,7 +71,7 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
 
     /**
      *
-     * @param sd
+     * @param sd state descriptor
      * @return
      * Allows for the addition of transitions in the property files.
      */
@@ -95,8 +100,8 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
 
     /**
      *
-     * @param transition
-     * @param sd
+     * @param transition - the transition which needs to be enhanced
+     * @param sd the state descriptor to which the transition is attached
      *
      */
     private void addEventInformationToTransition(Transition transition, StateDescriptor sd){
@@ -112,8 +117,8 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
 
     /**
      *
-     * @param t
-     * @param sd
+     * @param t - the transition
+     * @param sd - the state descriptor
      * Allows for metadata to be added to a transition in property file.
      */
     public void addMetadataToTransition(Transition t,StateDescriptor sd){
@@ -126,6 +131,17 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
             t.addMetaData(name,value);
             t.addMetaData(ENABLEMENT,"true");
         }
+        p = prefix + sd.getFlowId() + "." + sd.getId() + "." + t.getEventId() + ".newStateId" ;
+        String value = configProvider.valueOf(p);
+        if (value == null) return;
+        String[] s = value.split("\\.");
+        if (s.length <= 1){
+            t.setNewStateId(value);
+            return;
+        }
+        if (s.length > 2) return; // ignore if there are more than dots in the value of the property
+        t.setNewFlowId(s[0]);
+        t.setNewStateId(s[1]);
     }
 
     @Override
@@ -133,36 +149,32 @@ public class ConfigBasedEnablementStrategy implements EnablementStrategy {
         String flowId = state.getFlowId();
         String stateId = state.getStateId();
         if (flowId == null || stateId == null) return null;
-        String propName = prefix + "state.add." + stateId +".in" ;
+        String propName = prefix + flowId + "." + addStateProperty + "." + stateId ;
         String val = configProvider.valueOf(propName);
         if (val == null) return null;
-        if (val.equals(flowId)){
-            StateDescriptor sd = new StateDescriptor();
-            sd.setManualState(true);
-            sd.setId(stateId);
-            sd.setFlowId(flowId);
-            sd.setFlow(flowDescriptor);
-            addMetadataToState(sd);
-            sd.addMetaData(ENABLEMENT,"true");
-            return sd;
-        }
-        return null;
+
+        StateDescriptor sd = new StateDescriptor();
+        sd.setManualState(true);
+        sd.setId(stateId);
+        sd.setFlowId(flowId);
+        sd.setFlow(flowDescriptor);
+        addMetadataToState(sd);
+        sd.addMetaData(ENABLEMENT,"true");
+        return sd;
     }
 
     @Override
     public Collection<StateDescriptor> addDynamicStates(FlowDescriptor flowInfo) {
         List<StateDescriptor> list = new ArrayList<>();
-        String pfx = prefix + "state.add." ;
+        String pfx = prefix + flowInfo.getId() + "." + addStateProperty + "." ;
         Map<String, String> props = configProvider.getProperties(pfx);
         for (Map.Entry<String,String> prop: props.entrySet()){
             String propName = prop.getKey();
-            String propValue = prop.getValue();
             String stateId = propName.substring(pfx.length());
-            stateId = stateId.substring(0,stateId.indexOf('.'));
             StateDescriptor sd = new StateDescriptor();
             list.add(sd);
             sd.setId(stateId);
-            sd.setFlowId(propValue);
+            sd.setFlowId(flowInfo.getId());
             sd.setFlow(flowInfo);
             sd.setManualState(true);
             sd.addMetaData(ENABLEMENT,"true");

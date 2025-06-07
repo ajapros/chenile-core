@@ -38,6 +38,7 @@ public class ConfigProviderImpl implements ConfigProvider {
         }
         return map;
     }
+
     public void setProperty(String name, String value){
         this.properties.setProperty(name,value);
     }

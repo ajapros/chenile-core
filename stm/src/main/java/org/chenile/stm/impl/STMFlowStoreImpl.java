@@ -425,6 +425,11 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 		return defaultFlowId;
 	}
 
+	@Override
+	public Collection<FlowDescriptor> getAllFlows() {
+		return flows.values();
+	}
+
 
 	public EnablementStrategy getEnablementStrategy() {
 		return enablementStrategy;
