@@ -9,8 +9,8 @@
 		<relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>chenile-base</artifactId>
+    <name>Chenile Base contains all the base definitions</name>
 
     <dependencies>
         <dependency>

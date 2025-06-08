@@ -5,6 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>chenile-core-parent</artifactId>
     <version>${revision}</version>
+    <name>Chenile Core Services Parent</name>
     <modules>
         <module>stm</module>
         <module>owiz</module>

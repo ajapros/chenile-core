@@ -12,7 +12,6 @@
 
     <artifactId>jpa-utils</artifactId>
     <packaging>jar</packaging>
-
     <name>JPA Utils supplied by the Chenile Framework</name>
 
     <dependencies>
