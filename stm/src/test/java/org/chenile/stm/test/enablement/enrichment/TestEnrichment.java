@@ -1,9 +1,10 @@
-package org.chenile.stm.test.enablement.approval;
+package org.chenile.stm.test.enablement.enrichment;
 
 import junit.framework.TestCase;
 import org.chenile.stm.STM;
 import org.chenile.stm.State;
 import org.chenile.stm.action.STMAction;
+import org.chenile.stm.action.STMAutomaticStateComputation;
 import org.chenile.stm.action.STMTransitionAction;
 import org.chenile.stm.exception.STMException;
 import org.chenile.stm.impl.*;
@@ -13,9 +14,9 @@ import org.chenile.stm.test.enablement.MfgModel;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestApprovalEnablement extends TestCase {
+public class TestEnrichment extends TestCase {
 
-        protected STM<MfgModel> stm = new STMImpl<>();
+        protected STM<ApprovalModel> stm = new STMImpl<>();
         protected ConfigProviderImpl configProvider = new ConfigProviderImpl();
         protected STMFlowStoreImpl stmFlowStore = null;
         private final Map<String, Object> compMap = new HashMap<String, Object>();
@@ -44,11 +45,18 @@ public class TestApprovalEnablement extends TestCase {
             compMap.put("defaultTransitionAction",transitionAction);
             ConfigBasedEnablementStrategy configBasedEnablementStrategy = new ConfigBasedEnablementStrategy(configProvider);
             compMap.put("configBasedEnablementStrategy",configBasedEnablementStrategy);
+            stmFlowStore.setDefaultAutomaticStateComputation(new STMAutomaticStateComputation<ApprovalModel>() {
+                @Override
+                public String execute(ApprovalModel approvalModel) throws Exception {
+                    return approvalModel.approvalRequired? "yes": "no";
+                }
+            });
         }
 
         public void setUp() throws Exception{
-            createComponents();
             stmFlowStore = new MyStore();
+            createComponents();
+
             stmFlowEnricher = new STMFlowEnricher();
             XmlFlowReader flowReader = new XmlFlowReader(stmFlowStore);
             flowReader.setFilename(FLOW_DEFINITION_FILE);
@@ -57,13 +65,21 @@ public class TestApprovalEnablement extends TestCase {
             stm.setStmFlowStore(stmFlowStore);
         }
 
-        public void testDummy() throws Exception{
-            MfgModel mfgModel = new MfgModel();
-            stm.proceed(mfgModel);
-            assertEquals(new State("CREATED","MFG_FLOW"),mfgModel.getCurrentState());
-            stm.proceed(mfgModel,"e1",null);
-            assertEquals(new State("S9_APPROVAL_PENDING","MFG_FLOW"),mfgModel.getCurrentState());
-            stm.proceed(mfgModel,"approve",null);
-            assertEquals(new State("S9","MFG_FLOW"),mfgModel.getCurrentState());
+        public void testApprovalEnrichmentYes() throws Exception{
+            ApprovalModel approvalModel = new ApprovalModel();
+            stm.proceed(approvalModel);
+            assertEquals(new State("CREATED","MFG_FLOW"),approvalModel.getCurrentState());
+            stm.proceed(approvalModel,"e1",null);
+            assertEquals(new State("S9_APPROVAL_PENDING","MFG_FLOW"),approvalModel.getCurrentState());
+            stm.proceed(approvalModel,"approve",null);
+            assertEquals(new State("S9","MFG_FLOW"),approvalModel.getCurrentState());
         }
+
+    public void testApprovalEnrichmentNo() throws Exception{
+        ApprovalModel approvalModel = new ApprovalModel(false);
+        stm.proceed(approvalModel);
+        assertEquals(new State("CREATED","MFG_FLOW"),approvalModel.getCurrentState());
+        stm.proceed(approvalModel,"e1",null);
+        assertEquals(new State("S9","MFG_FLOW"),approvalModel.getCurrentState());
+    }
 }

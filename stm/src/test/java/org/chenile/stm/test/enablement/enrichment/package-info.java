@@ -14,4 +14,4 @@
  *  <p>Note that enrichers are applied only during the creation of the STM. They do not help if the
  *  tag can be defined or enhanced dynamically using an Enablement Strategy. </p>
  */
-package org.chenile.stm.test.enablement.approval;
+package org.chenile.stm.test.enablement.enrichment;

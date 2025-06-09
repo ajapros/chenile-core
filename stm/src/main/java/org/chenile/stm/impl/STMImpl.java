@@ -357,8 +357,8 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 	@SuppressWarnings("unchecked")
 	protected String obtainActionEvent(StateEntityType stateEntity, AutomaticStateDescriptor actionStateDescriptor)
 			throws Exception {
-		STMAutomaticStateComputation<StateEntityType> action = (STMAutomaticStateComputation<StateEntityType>) actionStateDescriptor
-				.getComponent();
+		STMAutomaticStateComputation<StateEntityType> action = (STMAutomaticStateComputation<StateEntityType>)
+				stmFlowStore.getAutomaticStateComputation(actionStateDescriptor);
 
 		if (action == null)
 			return STM.SUCCESS; // automatic states without components attached
