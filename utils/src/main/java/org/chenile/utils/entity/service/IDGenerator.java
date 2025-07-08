@@ -4,6 +4,7 @@ import org.chenile.core.context.ContextContainer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Generates IDs given a request context. This class is useful to generate predictable IDs for entities
@@ -29,6 +30,11 @@ public abstract class IDGenerator {
     public static String generateID(String prefix) {
         ContextContainer contextContainer = ContextContainer.CONTEXT_CONTAINER;
         String requestId = contextContainer.getRequestId();
+
+        //In case child nested jpa entities context container values are null
+        if(requestId== null || requestId.isBlank()){
+            requestId = String.valueOf(UUID.randomUUID());
+        }
         return String.format("%s-%s-%0,4d", prefix, requestId, obtainCounter(prefix));
     }
 
