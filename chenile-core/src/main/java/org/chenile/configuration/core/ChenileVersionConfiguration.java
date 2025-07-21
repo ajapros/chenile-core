@@ -26,6 +26,5 @@ public class ChenileVersionConfiguration implements InitializingBean{
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		chenileConfiguration.setVersion(version);
-		
 	}
 }
