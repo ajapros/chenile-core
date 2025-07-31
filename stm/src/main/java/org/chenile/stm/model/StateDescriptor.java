@@ -256,14 +256,15 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
                 {
                     "id": "%s",
                     "initialState": %s,
+                    "manualState": %s,
                     "transitions": [
                     %s
                     ]
                 }
-                """.formatted(this.id, this.initialState,transitionsAsJson());
+                """.formatted(this.id, this.initialState,this.manualState,transitionsAsJson());
 	}
 
-	private String transitionsAsJson() {
+	protected String transitionsAsJson() {
 		StringBuilder stringBuilder = new StringBuilder();
 		boolean first = true;
 		for (Transition t: getTransitions().values()){
@@ -278,6 +279,7 @@ public class StateDescriptor implements TransientActionsAwareDescriptor{
 		Map<String,Object> map = new HashMap<>();
 		map.put("id",this.id);
 		map.put("initialState",this.initialState);
+		map.put("manualState",this.manualState);
 		List<Map<String,Object>> list = new ArrayList<>();
 		for (Transition t: getTransitions().values()){
 			list.add(t.toMap());

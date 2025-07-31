@@ -299,16 +299,21 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 
 	public static class EventI {
 		public String eventId;
-		public EventI(String eventId){
+		public boolean isManualTransition;
+		public EventI(String eventId,boolean isManualTransition){
 			this.eventId = eventId;
+			this.isManualTransition = isManualTransition;
 		}
 		public String toString(){
 			return toJson();
 		}
 		public String toJson(){
 			return """
-					{"eventId": "%s"}
-					""".formatted(this.eventId);
+					{
+					"eventId": "%s",
+					"manualTransition": %s
+					}
+					""".formatted(this.eventId,this.isManualTransition);
 		}
 
 		@Override
@@ -334,7 +339,8 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 			if (!first) stringBuilder.append(",");
 			else first = false;
 			stringBuilder.append(sd.toJson());
-			events.addAll(sd.getTransitions().values().stream().map(t -> {return new EventI(t.getEventId());}).toList());
+			events.addAll(sd.getTransitions().values().stream().map(
+					t -> new EventI(t.getEventId(),sd.isManualState())).toList());
 		}
 		stringBuilder.append("],\n");
 		stringBuilder.append("\"events\": [\n");
@@ -357,7 +363,9 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 		Set<EventI> events = new HashSet<>();
 		for (StateDescriptor sd: getStates().values()){
 			list.add(sd.toMap());
-			events.addAll(sd.getTransitions().values().stream().map(t -> {return new EventI(t.getEventId());}).toList());
+			events.addAll(sd.getTransitions().values().stream().map(
+				t -> new EventI(t.getEventId(),sd.isManualState()
+				)).toList());
 		}
 		map.put("events",events);
 		map.put("states",list);

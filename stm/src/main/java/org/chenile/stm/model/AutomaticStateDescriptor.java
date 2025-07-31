@@ -121,5 +121,28 @@ public class AutomaticStateDescriptor extends StateDescriptor {
 		componentProperties.put(name, obj);
 		return this;
 	}
+
+	public String toJson() {
+		return """
+                {
+                    "id": "%s",
+                    "initialState": %s,
+                    "manualState": %s,
+                    "componentNameNotDefined": %s,
+                    "transitions": [
+                    %s
+                    ]
+                }
+                """.formatted(this.id, this.initialState,this.manualState,
+				(this.componentName == null),transitionsAsJson());
+	}
+
+	public Map<String, Object> toMap() {
+		Map<String,Object> map = super.toMap();
+		if (componentName == null){
+			map.put("componentNameNotDefined",true);
+		}
+		return map;
+	}
 	
 }
