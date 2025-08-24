@@ -135,6 +135,16 @@ public class OperationDefinition {
 	protected List<String> clientInterceptorComponentNames;
 	@JsonIgnore
 	protected Method method;
+
+	public String getOutputAsStringReference() {
+		return outputAsStringReference;
+	}
+
+	public void setOutputAsStringReference(String outputAsStringReference) {
+		this.outputAsStringReference = outputAsStringReference;
+	}
+
+	protected String outputAsStringReference;
 	protected ParameterizedTypeReference<?> outputAsParameterizedReference;
 	/**
 	 * Sometimes it is possible that the output is not specifiable since it can vary depending on the value of some headers. In that case,

@@ -311,7 +311,7 @@ public class FlowDescriptor implements TransientActionsAwareDescriptor{
 			return """
 					{
 					"eventId": "%s",
-					"manualTransition": %s
+					"isManualTransition": %s
 					}
 					""".formatted(this.eventId,this.isManualTransition);
 		}

@@ -186,18 +186,21 @@ public abstract class MappingProducerBase {
 		if (c != null && c.length > 0 && !c[0].isEmpty()) {
 			od.setProduces(MimeType.valueOf(c[0]));
 		}
-		
-		od.setOutputAsParameterizedReference(findOutputType(ResolvableType.forMethodReturnType(method)));
+
+		populateOutputTypes(od,method);
 		od.setUrl(url);
 		populateParams(csd,method,od);
 		csd.getOperations().add(od);
 	}
 
-	private static ParameterizedTypeReference<?> findOutputType(ResolvableType genericType){
+	private static void populateOutputTypes(OperationDefinition od,
+								 Method method){
 		// output type needs to be calculated by removing the surrounding ResponseEntity and
 		// GenericResponse. That is why we call getGeneric() twice to remove the two of them
+		ResolvableType genericType = ResolvableType.forMethodReturnType(method);
 		ResolvableType t = genericType.getGeneric();
 		t = t.getGeneric();
-		return ParameterizedTypeReference.forType(t.getType());
+		od.setOutputAsParameterizedReference(ParameterizedTypeReference.forType(t.getType()));
+		od.setOutput(t.getRawClass());
 	}
 }

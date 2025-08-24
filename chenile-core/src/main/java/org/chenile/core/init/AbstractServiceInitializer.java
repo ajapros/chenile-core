@@ -15,6 +15,7 @@ import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
 import org.chenile.core.service.HealthChecker;
 import org.chenile.core.util.MethodUtils;
+import org.chenile.core.util.convert.ChenileTypeUtils;
 import org.chenile.owiz.Command;
 import org.chenile.owiz.impl.Chain;
 import org.springframework.beans.factory.InitializingBean;
@@ -81,6 +82,9 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
             	od.setBodyTypeSelector(constructBodyTypeInterceptorsChain(od.getBodyTypeSelectorComponentNames(),
 						applicationContext));
             }
+			if (od.getOutputAsStringReference() != null){
+				od.setOutputAsParameterizedReference(ChenileTypeUtils.makeParameterizedTypeReference(od.getOutputAsStringReference()));
+			}
         }       
         validate(csd);
         String id = csd.getId();
