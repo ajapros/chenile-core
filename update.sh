@@ -1,4 +1,4 @@
-## 
+## dummy
 read -p "Comments:" comment
 new_version=$(cat chenile-core-version.txt)
 git add .
