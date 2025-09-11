@@ -353,6 +353,34 @@ public class RestCukesSteps {
         VariableHelper.put(varName, varValue);
     }
 
+    @Then("fix and store JSON string {string} as {string} from response")
+    public void fixAndStoreJsonString(String expression, String alias) {
+        String fixedJson, varValue = "";
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            String content = extractStringFromResponse();
+            varValue = JsonPath.parse(content).read(expression, String.class);
+            // Try parsing to check if valid JSON
+            mapper.readTree(varValue);
+            fixedJson = varValue;
+        } catch (Exception e) {
+            // If not valid JSON, escape problematic characters
+            fixedJson = varValue
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r");
+            fixedJson = "\"" + fixedJson + "\""; // wrap as JSON string
+        }
+        try {
+
+            VariableHelper.put(alias, mapper.writeValueAsString(fixedJson));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Given("that {string} equals {string}")
     public void that_varName_equals_varValue(String varName, String varValue) {
         VariableHelper.put(varName, varValue);
