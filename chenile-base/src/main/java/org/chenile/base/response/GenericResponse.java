@@ -49,12 +49,12 @@ public class GenericResponse<T> implements WarningAware{
 		this.success = success;
 	}
 	
-	@JsonSerialize(using = ToStringSerializer.class)
+	//@JsonSerialize(using = ToStringSerializer.class)
 	public int getCode() {
 		return responseMessage.getCode();
 	}
 
-	@JsonSerialize(using = ToStringSerializer.class)
+	//@JsonSerialize(using = ToStringSerializer.class)
 	public void setCode(int errorCode) {
 		this.responseMessage.setCode(errorCode);
 	}
@@ -83,12 +83,12 @@ public class GenericResponse<T> implements WarningAware{
 		this.data = data;
 	}
 
-	@JsonSerialize(using = ToStringSerializer.class)
+	//@JsonSerialize(using = ToStringSerializer.class)
 	public int getSubErrorCode() {
 		return this.responseMessage.getSubErrorCode();
 	}
 
-	@JsonSerialize(using = ToStringSerializer.class)
+	//@JsonSerialize(using = ToStringSerializer.class)
 	public void setSubErrorCode(int subErrorCode) {
 		this.responseMessage.setSubErrorCode(subErrorCode);
 	}
