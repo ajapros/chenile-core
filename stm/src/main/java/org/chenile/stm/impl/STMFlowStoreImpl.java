@@ -250,15 +250,15 @@ public class STMFlowStoreImpl implements STMFlowStore, TransientActionsAwareDesc
 		StateDescriptor sd = getStateInfo(state);
 		if (sd == null)
 			throw new RuntimeException("State " + state + " not defined in the STD.");
-		LOGGER.fine(
-				":::::::::::::::::::" + flow.isSkipEntryExitActionsForAutoStates() + "for state::::::::" + sd.getId());
+		// LOGGER.fine(
+				// ":::::::::::::::::::" + flow.isSkipEntryExitActionsForAutoStates() + "for state::::::::" + sd.getId());
 
 		if (flow.isSkipEntryExitActionsForAutoStates() && !sd.isManualState())
 			return null;
 		// start with the most specific one and cascade up.
 
-		LOGGER.fine(
-				":::::::::::::::::::" + flow.isSkipEntryExitActionsForAutoStates() + "for state::::::::" + sd.getId());
+		// LOGGER.fine(
+				// ":::::::::::::::::::" + flow.isSkipEntryExitActionsForAutoStates() + "for state::::::::" + sd.getId());
 
 		if (sd.getEntryAction() != null)
 			return sd.getEntryAction();
