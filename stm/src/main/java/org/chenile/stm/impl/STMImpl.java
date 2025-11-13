@@ -118,7 +118,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 		transitionAction = (STMTransitionAction<StateEntityType>) obj[1];
 		Transition transition = (Transition)obj[2];
 
-		executeStartStateExitAction(startState, stateEntity);
+		executeStartStateExitAction(startState,endState, stateEntity);
 
 		if (transitionAction != null)
 			transitionAction.doTransition(stateEntity, transitionParam, startState, startingEventId,endState,
@@ -127,7 +127,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 		stateEntity.setCurrentState(endState);
 		executeEndStateEntryAction(startState, endState, stateEntity);
 
-		return doEndStateChecks(endState, stateEntity, transitionParam);
+		return doEndStateChecks(startState,endState, stateEntity, transitionParam);
 	}
 
 	protected StateEntityType retrieveMergeFromPersistentStorage(StateEntityType originalStateEntity,
@@ -179,7 +179,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 														// flow as
 														// retrievedState
 			State newState = new State(retrievalTransition.getNewStateId(), newFlowId);
-			executeStartStateExitAction(retrievedState, ret);
+			executeStartStateExitAction(retrievedState,newState, ret);
 			if (retrievalTransition.getTransitionAction() != null) {
 				@SuppressWarnings("unchecked")
 				STMTransitionAction<StateEntityType> stmta = (STMTransitionAction<StateEntityType>) retrievalTransition
@@ -202,7 +202,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 		return (startState == null) || (startState.getFlowId() == null) || (startState.getStateId() == null);
 	}
 
-	private void executeStartStateExitAction(State startState, StateEntityType stateEntity) throws Exception {
+	private void executeStartStateExitAction(State startState,State endState, StateEntityType stateEntity) throws Exception {
 		if (isBeginning(startState))
 			return;
 
@@ -210,7 +210,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 		STMAction<StateEntityType> exitActionOfStartState = (STMAction<StateEntityType>) stmFlowStore
 				.getExitAction(startState);
 		if (exitActionOfStartState != null) {
-			exitActionOfStartState.execute(stateEntity);
+			exitActionOfStartState.execute(startState,endState, stateEntity);
 		}
 	}
 
@@ -221,10 +221,10 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 				.getEntryAction(endState);
 
 		if (entryActionOfEndState != null)
-			entryActionOfEndState.execute(stateEntity);
+			entryActionOfEndState.execute(startState,endState,stateEntity);
 	}
 
-	private StateEntityType doEndStateChecks(State endState, StateEntityType stateEntity, Object transitionParam)
+	private StateEntityType doEndStateChecks(State startState, State endState, StateEntityType stateEntity, Object transitionParam)
 			throws Exception {
 		// check if the new state can also be evaluated recursively. If it is
 		// auto state then it can be
@@ -236,7 +236,7 @@ public class STMImpl<StateEntityType extends StateEntity> implements STM<StateEn
 			STMAction<StateEntityType> exitActionForEndState = (STMAction<StateEntityType>) stmFlowStore
 					.getExitAction(endState);
 			if (exitActionForEndState != null)
-				exitActionForEndState.execute(stateEntity);
+				exitActionForEndState.execute(startState,endState,stateEntity);
 		}
 
 		if (!endStateDescriptor.isManualState()) {

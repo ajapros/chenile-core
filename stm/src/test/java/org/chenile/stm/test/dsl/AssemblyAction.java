@@ -12,12 +12,14 @@ public class AssemblyAction implements STMAction<AssemblyLineModel>, STMTransiti
     public AssemblyAction(String logMessage){
         this.logMessage = logMessage;
     }
-    @Override
-    public void execute(AssemblyLineModel assemblyLine) throws Exception {
-        assemblyLine.log.add(logMessage);
-    }
+
     @Override
     public void doTransition(AssemblyLineModel assemblyLine, Object transitionParam, State startState, String eventId, State endState, STMInternalTransitionInvoker<?> stm, Transition transition) throws Exception {
         assemblyLine.log.add(eventId);
+    }
+
+    @Override
+    public void execute(State startState, State endState, AssemblyLineModel assemblyLine) throws Exception {
+        assemblyLine.log.add(logMessage);
     }
 }

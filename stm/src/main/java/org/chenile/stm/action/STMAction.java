@@ -1,5 +1,6 @@
 package org.chenile.stm.action;
 
+import org.chenile.stm.State;
 import org.chenile.stm.StateEntity;
 
 
@@ -16,5 +17,6 @@ import org.chenile.stm.StateEntity;
  * 
  */
 public interface STMAction<StateEntityType extends StateEntity> {
-	public void execute(StateEntityType stateEntity) throws Exception;
+	//public void execute(StateEntityType stateEntity) throws Exception;
+	void execute(State startState, State endState, StateEntityType stateEntity) throws Exception;
 }
