@@ -119,7 +119,7 @@ public class RestCukesSteps {
 
     @Then("the http status code is {int}")
     public void the_http_status_code_is(Integer statusCode) throws Exception {
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         actions.andExpect(status().is(statusCode));
     }
 
@@ -132,33 +132,39 @@ public class RestCukesSteps {
      */
     @Then("success is true")
     public void success_is_true() throws Exception {
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         actions.andExpect(jsonPath("$.success").value(true));
     }
 
     @Then("success is false")
     public void success_is_false() throws Exception {
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         actions.andExpect(jsonPath("$.success").value(false));
     }
 
     // Check for keys with their values
 
+    @Then("the REST expression {string} size is {int}")
+    public void the_REST_expression_size_is(String string,Integer int1) throws Exception {
+        ResultActions actions = context.get("actions");
+        actions.andExpect(jsonPath("$." + string +".size()").value(int1));
+    }
+
     @Then("the REST response is null")
     public void the_REST_response_is_null() throws Exception {
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         actions.andExpect(jsonPath("$.payload").doesNotExist());
     }
 
     @Then("the REST response contains key {string}")
     public void the_REST_response_contains_key(String string) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.payload." + string).exists());
     }
 
     @Then("the REST response key {string} is {string}")
     public void the_REST_response_key_is(String key, String value) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.payload." + key).
                 value(substituteVariables(value)));
     }
@@ -166,7 +172,7 @@ public class RestCukesSteps {
 
     @And("the REST response key {string} contains string {string}")
     public void theRESTResponseKeyContainsString(String key, String value) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.payload." + key).value(containsString(
                 substituteVariables(value)
         )));
@@ -174,7 +180,7 @@ public class RestCukesSteps {
 
     @And("the REST response key {string} collection has an item with key {string} and value {string}")
     public void theRESTResponseKeyCollectionContainsKeyWithValue(String keyCollection, String key, String value) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.payload." + keyCollection + "[*]." + key)
                 .value(substituteVariables(value)));
     }
@@ -195,7 +201,7 @@ public class RestCukesSteps {
                 value2 = map.get("value");
             }
         }
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         value1 = substituteVariables(value1);
         value2 = substituteVariables(value2);
         // String expression = "$.payload." + keyCollection + "[?(@." + key1 + "=='" + value1 + "')]." + key2;
@@ -206,7 +212,7 @@ public class RestCukesSteps {
 
     @Then("the REST response does not contain key {string}")
     public void the_REST_response_does_not_contain_key(String key) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.payload." + key).doesNotExist());
     }
 
@@ -215,25 +221,25 @@ public class RestCukesSteps {
      */
     @Then("the error array size is {int}")
     public void the_error_array_size_is(Integer size) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.errors.length()").value(size));
     }
 
     @Then("the top level code is {int}")
     public void the_top_level_code_is(Integer code) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.code").value(code));
     }
 
     @Then("the top level subErrorCode is {int}")
     public void the_top_level_subErrorCode_is(Integer code) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.subErrorCode").value(code));
     }
 
     @Then("the top level description is {string}")
     public void the_top_level_description_is(String description) throws Exception {
-        ResultActions response = (ResultActions) context.get("actions");
+        ResultActions response = context.get("actions");
         response.andExpect(jsonPath("$.description").
                 value(substituteVariables(description)));
     }
@@ -274,7 +280,7 @@ public class RestCukesSteps {
                 return;
         }
         fail("Unable to find " + errorNum + " in warnings");
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         assertWarnings(actions, errorNum, null);
     }
 
@@ -306,13 +312,13 @@ public class RestCukesSteps {
     @Then("a REST exception is thrown with status {int} and message code {int}")
     public void a_REST_exception_is_thrown_with_status_and_message_code
     (Integer errCode, Integer subErrCode) throws Exception {
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         assertErrors(actions, errCode, subErrCode, null);
     }
 
     @Then("a REST exception is thrown with message code {int}")
     public void a_REST_exception_is_thrown_with_message_code(Integer errorCode) throws Exception {
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         assertErrors(actions, 400, errorCode, null);
     }
 
@@ -320,7 +326,7 @@ public class RestCukesSteps {
     public void a_REST_exception_is_thrown_with_param_number_value(Integer pos, String message)
             throws Exception {
         message = substituteVariables(message);
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         actions.andExpect(jsonPath("$.errors[0].params[" + (pos - 1) + "]").value(message));
     }
 
@@ -328,7 +334,7 @@ public class RestCukesSteps {
     public void a_REST_exception_is_thrown_with_message(String exceptionMessage)
             throws Exception {
         exceptionMessage = substituteVariables(exceptionMessage);
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         actions.andExpect(jsonPath("$.description").value(exceptionMessage));
     }
 
@@ -340,7 +346,7 @@ public class RestCukesSteps {
     }
 
     private String extractStringFromResponse() throws Exception {
-        ResultActions actions = (ResultActions) context.get("actions");
+        ResultActions actions = context.get("actions");
         MvcResult result = actions.andReturn();
         return result.getResponse().getContentAsString();
     }

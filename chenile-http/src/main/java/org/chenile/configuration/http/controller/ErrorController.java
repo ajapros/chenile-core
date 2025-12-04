@@ -1,6 +1,7 @@
 package org.chenile.configuration.http.controller;
 
 import org.chenile.base.exception.ErrorNumException;
+import org.chenile.base.exception.ServerException;
 import org.chenile.base.response.GenericResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,8 @@ public class ErrorController extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     protected ResponseEntity<Object> handleConflict(
             RuntimeException ex, WebRequest request) {
-        ErrorNumException ene = new ErrorNumException(1999,ex.getMessage(),ex);
+        logger.error("Error in processing the request.",ex);
+        ErrorNumException ene = new ServerException(1999,ex.getMessage(),ex);
         GenericResponse<Object> body = new GenericResponse<>(ene);
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }

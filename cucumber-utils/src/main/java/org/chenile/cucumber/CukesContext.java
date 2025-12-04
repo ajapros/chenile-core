@@ -13,7 +13,7 @@ public enum CukesContext {
 
 	CONTEXT;
 
-	public ThreadLocal<Map<String, Object>> c = new ThreadLocal<>();
+	public final ThreadLocal<Map<String, Object>> c = new ThreadLocal<>();
 
 	/**
 	 * Pushes a hash map into the thread local so that we can now use the hash map to
