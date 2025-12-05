@@ -38,11 +38,7 @@ public class BaseChenileInterceptor implements Command<ChenileExchange>{
 		}catch(Throwable e){
 			exchange.setException(e);
 		} finally {
-			try {
-				doPostProcessing(exchange);
-			}catch(Exception e){
-
-			}
+			doPostProcessing(exchange);
 		}		
 	}
 	
