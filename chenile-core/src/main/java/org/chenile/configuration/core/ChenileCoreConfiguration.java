@@ -53,7 +53,9 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 @Configuration
 @PropertySource("classpath:${chenile.properties:chenile.properties}")
 public class ChenileCoreConfiguration {
-	
+
+	@Value("${chenile.base.url}")
+	private String baseUrl;
 	@Value("${chenile.service.json.package}")
 	private String chenileServiceJsonResources;
 	
@@ -102,6 +104,7 @@ public class ChenileCoreConfiguration {
     @Bean
     public ChenileConfiguration chenileServiceConfiguration(){
         ChenileConfiguration configuration = new ChenileConfiguration(moduleName,applicationContext);
+		configuration.setBaseUrl(baseUrl);
         configuration.addPreProcessors(preProcessors);
         configuration.addPostProcessors(postProcessors);
         configuration.setChenileExceptionHandlerName(exceptionHandlerName);

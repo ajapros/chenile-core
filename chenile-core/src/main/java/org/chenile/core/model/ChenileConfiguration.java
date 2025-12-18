@@ -24,6 +24,16 @@ import org.springframework.context.ApplicationContext;
 public class ChenileConfiguration {
 
 	ApplicationContext applicationContext;
+
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+
+	private String baseUrl;
 	private String moduleName;
 	private List<Command<ChenileExchange>> preProcessorCommands;
 	private List<Command<ChenileExchange>> postProcessorCommands;

@@ -18,7 +18,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * with policies that are enforced by specific last mile interceptors. Please see the details in
  * <a href="https://chenile.org/chenile-service-design.html">Chenile Service Definition.</a>
  */
-public class ChenileServiceDefinition  { 
+public class ChenileServiceDefinition  {
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+
+	private String baseUrl;
 	@JsonIgnore
 	private Object serviceReference;
 	private String name;
