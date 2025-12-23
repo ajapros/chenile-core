@@ -6,6 +6,8 @@ import java.util.Map;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.owiz.Command;
 import org.chenile.owiz.impl.ChainContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A generic interceptor for other Chenile Interceptors to override.
@@ -18,6 +20,9 @@ import org.chenile.owiz.impl.ChainContext;
  *
  */
 public class BaseChenileInterceptor implements Command<ChenileExchange>{
+
+	private final static Logger LOGGER = LoggerFactory.getLogger(BaseChenileInterceptor.class);
+
 
 	/**
 	 * If this method is over-ridden, make sure that you call doContinue unless you want to end the 
@@ -36,6 +41,7 @@ public class BaseChenileInterceptor implements Command<ChenileExchange>{
 		try {
 			doContinue(exchange);
 		}catch(Throwable e){
+			LOGGER.error("Error " ,e);
 			exchange.setException(e);
 		} finally {
 			doPostProcessing(exchange);

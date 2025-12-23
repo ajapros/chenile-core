@@ -1,9 +1,9 @@
 package org.chenile.core.transform;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +57,7 @@ public class SubclassRegistry {
         if (subNode == null) {
             return null;
         }
-        String type = subNode.asText();
+        String type = subNode.asString();
         if (type == null || type.isEmpty()) return null;
         return (map.get(type) != null)? map.get(type) : null;
     }

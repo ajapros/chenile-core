@@ -22,9 +22,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
-import static org.chenile.core.errorcodes.ErrorCodes.*;
+import tools.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.chenile.core.errorcodes.ErrorCodes.*;
 
 /**
  * A super class to instantiate a service. This can be used to instantiate it from a file

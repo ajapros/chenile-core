@@ -1,12 +1,12 @@
 package org.chenile.core.transform;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.chenile.base.exception.BadRequestException;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.errorcodes.ErrorCodes;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.owiz.Command;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.jackson.core.type.TypeReference;
 
 /**
  * SubclassBodyTypeSelector uses the Subclass registry to determine the appropriate subclass based on the type to distinguish

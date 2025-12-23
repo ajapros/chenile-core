@@ -11,8 +11,7 @@ import org.chenile.core.model.ModuleAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Extend this to initialize anything like event definitions etc. (not only services)

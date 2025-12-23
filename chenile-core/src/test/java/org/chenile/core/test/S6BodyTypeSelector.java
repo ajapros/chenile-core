@@ -3,8 +3,7 @@ package org.chenile.core.test;
 import org.chenile.base.exception.BadRequestException;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.owiz.Command;
-
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
 /**
  * Sets the body type for function s6 in {@link MockService}

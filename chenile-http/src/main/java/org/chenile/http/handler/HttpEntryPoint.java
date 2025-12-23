@@ -93,7 +93,7 @@ public class HttpEntryPoint implements HttpRequestHandler {
 			HttpServletResponse httpServletResponse) throws Exception{
 		int status = exchange.getHttpResponseStatusCode();
 		httpServletResponse.setStatus(status);
-		httpServletResponse.setContentType(operationDefinition.getProduces().toString());
+		httpServletResponse.setContentType(operationDefinition.getProduces().getType());
 		switch(operationDefinition.getProduces()) {
 			case JSON :
 			case HTML:

@@ -22,8 +22,8 @@ import org.chenile.owiz.impl.ChainContext;
 import org.chenile.owiz.impl.ChainContextContainer;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * A bidirectional exchange that navigates between different Chenile Interceptors.

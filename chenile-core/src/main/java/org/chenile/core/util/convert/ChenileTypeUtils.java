@@ -1,10 +1,10 @@
 package org.chenile.core.util.convert;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

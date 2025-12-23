@@ -1,6 +1,5 @@
 package org.chenile.core.transform;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.chenile.base.exception.ServerException;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.errorcodes.ErrorCodes;
@@ -8,6 +7,7 @@ import org.chenile.core.interceptors.BaseChenileInterceptor;
 import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.owiz.Command;
+import tools.jackson.core.type.TypeReference;
 
 import java.lang.reflect.Type;
 

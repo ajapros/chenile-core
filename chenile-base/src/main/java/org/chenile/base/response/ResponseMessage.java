@@ -3,9 +3,9 @@ package org.chenile.base.response;
 import java.util.Arrays;
 
 import org.springframework.http.HttpStatus;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * A detailed response message that contains a bunch of information.
