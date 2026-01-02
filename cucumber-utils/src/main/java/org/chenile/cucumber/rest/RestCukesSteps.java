@@ -171,6 +171,13 @@ public class RestCukesSteps {
                 value(substituteVariables(value)));
     }
 
+    @Then("the value of {string} is {string}")
+    public void the_value_of_is(String key, String value) throws Exception{
+        ResultActions response = context.get("actions");
+        response.andExpect(jsonPath(key).
+                value(substituteVariables(value)));
+    }
+
 
     @And("the REST response key {string} contains string {string}")
     public void theRESTResponseKeyContainsString(String key, String value) throws Exception {
