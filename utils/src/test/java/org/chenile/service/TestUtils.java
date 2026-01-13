@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 //@RunWith(SpringRunner.class)
 @SpringBootTest(classes = SpringConfig.class)
@@ -100,23 +102,26 @@ public  class TestUtils {
 	}
 
 
-	//@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testMissingSchemaForHeaderlessCsv() throws Exception {
-		String csv = "1,Alan,Turing,AI,100000,2020-01-01";
-		InputStream inputStream = new ByteArrayInputStream(csv.getBytes());
 
-		Properties props = new Properties();
-		props.setProperty("csv.hasHeader", "false");
-		List<EmployeeWithoutHeaders> context = new ArrayList<>();
+		assertThrows(IllegalArgumentException.class, () -> {
+			String csv = "1,Alan,Turing,AI,100000,2020-01-01";
+			InputStream inputStream = new ByteArrayInputStream(csv.getBytes());
 
-		Consumer<Object> logHighEarners = obj -> {
-			if (obj instanceof EmployeeWithoutHeaders emp && emp.getSalary() > 80000) {
-				System.out.println("High earner: " + emp.getFirstName() + " - $" + emp.getSalary());
-				context.add(emp);
-			}
-		};
+			Properties props = new Properties();
+			props.setProperty("csv.hasHeader", "false");
+			List<EmployeeWithoutHeaders> context = new ArrayList<>();
 
-		looper.loop(inputStream,"csv",props, EmployeeWithoutHeaders.class,logHighEarners );
+			Consumer<Object> logHighEarners = obj -> {
+				if (obj instanceof EmployeeWithoutHeaders emp && emp.getSalary() > 80000) {
+					System.out.println("High earner: " + emp.getFirstName() + " - $" + emp.getSalary());
+					context.add(emp);
+				}
+			};
+			looper.loop(inputStream,"csv",props, EmployeeWithoutHeaders.class,logHighEarners );
+		});
+
 
 	}
 
