@@ -158,6 +158,12 @@ public class RestCukesSteps {
         actions.andExpect(jsonPath("$.payload").doesNotExist());
     }
 
+    @Then("the REST response is empty")
+    public void the_REST_response_is_empty() throws Exception {
+        ResultActions actions = context.get("actions");
+        actions.andExpect(jsonPath("$.payload").isEmpty());
+    }
+
     @Then("the REST response contains key {string}")
     public void the_REST_response_contains_key(String string) throws Exception {
         ResultActions response = context.get("actions");
