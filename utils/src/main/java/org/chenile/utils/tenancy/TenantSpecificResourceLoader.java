@@ -1,6 +1,7 @@
 package org.chenile.utils.tenancy;
 
 import org.chenile.base.exception.ServerException;
+import org.chenile.core.context.ContextContainer;
 import org.chenile.utils.str.StrSubstitutor;
 
 import java.io.FileInputStream;
@@ -25,6 +26,13 @@ import java.util.Map;
  */
 public class TenantSpecificResourceLoader {
 
+	public static URL getResource(String resourceTemplate){
+		return getResource(resourceTemplate, ContextContainer.getInstance().getTenant());
+	}
+
+	public static InputStream getResourceAsStream(String resourceTemplate){
+		return getResourceAsStream(resourceTemplate, ContextContainer.getInstance().getTenant());
+	}
 	/**
 	 * Looks for a tenant specific resource. If tenant specific resource is not present, looks for a generic
 	 * resource by skipping the tenant specific part. <br/>
