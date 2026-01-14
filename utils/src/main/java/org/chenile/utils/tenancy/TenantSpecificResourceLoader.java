@@ -1,11 +1,13 @@
 package org.chenile.utils.tenancy;
 
+import org.chenile.base.exception.ServerException;
+import org.chenile.utils.str.StrSubstitutor;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.chenile.base.exception.ServerException;
-import org.chenile.utils.str.StrSubstitutor;
 
 
 /**
@@ -22,7 +24,38 @@ import org.chenile.utils.str.StrSubstitutor;
  *
  */
 public class TenantSpecificResourceLoader {
-	
+
+	/**
+	 * Looks for a tenant specific resource. If tenant specific resource is not present, looks for a generic
+	 * resource by skipping the tenant specific part. <br/>
+	 * For example, consider a resource template "org/chenile/%{tenantId}/a.json". Let us say we have a tenant "abc".
+	 * This returns org/chenile/abc/a.json if it is present. Else it will return org/chenile/a.json if that is
+	 * present. Else it will return null.
+	 *
+	 * @param resourceTemplate - resource name with tenantId in it of the form stated above.
+	 * @return the input stream of the discovered resource. null if absent.
+	 */
+	public static InputStream getResourceAsStream(String resourceTemplate, String tenantId) {
+		URL url = getResource(resourceTemplate,tenantId);
+		if (url == null) return null;
+		try {
+			return new FileInputStream(url.getFile());
+		}catch(Exception e){ return null;}
+	}
+	/**
+	 * Returns a tenant specific resource. If tenant specific resource is not present, return a generic
+	 * resource by skipping the tenant specific part. <br/>
+	 * For example, consider a resource template "org/chenile/%{tenantId}/a.json". Let us say we have a tenant "abc".
+	 * This returns org/chenile/abc/a.json if it is present. Else it will return org/chanile/a.json if that is
+	 * present. Else it will return null.
+	 *
+	 * @param resourceTemplate - resource name with tenantId in it of the form stated above.
+	 * @return the URL of the discovered resource or null if not available.
+	 */
+	public static URL getResource(String resourceTemplate, String tenantId){
+        String genericPath = resourceTemplate.replace("/%{tenantId}/","/");
+		return new TenantSpecificResourceLoader(resourceTemplate,genericPath).obtainURL("",tenantId);
+	}
 	public String delimiter = "%";
 	protected String tenantSpecificPath;
 	protected String genericPath;
