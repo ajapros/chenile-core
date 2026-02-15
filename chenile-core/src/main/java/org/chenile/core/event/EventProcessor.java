@@ -1,8 +1,6 @@
 package org.chenile.core.event;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.chenile.base.exception.ServerException;
 import org.chenile.core.context.ChenileExchange;
@@ -41,18 +39,19 @@ public class EventProcessor {
 		handleEvent(eventId, eventPayload, new HashMap<>());
 	}
 
-	public void handleEvent(String eventId, Object eventPayload, Map<String,String> headers) {
+	public List<ChenileExchange> handleEvent(String eventId, Object eventPayload, Map<String,String> headers) {
+		List<ChenileExchange> resExcahngeList = new ArrayList<>();
 		ChenileEventDefinition ced = chenileServiceConfiguration.getEvents().get(eventId);
 		if (ced == null) {
 			//throw new ServerException(ErrorCodes.UNKNOWN_EVENT.getSubError(), new Object[]{eventId});
 			logger.warn("No event listener found for event {}",eventId);
-			return;
+			return resExcahngeList;
 		}
 
 		Set<SubscriberVO> subscribers = ced.getEventSubscribers();
 		if(subscribers == null || subscribers.isEmpty()) {
 			System.err.println("Subscribers is null");
-			return;
+			return resExcahngeList;
 		}
 		for(SubscriberVO subscriber: subscribers) {
 			ChenileExchange chenileExchange = new ChenileExchange();
@@ -65,7 +64,9 @@ public class EventProcessor {
 			setHeaders(chenileExchange);
 			chenileExchange.setBody(eventPayload);
 			chenileEntryPoint.execute(chenileExchange);
+			resExcahngeList.add(chenileExchange);
 		}
+		return resExcahngeList;
 	}
 
 
