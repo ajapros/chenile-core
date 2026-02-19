@@ -1,4 +1,4 @@
-package org.chenile.multids;
+package org.chenile.multids.test.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,13 +7,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "widgets")
-public class Widget {
+@Table(name = "tenant_items")
+public class TenantItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
+    private String tenant;
 
     public Long getId() {
         return id;
@@ -29,5 +30,13 @@ public class Widget {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }
