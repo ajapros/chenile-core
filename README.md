@@ -26,4 +26,23 @@ Finally, Chenile ships with its own code generators to ease the development of m
 Please see [Code Generation Repository](https://github.com/rajakolluru/chenile-gen) for more information 
 about the code generator.
 
+# Multi datasource utility
+
+The `multi-datasource-utils` module provides a Spring Boot configuration that routes JPA traffic
+to different data sources based on `ContextContainer.getTenant()`. Configure it like this:
+
+```yaml
+chenile:
+  multids:
+    defaultTenantId: tenant1
+    datasources:
+      tenant1:
+        jdbcUrl: jdbc:h2:mem:tenant1;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        username: sa
+        password: ''
+      tenant2:
+        jdbcUrl: jdbc:h2:mem:tenant2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        username: sa
+        password: ''
+```
 

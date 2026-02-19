@@ -14,6 +14,7 @@
         <module>cucumber-utils</module>
         <module>utils</module>
         <module>jpa-utils</module>
+        <module>multi-datasource-utils</module>
     </modules>
 
     <packaging>pom</packaging>
