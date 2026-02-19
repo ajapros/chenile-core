@@ -109,7 +109,7 @@ public class HttpEntryPoint implements HttpRequestHandler {
 
 	private void processFailure(ChenileExchange exchange, HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse) throws ServletException,IOException {
-		httpServletResponse.setContentType(operationDefinition.getProduces().toString());
+		httpServletResponse.setContentType(operationDefinition.getProduces().getType());
 		httpServletResponse.setStatus(exchange.getHttpResponseStatusCode());
 		httpServletResponse.getWriter().write(om.writeValueAsString(exchange.getResponse()));
 		httpServletResponse.flushBuffer();

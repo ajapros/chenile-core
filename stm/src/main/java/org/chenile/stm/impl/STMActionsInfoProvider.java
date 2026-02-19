@@ -110,4 +110,8 @@ public class STMActionsInfoProvider{
 	public Map<String,Object> toMap(){
 		return stmFlowStore.toMap();
 	}
+
+	public STMFlowStoreImpl getStmFlowStore() {
+		return stmFlowStore;
+	}
 }
