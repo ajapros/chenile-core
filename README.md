@@ -1,6 +1,20 @@
 # chenile-core
 This contains the source code of all the core modules and test modules for Chenile
 
+## Repository docs
+
+- [Docs index](docs/README.md)
+- [Codebase overview](docs/codebase-overview.md)
+- [Interceptor chain walkthrough](docs/interceptor-chain.md)
+- [Exchange lifecycle](docs/exchange-lifecycle.md)
+- [Service-definition JSON](docs/service-definition-json.md)
+- [Chenile annotations](docs/chenile-annotations.md)
+- [Trajectories](docs/trajectories.md)
+- [Events](docs/events.md)
+- [Transformation](docs/transformation.md)
+- [STM module](docs/stm.md)
+- [ServiceInvoker and domain binding](docs/service-invoker.md)
+
 # About chenile
 
 Chenile is an open source framework for creating Micro services using Java and Spring Boot. 
@@ -45,4 +59,3 @@ chenile:
         username: sa
         password: ''
 ```
-
