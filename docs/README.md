@@ -16,6 +16,7 @@ If you are new to the repository, read in this order:
 8. `trajectories.md`
 9. `events.md`
 10. `stm.md`
+11. `intro-video-outline.md`
 
 ## By topic
 
@@ -43,6 +44,21 @@ If you are new to the repository, read in this order:
 ### State machine subsystem
 
 - `stm.md`: STM model, XML flow definitions, DSL features, and execution behavior
+
+### Communication and onboarding
+
+- `intro-video-outline.md`: structure and rough transcript for an introductory Chenile video
+- `intro-video-script.md`: production-ready slide and narration script
+- `intro-video-speaker-notes.md`: natural delivery notes for recording
+- `intro-video-slide-deck.md`: slide-by-slide deck content for the intro video
+- `intro-video-google-slides.md`: Google Slides-ready slide plan
+- `intro-video-mermaid-diagrams.md`: Mermaid diagrams for the intro deck
+- `intro-video-google-slides-copy-paste.md`: copy-paste slide content for fast deck creation
+- `intro-video-mermaid-diagrams-presentation.md`: simplified Mermaid variants for exported slide visuals
+- `intro-video-visual-style-guide.md`: visual style system for the intro presentation
+- `intro-video-final-slide-text.md`: final slide text only
+- `intro-video-mermaid-diagrams-themed.md`: Mermaid diagrams with presentation theme blocks
+- `intro-video-recording-runbook.md`: practical runbook for recording the intro video
 
 ## Mental model for the repository
 

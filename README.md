@@ -14,6 +14,7 @@ This contains the source code of all the core modules and test modules for Cheni
 - [Transformation](docs/transformation.md)
 - [STM module](docs/stm.md)
 - [ServiceInvoker and domain binding](docs/service-invoker.md)
+- [Intro video outline](docs/intro-video-outline.md)
 
 # About chenile
 
