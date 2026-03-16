@@ -2,13 +2,14 @@ package org.chenile.core.i18n;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.lang.NonNullApi;
 
 /**
  * This can be used in lieu of the default Message Source. It provides an ability to modularize 
@@ -28,17 +29,24 @@ public class MultipleMessageSource extends ReloadableResourceBundleMessageSource
 
 	@Override
 	protected List<String> calculateFilenamesForLocale(String basename, Locale locale) {
-		List<String> filenames = super.calculateFilenamesForLocale(basename, locale);
-		List<String> add = new ArrayList<>();
+		List<String> filenames = new ArrayList<>(super.calculateFilenamesForLocale(basename, locale));
+		Set<String> add = new LinkedHashSet<>();
 		for (String filename : filenames) {
 			try {
 				Resource[] resources = resolver.getResources(filename + PROPERTIES_SUFFIX);
 				for (Resource resource : resources) {
-					String sourcePath = resource.getURI().toString().replace(PROPERTIES_SUFFIX, "");
+					String sourcePath = resource.getURL().toExternalForm().replace(PROPERTIES_SUFFIX, "");
 					add.add(sourcePath);
 				}
 			} catch (IOException ignored) {}
 		}
+		try {
+			Resource[] resources = resolver.getResources(basename + PROPERTIES_SUFFIX);
+			for (Resource resource : resources) {
+				String sourcePath = resource.getURL().toExternalForm().replace(PROPERTIES_SUFFIX, "");
+				add.add(sourcePath);
+			}
+		} catch (IOException ignored) {}
 		filenames.addAll(add);
 		return filenames;
 	}
