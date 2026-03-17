@@ -9,6 +9,7 @@ This contains the source code of all the core modules and test modules for Cheni
 - [Exchange lifecycle](docs/exchange-lifecycle.md)
 - [Service-definition JSON](docs/service-definition-json.md)
 - [Chenile annotations](docs/chenile-annotations.md)
+- [Chenile MCP](docs/chenile-mcp.md)
 - [Trajectories](docs/trajectories.md)
 - [Events](docs/events.md)
 - [Transformation](docs/transformation.md)

@@ -30,6 +30,7 @@ If you are new to the repository, read in this order:
 
 - `service-definition-json.md`: JSON-based service and operation metadata
 - `chenile-annotations.md`: annotation-based registration and its equivalence to JSON
+- `chenile-mcp.md`: how Chenile operations are exposed as Spring AI MCP tools, including polymorphic registrations
 
 ### Request shaping and dispatch
 

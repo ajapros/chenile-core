@@ -8,6 +8,8 @@ spring:
   sql:
     init:
       mode: never
+  banner:
+    location: classpath:banner.txt
 
 chenile:
   multids:

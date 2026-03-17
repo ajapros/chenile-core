@@ -1,3 +1,7 @@
 chenile:
   base:
     url:
+
+spring:
+  banner:
+    location: classpath:banner.txt

@@ -1,11 +1,5 @@
 package org.chenile.http.init;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.chenile.base.exception.ServerException;
 import org.chenile.core.annotation.ChenileAnnotation;
 import org.chenile.core.errorcodes.ErrorCodes;
@@ -16,32 +10,28 @@ import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.service.HealthChecker;
 import org.chenile.core.util.MethodUtils;
 import org.chenile.http.annotation.ChenileController;
-import org.chenile.http.init.od.DeleteMappingProducer;
-import org.chenile.http.init.od.GetMappingProducer;
-import org.chenile.http.init.od.PatchMappingProducer;
-import org.chenile.http.init.od.PostMappingProducer;
-import org.chenile.http.init.od.PutMappingProducer;
+import org.chenile.http.init.od.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.annotation.Order;
 import org.springframework.util.ClassUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Uses a Spring controller with additional annotations to initiate a Chenile Service.
  * The controller must extend from ControllerSupport.
  */
-public class AnnotationChenileServiceInitializer extends AbstractServiceInitializer{
+public class AnnotationChenileServiceInitializer extends AbstractServiceInitializer implements SmartInitializingSingleton {
 	private final Logger logger = LoggerFactory.getLogger(AnnotationChenileServiceInitializer.class);
 	@Autowired ApplicationContext applicationContext;
 	@Autowired ChenileConfiguration chenileConfiguration;
@@ -52,9 +42,11 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 	private PostMappingProducer postMappingProducer;
 	private PutMappingProducer putMappingProducer;
 
-	@EventListener(ApplicationReadyEvent.class)
-	@Order(10)
-	public void init() throws Exception {
+	//@EventListener(ApplicationReadyEvent.class)
+	//@Order(10)
+	// public void init() throws Exception {
+	@Override
+	public void afterSingletonsInstantiated() {
 		deleteMappingProducer = new DeleteMappingProducer(applicationContext);
 		getMappingProducer = new GetMappingProducer(applicationContext);
 		patchMappingProducer = new PatchMappingProducer(applicationContext);
@@ -177,4 +169,5 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 	        klass = klass.getSuperclass();
 	    }
 	}
+
 }

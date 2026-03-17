@@ -37,7 +37,7 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
     @Autowired
     private ApplicationContext applicationContext;
 
-    public abstract void init() throws Exception;
+    public void init() throws Exception{}
     
     protected void registerService(String jsonPath) throws IOException{
     	registerServiceDefinition(jsonPath);
