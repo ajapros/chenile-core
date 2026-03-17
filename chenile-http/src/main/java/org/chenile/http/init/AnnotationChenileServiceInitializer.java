@@ -16,8 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +34,7 @@ import java.util.Map.Entry;
  * Uses a Spring controller with additional annotations to initiate a Chenile Service.
  * The controller must extend from ControllerSupport.
  */
-public class AnnotationChenileServiceInitializer extends AbstractServiceInitializer implements SmartInitializingSingleton {
+public class AnnotationChenileServiceInitializer extends AbstractServiceInitializer {//implements SmartInitializingSingleton {
 	private final Logger logger = LoggerFactory.getLogger(AnnotationChenileServiceInitializer.class);
 	@Autowired ApplicationContext applicationContext;
 	@Autowired ChenileConfiguration chenileConfiguration;
@@ -42,11 +45,11 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 	private PostMappingProducer postMappingProducer;
 	private PutMappingProducer putMappingProducer;
 
-	//@EventListener(ApplicationReadyEvent.class)
-	//@Order(10)
-	// public void init() throws Exception {
-	@Override
-	public void afterSingletonsInstantiated() {
+	@EventListener(ApplicationReadyEvent.class)
+	@Order(10)
+	public void init() throws Exception {
+	//@Override
+	// public void afterSingletonsInstantiated() {
 		deleteMappingProducer = new DeleteMappingProducer(applicationContext);
 		getMappingProducer = new GetMappingProducer(applicationContext);
 		patchMappingProducer = new PatchMappingProducer(applicationContext);
