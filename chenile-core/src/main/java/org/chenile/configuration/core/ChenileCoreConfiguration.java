@@ -175,21 +175,10 @@ public class ChenileCoreConfiguration {
 		return executor;		
     }
 
-	@Bean public ExecuteChenileInitializers executeChenileInitializers(){
-		return new ExecuteChenileInitializers();
-	}
-
-	/**
-	 * We should at least have one ChenileInitializer to execute!
-	 * @return a dummy initializer that does nothing
-	 */
-	@Bean public DummyInitializer dummyInitializer() { return new DummyInitializer();}
-
-
 	@Bean public Chain<ChenileExchange> chenileHighway(){
     	return new Chain<ChenileExchange>();
     }
-    
+
     /* 
      * The transformation framework
      */
