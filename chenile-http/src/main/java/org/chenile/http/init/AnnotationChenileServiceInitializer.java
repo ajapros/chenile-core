@@ -4,7 +4,6 @@ import org.chenile.base.exception.ServerException;
 import org.chenile.core.annotation.ChenileAnnotation;
 import org.chenile.core.errorcodes.ErrorCodes;
 import org.chenile.core.init.AbstractServiceInitializer;
-import org.chenile.core.init.ChenileInitializer;
 import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.OperationDefinition;
@@ -15,7 +14,6 @@ import org.chenile.http.init.od.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ClassUtils;
@@ -31,11 +29,10 @@ import java.util.Map.Entry;
  * Uses a Spring controller with additional annotations to initiate a Chenile Service.
  * The controller must extend from ControllerSupport.
  */
-public class AnnotationChenileServiceInitializer extends AbstractServiceInitializer implements ChenileInitializer {
+public class AnnotationChenileServiceInitializer extends AbstractServiceInitializer {
 	private final Logger logger = LoggerFactory.getLogger(AnnotationChenileServiceInitializer.class);
-	@Autowired ApplicationContext applicationContext;
-	@Autowired ChenileConfiguration chenileConfiguration;
-	
+
+
 	private DeleteMappingProducer deleteMappingProducer; 
 	private GetMappingProducer getMappingProducer ;
 	private PatchMappingProducer patchMappingProducer;
@@ -43,10 +40,11 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 	private PutMappingProducer putMappingProducer;
 
 
-	//@EventListener(ApplicationReadyEvent.class)
-	//@Order(10)
-	//public void init() throws Exception {
-	public void performInit() {
+	public AnnotationChenileServiceInitializer(ApplicationContext ac, ChenileConfiguration chenileConfiguration){
+        super(chenileConfiguration,ac);
+	}
+
+	public void init() {
 		System.err.println("Annotation Chenile Service Initializer: " );
 		deleteMappingProducer = new DeleteMappingProducer(applicationContext);
 		getMappingProducer = new GetMappingProducer(applicationContext);
@@ -61,8 +59,8 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 			Object bean = e.getValue();
 			ChenileController chenileController = bean.getClass().getAnnotation(ChenileController.class);
 			ChenileServiceDefinition csd = new ChenileServiceDefinition();
-			csd.setModuleName(chenileConfiguration.getModuleName());
-	        csd.setVersion(chenileConfiguration.getVersion());
+			csd.setModuleName(serviceConfiguration.getModuleName());
+	        csd.setVersion(serviceConfiguration.getVersion());
 			String id = chenileController.value();
 			csd.setId(id);
 			String name = chenileController.serviceName();
