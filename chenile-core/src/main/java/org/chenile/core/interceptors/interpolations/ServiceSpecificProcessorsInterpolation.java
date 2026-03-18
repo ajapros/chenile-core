@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ServiceSpecificProcessorsInterpolation extends InterpolationCommand<ChenileExchange> {
 
-	@Autowired ChenileConfiguration chenileConfiguration;
 	@Override
 	protected List<Command<ChenileExchange>> fetchCommands(ChenileExchange exchange) {
 		return exchange.getServiceDefinition().getInterceptorCommands();

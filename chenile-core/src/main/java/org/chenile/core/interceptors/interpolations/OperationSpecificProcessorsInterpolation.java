@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OperationSpecificProcessorsInterpolation extends InterpolationCommand<ChenileExchange> {
 
-	@Autowired ChenileConfiguration chenileConfiguration;
 	@Override
 	protected List<Command<ChenileExchange>> fetchCommands(ChenileExchange exchange) {
 		return exchange.getOperationDefinition().getInterceptorCommands();

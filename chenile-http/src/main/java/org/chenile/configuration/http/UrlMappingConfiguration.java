@@ -2,11 +2,14 @@ package org.chenile.configuration.http;
 
 
 
+import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.http.handler.ControllerSupport;
 import org.chenile.http.init.AnnotationChenileServiceInitializer;
 import org.chenile.http.init.AnnotationTrajectoryInitializer;
 import org.chenile.http.init.HttpModuleBuilder;
 import org.chenile.http.init.TrajectoryPostprocessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -35,8 +38,9 @@ public class UrlMappingConfiguration {
      */
     @Bean
     @Order(5)
-    public AnnotationChenileServiceInitializer annotationChenileServiceInitializer() {
-    	return new AnnotationChenileServiceInitializer();
+    public AnnotationChenileServiceInitializer annotationChenileServiceInitializer(@Autowired ApplicationContext applicationContext,
+                                                                                   ChenileConfiguration chenileConfiguration) {
+    	return new AnnotationChenileServiceInitializer(applicationContext,chenileConfiguration);
     }
     
     @Bean

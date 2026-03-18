@@ -126,8 +126,8 @@ public class ChenileCoreConfiguration {
 	}
     
     @Bean
-    public ChenileServiceInitializer chenileServiceInitializer()throws IOException {
-    	return new ChenileServiceInitializer(toResources(chenileServiceJsonResources));
+    public ChenileServiceInitializer chenileServiceInitializer(ApplicationContext ac, ChenileConfiguration chenileConfiguration)throws IOException {
+    	return new ChenileServiceInitializer(toResources(chenileServiceJsonResources),ac,chenileConfiguration);
     }
     
     @Bean

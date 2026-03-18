@@ -6,6 +6,7 @@ import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
 import org.chenile.core.util.MethodUtils;
+import org.chenile.http.init.AnnotationChenileServiceInitializer;
 import org.chenile.mcp.model.*;
 import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -32,25 +34,25 @@ import java.util.StringJoiner;
  * exposes them as MCP tools,
  */
 
-public class ChenileMCPInitializer implements ToolCallbackProvider, ChenileInitializer {
+public class ChenileMCPInitializer implements ToolCallbackProvider, InitializingBean {
     Logger logger = LoggerFactory.getLogger(ChenileMCPInitializer.class);
-    @Autowired
-    ChenileConfiguration chenileConfiguration;
-    @Autowired
-    ApplicationContext applicationContext;
-    // @Autowired
+
+    final ChenileConfiguration chenileConfiguration;
+
+    private final Map<String, ChenilePolymorphProvider> polymorphProviderMap;
+
     private final List<ToolCallback> toolCallbacks = new ArrayList<>();
     final boolean chenileMcpEnabled;
 
-    public ChenileMCPInitializer(boolean enabled){
+    public ChenileMCPInitializer(boolean enabled, ChenileConfiguration chenileConfiguration, Map<String,
+            ChenilePolymorphProvider> polymorphProviderMap){
+        this.chenileConfiguration = chenileConfiguration;
         this.chenileMcpEnabled = enabled;
-
+        this.polymorphProviderMap = polymorphProviderMap;
     }
-    //@EventListener(ApplicationReadyEvent.class)
-    // @Order(910)
-    // public void initialize() {
+
     @Override
-    public void performInit() {
+    public void afterPropertiesSet() throws Exception {
         System.err.println("Size of Chenile configuration services = " +
                 chenileConfiguration.getServices().values().size());
         if (!chenileMcpEnabled) {
@@ -73,7 +75,7 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, ChenileIniti
                     continue;
                 }
                 ChenilePolymorphProvider provider =
-                        applicationContext.getBean(polymorph.value(), ChenilePolymorphProvider.class);
+                        polymorphProviderMap.get(polymorph.value());
                 List<ChenilePolymorphVariant> variants = provider.getVariants(serviceDefinition, operationDefinition);
                 if (variants == null || variants.isEmpty()) {
                     logger.warn("No polymorph variants returned for {}.{} from {}",
@@ -280,5 +282,6 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, ChenileIniti
     public ToolCallback[] getToolCallbacks() {
         return toolCallbacks.toArray(ToolCallback[]::new);
     }
+
 
 }

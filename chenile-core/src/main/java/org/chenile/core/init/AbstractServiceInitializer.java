@@ -32,13 +32,18 @@ import static org.chenile.core.errorcodes.ErrorCodes.*;
  * It registers a service in {@link ChenileConfiguration}
  */
 public abstract class AbstractServiceInitializer implements InitializingBean {
-    @Autowired
-    private ChenileConfiguration serviceConfiguration;
-    @Autowired
-    private ApplicationContext applicationContext;
+    protected  ChenileConfiguration serviceConfiguration;
+	protected ApplicationContext applicationContext;
 
-    public void init() throws Exception{}
-    
+	protected AbstractServiceInitializer(
+			ChenileConfiguration serviceConfiguration,
+			ApplicationContext applicationContext) {
+		this.serviceConfiguration = serviceConfiguration;
+		this.applicationContext = applicationContext;
+	}
+
+	protected abstract void init() throws Exception;
+
     protected void registerService(String jsonPath) throws IOException{
     	registerServiceDefinition(jsonPath);
     }
@@ -175,7 +180,7 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
 		}
 		return new InterceptorChain(cmdList);
 	}
-    
+
 	@Override
     public void afterPropertiesSet() throws Exception {
         init();
