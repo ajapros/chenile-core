@@ -1,27 +1,23 @@
 package org.chenile.mcp.init;
 
-import org.springframework.context.annotation.DependsOn;
-import tools.jackson.core.type.TypeReference;
+import org.chenile.core.init.ChenileInitializer;
 import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
 import org.chenile.core.util.MethodUtils;
-import org.chenile.mcp.model.ChenileMCP;
-import org.chenile.mcp.model.ChenilePolymorph;
-import org.chenile.mcp.model.ChenilePolymorphProvider;
-import org.chenile.mcp.model.ChenilePolymorphVariant;
-import org.chenile.mcp.model.ChenileToolCallback;
+import org.chenile.mcp.model.*;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.EventListener;
+import tools.jackson.core.type.TypeReference;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -35,13 +31,14 @@ import java.util.StringJoiner;
  * Detects the {@link ChenileMCP} annotated services and operations in the Chenile configuration,
  * exposes them as MCP tools,
  */
-@DependsOn("annotationChenileServiceInitializer")
-public class ChenileMCPInitializer implements ToolCallbackProvider {
+
+public class ChenileMCPInitializer implements ToolCallbackProvider, ChenileInitializer {
     Logger logger = LoggerFactory.getLogger(ChenileMCPInitializer.class);
     @Autowired
     ChenileConfiguration chenileConfiguration;
     @Autowired
     ApplicationContext applicationContext;
+    // @Autowired
     private final List<ToolCallback> toolCallbacks = new ArrayList<>();
     final boolean chenileMcpEnabled;
 
@@ -49,8 +46,13 @@ public class ChenileMCPInitializer implements ToolCallbackProvider {
         this.chenileMcpEnabled = enabled;
 
     }
-    @EventListener(ApplicationReadyEvent.class)
-    public void initialize() {
+    //@EventListener(ApplicationReadyEvent.class)
+    // @Order(910)
+    // public void initialize() {
+    @Override
+    public void performInit() {
+        System.err.println("Size of Chenile configuration services = " +
+                chenileConfiguration.getServices().values().size());
         if (!chenileMcpEnabled) {
             logger.info("Chenile MCP is disabled. Skipping MCP tool registration.");
             return;
@@ -278,6 +280,5 @@ public class ChenileMCPInitializer implements ToolCallbackProvider {
     public ToolCallback[] getToolCallbacks() {
         return toolCallbacks.toArray(ToolCallback[]::new);
     }
-
 
 }

@@ -13,10 +13,7 @@ import org.chenile.core.context.PopulateContextContainer;
 import org.chenile.core.entrypoint.ChenileEntryPoint;
 import org.chenile.core.event.EventLogger;
 import org.chenile.core.event.EventProcessor;
-import org.chenile.core.init.ChenileEventInitializer;
-import org.chenile.core.init.ChenileEventSubscribersInitializer;
-import org.chenile.core.init.ChenileServiceInitializer;
-import org.chenile.core.init.ChenileTrajectoryInitializer;
+import org.chenile.core.init.*;
 import org.chenile.core.interceptors.*;
 import org.chenile.core.interceptors.interpolations.ExceptionHandlerInterpolation;
 import org.chenile.core.interceptors.interpolations.OperationSpecificProcessorsInterpolation;
@@ -177,8 +174,19 @@ public class ChenileCoreConfiguration {
 		executor.setOrchConfigurator(xmlOrchConfigurator);
 		return executor;		
     }
-    
-    @Bean public Chain<ChenileExchange> chenileHighway(){
+
+	@Bean public ExecuteChenileInitializers executeChenileInitializers(){
+		return new ExecuteChenileInitializers();
+	}
+
+	/**
+	 * We should at least have one ChenileInitializer to execute!
+	 * @return a dummy initializer that does nothing
+	 */
+	@Bean public DummyInitializer dummyInitializer() { return new DummyInitializer();}
+
+
+	@Bean public Chain<ChenileExchange> chenileHighway(){
     	return new Chain<ChenileExchange>();
     }
     

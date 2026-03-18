@@ -9,6 +9,7 @@ import org.chenile.http.init.HttpModuleBuilder;
 import org.chenile.http.init.TrajectoryPostprocessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 
@@ -27,8 +28,13 @@ public class UrlMappingConfiguration {
     @Bean public ControllerSupport controllerSupport() {
     	return new ControllerSupport();
     }
-    
+
+    /**
+     * This should run before all the initializers
+     * @return an initializer that initiates a full fledged {@link org.chenile.core.model.ChenileConfiguration}
+     */
     @Bean
+    @Order(5)
     public AnnotationChenileServiceInitializer annotationChenileServiceInitializer() {
     	return new AnnotationChenileServiceInitializer();
     }
