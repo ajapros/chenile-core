@@ -182,6 +182,7 @@ From `mockService.json`:
     {
       "name": "foo",
       "type": "BODY",
+      "paramType": "org.chenile.core.test.Foo",
       "paramClass": "org.chenile.core.test.Foo"
     }
   ]

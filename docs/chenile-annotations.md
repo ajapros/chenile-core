@@ -205,7 +205,7 @@ This tells Chenile:
 - the controller receives a `String`
 - but the underlying service contract should be treated as `Vehicle`
 
-There is no exact one-field JSON equivalent because JSON already describes the service contract directly through `input` and `paramClass`. `@ChenileParamType` exists mainly to bridge the gap between controller signatures and service signatures.
+There is no exact one-field JSON equivalent because JSON already describes the service contract directly through `input` and `paramType` (with `paramClass` retained only as a raw-class compatibility field). External consumers should read `ParamDefinition.getParamType()`, not `getParamClass()`. `@ChenileParamType` exists mainly to bridge the gap between controller signatures and service signatures.
 
 ### `@ChenileResponseCodes`
 
@@ -331,6 +331,7 @@ After registration, both produce `OperationDefinition` and `ChenileServiceDefini
     {
       "name": "param",
       "type": "BODY",
+      "paramType": "java.lang.Object",
       "paramClass": "java.lang.Object"
     }
   ]

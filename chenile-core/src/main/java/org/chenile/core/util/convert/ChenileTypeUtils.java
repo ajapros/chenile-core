@@ -33,6 +33,14 @@ public final class ChenileTypeUtils {
         return ChenileTypeUtils.toTypeReference(javaType);
     }
 
+    public static Type parseType(String s) throws ClassNotFoundException {
+        return toReflectType(ChenileGenericTypeParser.parse(s));
+    }
+
+    public static String typeToString(Type type) {
+        return type == null ? null : type.getTypeName();
+    }
+
     public static ParameterizedTypeReference<?> toParameterizedTypeReference(JavaType javaType) {
         return ParameterizedTypeReference.forType(toReflectType(javaType));
     }
@@ -44,6 +52,22 @@ public final class ChenileTypeUtils {
                 return toReflectType(javaType);
             }
         };
+    }
+
+    public static Class<?> toRawClass(Type type) {
+        if (type == null) {
+            return null;
+        }
+        if (type instanceof Class<?>) {
+            return (Class<?>) type;
+        }
+        if (type instanceof ParameterizedType parameterizedType) {
+            Type rawType = parameterizedType.getRawType();
+            if (rawType instanceof Class<?>) {
+                return (Class<?>) rawType;
+            }
+        }
+        throw new IllegalArgumentException("Cannot extract raw class from type " + type.getTypeName());
     }
 
     private static Type toReflectType(JavaType javaType) {

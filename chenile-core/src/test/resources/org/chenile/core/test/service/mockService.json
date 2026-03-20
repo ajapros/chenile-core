@@ -18,6 +18,7 @@
       {
         "name": "list",
         "type": "BODY",
+        "paramType": "java.util.List<java.lang.String>",
         "paramClass": "java.util.List",
         "description": "list is picked up from the body"
       }
@@ -54,6 +55,7 @@
       {
         "name": "id",
         "type": "HEADER",
+        "paramType": "java.lang.Integer",
         "paramClass": "java.lang.Integer",
         "description": "System property multi key value."
       }
@@ -72,6 +74,7 @@
       {
         "name": "id",
         "type": "HEADER",
+        "paramType": "int",
         "paramClass": "int",
         "description": "System property multi key value."
       }
@@ -89,6 +92,7 @@
       {
         "name": "flag",
         "type": "HEADER",
+        "paramType": "boolean",
         "paramClass": "boolean",
         "description": "some description"
       }
@@ -106,6 +110,7 @@
       {
         "name": "exceptionNum",
         "type": "HEADER",
+        "paramType": "int",
         "paramClass": "int",
         "description": "test exception"
       }
@@ -129,6 +134,7 @@
       {
         "name": "param",
         "type": "BODY",
+        "paramType": "java.lang.Object",
         "paramClass": "java.lang.Object",
         "description": "flexible body type"
       }
@@ -146,6 +152,7 @@
       {
         "name": "headers",
         "type": "HEADERS",
+        "paramType": "java.util.Map<java.lang.String,java.lang.Object>",
         "paramClass": "java.util.Map",
         "description": "headers"
       }
@@ -164,6 +171,7 @@
       {
         "name": "foo",
         "type": "BODY",
+        "paramType": "org.chenile.core.test.Foo",
         "paramClass": "org.chenile.core.test.Foo",
         "description": "body"
       }

@@ -129,12 +129,12 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
 						od.getBodyTypeSelectorComponentNames().length == 0)) {
     				throw new ServerException(MISSING_INPUT_TYPE.getSubError(), new Object[]{csd.getId(), od.getName(),pd.getName()});
     			}
-    			if (pd.getParamClass() == null) {
-    				pd.setParamClass(od.getInput());
+    			if (pd.getParamType() == null) {
+    				pd.setParamType(od.getInput());
     			}
     		}
-    		if (pd.getParamClass() == null) {
-    			pd.setParamClass(String.class); 
+    		if (pd.getParamType() == null) {
+    			pd.setParamType(String.class); 
     		}  		
     	}
     	// find if method exists in the service. 

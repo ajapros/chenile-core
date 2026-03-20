@@ -22,6 +22,7 @@ import java.lang.annotation.Target;
  * specifies the type of employee who needs to be "saved". The bodyTypeSelector helps in determining
  * the specific type of Employee by examining the context of the request. It has the full context of
  * the request since it is passed a {@link org.chenile.core.context.ChenileExchange}</p>
+ * <p>Multiple body type selectors can be chained to determine the body type.</p>
  */
 @Retention(RUNTIME)
 @Target(METHOD)

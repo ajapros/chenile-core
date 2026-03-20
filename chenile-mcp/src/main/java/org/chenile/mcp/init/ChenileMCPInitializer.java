@@ -1,14 +1,11 @@
 package org.chenile.mcp.init;
 
-import org.chenile.core.init.ChenileInitializer;
 import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
 import org.chenile.core.util.MethodUtils;
-import org.chenile.http.init.AnnotationChenileServiceInitializer;
 import org.chenile.mcp.model.*;
-import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.ToolCallback;
@@ -16,9 +13,6 @@ import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.SmartInitializingSingleton;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import tools.jackson.core.type.TypeReference;
 
 import java.lang.reflect.Method;
@@ -186,8 +180,8 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
             StringBuilder part = new StringBuilder(paramDefinition.getName())
                     .append(" [").append(paramDefinition.getType()).append("]");
             TypeReference<?> effectiveType = parameterTypes.get(paramDefinition.getName());
-            if (effectiveType == null && paramDefinition.getParamClass() != null) {
-                effectiveType = typeReferenceOf(paramDefinition.getParamClass());
+            if (effectiveType == null && paramDefinition.getParamType() != null) {
+                effectiveType = typeReferenceOf(paramDefinition.getParamType());
             }
             if (effectiveType != null) {
                 part.append(" ").append(typeDisplayName(effectiveType));
@@ -211,21 +205,25 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
         return joiner.toString();
     }
 
-    private List<ChenileToolCallback.ChenileToolParameter> buildToolParameters(OperationDefinition operationDefinition,
-                                                                               ChenilePolymorphVariant polymorphVariant) {
+    private List<ChenileToolCallback.ChenileToolParameter> buildToolParameters(
+            OperationDefinition operationDefinition,
+            ChenilePolymorphVariant polymorphVariant) {
         Map<String, TypeReference<?>> parameterTypes = polymorphVariant == null ? Map.of() : polymorphVariant.parameterTypes();
         Map<String, Object> fixedValues = polymorphVariant == null ? Map.of() : polymorphVariant.fixedParameterValues();
         List<ChenileToolCallback.ChenileToolParameter> toolParameters = new ArrayList<>();
         for (ParamDefinition paramDefinition : operationDefinition.getParams()) {
             TypeReference<?> effectiveType = parameterTypes.get(paramDefinition.getName());
-            if (effectiveType == null && paramDefinition.getParamClass() != null) {
-                effectiveType = typeReferenceOf(paramDefinition.getParamClass());
+            if (effectiveType == null && paramDefinition.getParamType() != null) {
+                effectiveType = typeReferenceOf(paramDefinition.getParamType());
             }
             if (effectiveType == null && operationDefinition.getInput() != null) {
                 effectiveType = typeReferenceOf(operationDefinition.getInput());
             }
+            logger.info("Creating effective type for {} is {}. Param type is {}",
+                    operationDefinition.getName(),effectiveType,paramDefinition.getParamType());
             toolParameters.add(new ChenileToolCallback.ChenileToolParameter(
                     paramDefinition.getName(),
+                    paramDefinition.getDescription(),
                     toJackson2(effectiveType),
                     fixedValues.get(paramDefinition.getName())
             ));
@@ -248,6 +246,11 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
             public java.lang.reflect.Type getType() {
                 return type;
             }
+
+            @Override
+            public String toString() {
+                return type.getTypeName();
+            }
         };
     }
 
@@ -258,11 +261,15 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
         return baseName + "_" + polymorphVariant.nameSuffix();
     }
 
-    private TypeReference<?> typeReferenceOf(Class<?> clazz) {
+    private TypeReference<?> typeReferenceOf(Type type) {
         return new TypeReference<>() {
             @Override
             public Type getType() {
-                return clazz;
+                return type;
+            }
+            @Override
+            public String toString() {
+                return type.getTypeName();
             }
         };
     }

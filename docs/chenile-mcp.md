@@ -76,8 +76,10 @@ The tool input schema is derived from Chenile parameter metadata:
 
 - `ParamDefinition.name`
 - `ParamDefinition.type`
-- `ParamDefinition.paramClass`
+- `ParamDefinition.getParamType()`
 - `OperationDefinition.input`
+
+External consumers should always use `ParamDefinition.getParamType()`. `getParamClass()` is an internal raw-signature detail used by Chenile for method matching and invocation compatibility.
 
 The actual invocation uses the service reference bean plus the resolved Java method.
 

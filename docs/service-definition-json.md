@@ -218,6 +218,7 @@ Examples:
 {
   "name": "headers",
   "type": "HEADERS",
+  "paramType": "java.util.Map<java.lang.String,java.lang.Object>",
   "paramClass": "java.util.Map",
   "description": "headers"
 }
@@ -227,7 +228,8 @@ The important fields are:
 
 - `name`
 - `type`
-- `paramClass`
+- `paramType`
+- `paramClass` (legacy/raw-class compatibility)
 - `description`
 
 ### Binding types
@@ -239,7 +241,11 @@ The important fields are:
 - `HEADERS` -> use the whole header map
 - `MULTI_PART` -> use one named multipart file
 
-If `paramClass` is omitted:
+`paramType` is the public metadata field and the value external consumers should read through `ParamDefinition.getParamType()`. It can represent generic types such as `java.util.List<java.lang.String>` or `java.util.Map<java.lang.String,java.lang.Object>`.
+
+`paramClass` remains supported only as a compatibility and internal raw-invocation field. External consumers should not use `ParamDefinition.getParamClass()` because it may intentionally differ from `paramType` when Chenile needs a different raw signature for method matching.
+
+If both `paramType` and `paramClass` are omitted:
 
 - body parameters default to the operation `input` type
 - non-body parameters default to `String`
@@ -321,6 +327,7 @@ From `chenile-core/src/test/resources/org/chenile/core/test/service/mockService.
     {
       "name": "param",
       "type": "BODY",
+      "paramType": "java.lang.Object",
       "paramClass": "java.lang.Object"
     }
   ]
@@ -346,6 +353,7 @@ From `mockService.json`:
     {
       "name": "headers",
       "type": "HEADERS",
+      "paramType": "java.util.Map<java.lang.String,java.lang.Object>",
       "paramClass": "java.util.Map"
     }
   ]
@@ -353,6 +361,27 @@ From `mockService.json`:
 ```
 
 This tells `ServiceInvoker` to pass the complete header map to the service method.
+
+### Example 4a: generic body metadata
+
+From `mockService.json`:
+
+```json
+{
+  "name": "mockMethod",
+  "input": "java.util.ArrayList",
+  "params": [
+    {
+      "name": "list",
+      "type": "BODY",
+      "paramType": "java.util.List<java.lang.String>",
+      "paramClass": "java.util.List"
+    }
+  ]
+}
+```
+
+This preserves the generic contract for metadata consumers such as MCP schema generation, which should read `ParamDefinition.getParamType()`, while runtime method lookup still uses the internal raw class from `paramClass`.
 
 ### Example 5: event subscription
 
@@ -369,6 +398,7 @@ From `mockService.json`:
     {
       "name": "foo",
       "type": "BODY",
+      "paramType": "org.chenile.core.test.Foo",
       "paramClass": "org.chenile.core.test.Foo"
     }
   ]

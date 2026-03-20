@@ -2,6 +2,7 @@ package org.chenile.core.interceptors;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.chenile.core.errorcodes.ErrorCodes;
 import org.chenile.core.model.HttpBindingType;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
+import org.chenile.core.util.convert.ChenileTypeUtils;
 import org.chenile.owiz.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +61,7 @@ public class ServiceInvoker implements Command<ChenileExchange>{
 	}
 
 	private void invokeApi(ChenileExchange exchange) throws IllegalAccessException, InvocationTargetException {
-    	Object targetBean = exchange.getServiceReference();// exchange.getServiceDefinition().getServiceReference();	
+    	Object targetBean = exchange.getServiceReference();
     	Method method = exchange.getMethod();
         List<Object> apiInvocation = exchange.getApiInvocation();
     
@@ -80,7 +82,8 @@ public class ServiceInvoker implements Command<ChenileExchange>{
 			if(pd.getType().equals(HttpBindingType.BODY)){
 				invokableParams.add(exchange.getBody());
 			}else if(pd.getType().equals(HttpBindingType.HEADER)){
-				invokableParams.add(convert(pd.getParamClass(),exchange.getHeader(pd.getName()),
+				Type effectiveType = (pd.getParamClass() != null) ? pd.getParamClass() : pd.getParamType();
+				invokableParams.add(convert(effectiveType,exchange.getHeader(pd.getName()),
 						pd.getName()));
 			}else if (pd.getType().equals(HttpBindingType.HEADERS)) {
 				invokableParams.add(exchange.getHeaders());
@@ -91,7 +94,8 @@ public class ServiceInvoker implements Command<ChenileExchange>{
 		exchange.setApiInvocation(invokableParams);
 	}
 
-	private static Object convert( Class<?> clazz, Object v, String paramName ) {
+	private static Object convert(Type type, Object v, String paramName ) {
+		Class<?> clazz = (type instanceof Class<?>) ? (Class<?>) type : ChenileTypeUtils.toRawClass(type);
 		if (v == null) return null;
 		if (v.getClass().equals(clazz)) return v;
 		String value = null;

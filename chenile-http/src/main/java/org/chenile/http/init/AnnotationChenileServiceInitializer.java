@@ -45,7 +45,6 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 	}
 
 	public void init() {
-		System.err.println("Annotation Chenile Service Initializer: " );
 		deleteMappingProducer = new DeleteMappingProducer(applicationContext);
 		getMappingProducer = new GetMappingProducer(applicationContext);
 		patchMappingProducer = new PatchMappingProducer(applicationContext);

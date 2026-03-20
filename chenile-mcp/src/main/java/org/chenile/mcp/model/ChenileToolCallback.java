@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.chenile.mcp.init.ChenileMCPInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
@@ -21,6 +24,7 @@ import java.util.List;
 
 public class ChenileToolCallback implements ToolCallback {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    static Logger logger = LoggerFactory.getLogger(ChenileToolCallback.class);
 
     private final ToolDefinition toolDefinition;
     private final ToolMetadata toolMetadata;
@@ -109,16 +113,18 @@ public class ChenileToolCallback implements ToolCallback {
             JsonNode schemaNode;
             try {
                 Type parameterType = parameter.type() == null ? Object.class : parameter.type().getType();
+                logger.info("Parameter type = {}",parameterType);
                 schemaNode = OBJECT_MAPPER.readTree(JsonSchemaGenerator.generateForType(parameterType));
             } catch (Exception e) {
                 throw new RuntimeException("Error generating schema for " + parameter.name(), e);
             }
             properties.set(parameter.name(), schemaNode);
-            required.add(parameter.name());
+            // required.add(parameter.name());
         }
+        logger.info("Generating input Schema = {}",root.toPrettyString());
         return JsonSchemaUtils.ensureValidInputSchema(root.toString());
     }
 
-    public record ChenileToolParameter(String name, TypeReference<?> type, Object fixedValue) {
+    public record ChenileToolParameter(String name, String description,TypeReference<?> type, Object fixedValue) {
     }
 }

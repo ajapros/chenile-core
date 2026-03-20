@@ -21,11 +21,11 @@ public class ChenileGenericTypeParser {
         int genericStart = typeStr.indexOf('<');
         if (genericStart == -1) {
             // no generics, just a raw class
-            return mapper.getTypeFactory().constructType(Class.forName(typeStr));
+            return mapper.getTypeFactory().constructType(resolveClass(typeStr));
         }
 
         String rawClassName = typeStr.substring(0, genericStart).trim();
-        Class<?> rawClass = Class.forName(rawClassName);
+        Class<?> rawClass = resolveClass(rawClassName);
 
         // extract the generic content inside <...>
         String inner = typeStr.substring(genericStart + 1, typeStr.lastIndexOf('>')).trim();
@@ -58,6 +58,21 @@ public class ChenileGenericTypeParser {
         }
         result.add(current.toString().trim());
         return result;
+    }
+
+    private static Class<?> resolveClass(String typeName) throws ClassNotFoundException {
+        return switch (typeName) {
+            case "boolean" -> boolean.class;
+            case "byte" -> byte.class;
+            case "short" -> short.class;
+            case "int" -> int.class;
+            case "long" -> long.class;
+            case "float" -> float.class;
+            case "double" -> double.class;
+            case "char" -> char.class;
+            case "void" -> void.class;
+            default -> Class.forName(typeName);
+        };
     }
 
 }

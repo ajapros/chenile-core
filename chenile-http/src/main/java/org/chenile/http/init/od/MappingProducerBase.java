@@ -23,6 +23,8 @@ import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
 import org.chenile.http.annotation.*;
 import org.chenile.owiz.Command;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
@@ -31,7 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
 public abstract class MappingProducerBase {
-	
+	private static Logger logger = LoggerFactory.getLogger(MappingProducerBase.class);
 	protected ApplicationContext applicationContext;
 	public MappingProducerBase(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
@@ -45,7 +47,7 @@ public abstract class MappingProducerBase {
 		collectChenileAnnotations(method,od);
 		processChenileResponseCodes(method,od);
 	}
-	
+
 	protected void processChenileResponseCodes(Method method, OperationDefinition od) {
 		if(method.isAnnotationPresent(ChenileResponseCodes.class)) {
 			ChenileResponseCodes co = method.getAnnotation(ChenileResponseCodes.class);
@@ -151,12 +153,18 @@ public abstract class MappingProducerBase {
 			}
 			ParamDefinition pd = new ParamDefinition();
 			pd.setName(param.getName());
-			pd.setParamClass(param.getType());
+			pd.setParamType(param.getParameterizedType());
+			logger.info("The Parameterized type for {} is {}",od.getName(),pd.getParamType());
 			if (param.isAnnotationPresent(RequestBody.class)) {
 				pd.setType(HttpBindingType.BODY);
 				od.setInput(param.getType());
 			}else {
 				pd.setType(HttpBindingType.HEADER);
+			}
+			if (param.isAnnotationPresent(ParamInfo.class)){
+				ParamInfo pi = param.getAnnotation(ParamInfo.class);
+				pd.setName(pi.name());
+				pd.setDescription(pi.description());
 			}
 			processParamClassType(od,pd,param);
 			paramList.add(pd);
