@@ -118,6 +118,10 @@ public class ChenileToolCallback implements ToolCallback {
             } catch (Exception e) {
                 throw new RuntimeException("Error generating schema for " + parameter.name(), e);
             }
+            if (parameter.description() != null && !parameter.description().isBlank()
+                    && schemaNode instanceof ObjectNode schemaObject) {
+                schemaObject.put("description", parameter.description());
+            }
             properties.set(parameter.name(), schemaNode);
             // required.add(parameter.name());
         }

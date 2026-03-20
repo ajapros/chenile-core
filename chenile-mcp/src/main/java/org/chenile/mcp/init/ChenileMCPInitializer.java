@@ -172,6 +172,8 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
         }
         Map<String, Object> fixedValues = polymorphVariant == null ? Map.of() : polymorphVariant.fixedParameterValues();
         Map<String, TypeReference<?>> parameterTypes = polymorphVariant == null ? Map.of() : polymorphVariant.parameterTypes();
+        Map<String, String> parameterDescriptions =
+                polymorphVariant == null ? Map.of() : polymorphVariant.parameterDescriptions();
         StringJoiner joiner = new StringJoiner(", ", " Parameters: ", "");
         for (ParamDefinition paramDefinition : operationDefinition.getParams()) {
             if (fixedValues.containsKey(paramDefinition.getName())) {
@@ -186,8 +188,9 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
             if (effectiveType != null) {
                 part.append(" ").append(typeDisplayName(effectiveType));
             }
-            if (paramDefinition.getDescription() != null && !paramDefinition.getDescription().isBlank()) {
-                part.append(" ").append(paramDefinition.getDescription());
+            String effectiveDescription = effectiveParameterDescription(paramDefinition, parameterDescriptions);
+            if (effectiveDescription != null && !effectiveDescription.isBlank()) {
+                part.append(" ").append(effectiveDescription);
             }
             joiner.add(part.toString());
         }
@@ -209,6 +212,8 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
             OperationDefinition operationDefinition,
             ChenilePolymorphVariant polymorphVariant) {
         Map<String, TypeReference<?>> parameterTypes = polymorphVariant == null ? Map.of() : polymorphVariant.parameterTypes();
+        Map<String, String> parameterDescriptions =
+                polymorphVariant == null ? Map.of() : polymorphVariant.parameterDescriptions();
         Map<String, Object> fixedValues = polymorphVariant == null ? Map.of() : polymorphVariant.fixedParameterValues();
         List<ChenileToolCallback.ChenileToolParameter> toolParameters = new ArrayList<>();
         for (ParamDefinition paramDefinition : operationDefinition.getParams()) {
@@ -223,12 +228,21 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
                     operationDefinition.getName(),effectiveType,paramDefinition.getParamType());
             toolParameters.add(new ChenileToolCallback.ChenileToolParameter(
                     paramDefinition.getName(),
-                    paramDefinition.getDescription(),
+                    effectiveParameterDescription(paramDefinition, parameterDescriptions),
                     toJackson2(effectiveType),
                     fixedValues.get(paramDefinition.getName())
             ));
         }
         return toolParameters;
+    }
+
+    private String effectiveParameterDescription(ParamDefinition paramDefinition,
+                                                 Map<String, String> parameterDescriptions) {
+        String variantDescription = parameterDescriptions.get(paramDefinition.getName());
+        if (variantDescription != null && !variantDescription.isBlank()) {
+            return variantDescription;
+        }
+        return paramDefinition.getDescription();
     }
 
     /**

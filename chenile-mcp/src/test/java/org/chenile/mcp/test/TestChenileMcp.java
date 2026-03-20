@@ -31,6 +31,12 @@ public class TestChenileMcp {
         Assertions.assertTrue(callbacksByName.containsKey("simpleTool"));
         Assertions.assertTrue(callbacksByName.containsKey("fooTool_e1"));
         Assertions.assertTrue(callbacksByName.containsKey("fooTool_e2"));
+        Assertions.assertTrue(callbacksByName.get("simpleTool").getToolDefinition().inputSchema()
+                .contains("\"description\":\"Simple payload body\""));
+        Assertions.assertTrue(callbacksByName.get("fooTool_e1").getToolDefinition().inputSchema()
+                .contains("\"description\":\"Payload for event e1\""));
+        Assertions.assertTrue(callbacksByName.get("fooTool_e2").getToolDefinition().inputSchema()
+                .contains("\"description\":\"Payload for event e2\""));
 
         String simpleResult = callbacksByName.get("simpleTool")
                 .call("{\"payload\":{\"value\":\"alpha\"}}");

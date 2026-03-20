@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.http.annotation.ChenileController;
 import org.chenile.http.annotation.ChenileParamType;
+import org.chenile.http.annotation.ParamInfo;
 import org.chenile.http.handler.ControllerSupport;
 import org.chenile.mcp.model.ChenileMCP;
 import org.chenile.mcp.model.ChenilePolymorph;
@@ -20,6 +21,7 @@ public class TestMcpController extends ControllerSupport {
     @PostMapping("/mcp/simple")
     @ChenileMCP(name = "simpleTool", description = "Simple MCP tool")
     public ResponseEntity<GenericResponse<String>> simple(HttpServletRequest request,
+                                                          @ParamInfo(name = "payload", description = "Simple payload body")
                                                           @RequestBody SimplePayload payload) {
         return process(request, payload);
     }
