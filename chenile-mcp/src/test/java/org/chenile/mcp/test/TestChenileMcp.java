@@ -1,5 +1,7 @@
 package org.chenile.mcp.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.tool.ToolCallback;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 @SpringBootTest(classes = McpTestApplication.class)
 @ActiveProfiles("unittest")
 public class TestChenileMcp {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
     private ToolCallbackProvider toolCallbackProvider;
@@ -37,6 +40,9 @@ public class TestChenileMcp {
                 .contains("\"description\":\"Payload for event e1\""));
         Assertions.assertTrue(callbacksByName.get("fooTool_e2").getToolDefinition().inputSchema()
                 .contains("\"description\":\"Payload for event e2\""));
+        callbacksByName.values().forEach(callback ->
+                Assertions.assertFalse(containsRequired(readSchema(callback)),
+                        "Schema should not contain required fields for tool " + callback.getToolDefinition().name()));
 
         String simpleResult = callbacksByName.get("simpleTool")
                 .call("{\"payload\":{\"value\":\"alpha\"}}");
@@ -49,5 +55,39 @@ public class TestChenileMcp {
         String e2Result = callbacksByName.get("fooTool_e2")
                 .call("{\"id\":\"43\",\"eventPayload\":{\"value\":\"two\"}}");
         Assertions.assertEquals("\"e2:E2:two\"", e2Result);
+    }
+
+    private JsonNode readSchema(ToolCallback callback) {
+        try {
+            return OBJECT_MAPPER.readTree(callback.getToolDefinition().inputSchema());
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to parse tool schema", e);
+        }
+    }
+
+    private boolean containsRequired(JsonNode node) {
+        if (node == null) {
+            return false;
+        }
+        if (node.isObject()) {
+            if (node.has("required")) {
+                return true;
+            }
+            var fields = node.fields();
+            while (fields.hasNext()) {
+                if (containsRequired(fields.next().getValue())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (node.isArray()) {
+            for (JsonNode item : node) {
+                if (containsRequired(item)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

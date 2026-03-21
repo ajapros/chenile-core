@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.chenile.mcp.init.ChenileMCPInitializer;
 import org.slf4j.Logger;
@@ -105,7 +104,6 @@ public class ChenileToolCallback implements ToolCallback {
         ObjectNode root = OBJECT_MAPPER.createObjectNode();
         root.put("type", "object");
         ObjectNode properties = root.putObject("properties");
-        ArrayNode required = root.putArray("required");
         for (ChenileToolParameter parameter : parameters) {
             if (parameter.fixedValue() != null) {
                 continue;
@@ -123,10 +121,24 @@ public class ChenileToolCallback implements ToolCallback {
                 schemaObject.put("description", parameter.description());
             }
             properties.set(parameter.name(), schemaNode);
-            // required.add(parameter.name());
         }
+        removeRequiredFields(root);
         logger.info("Generating input Schema = {}",root.toPrettyString());
         return JsonSchemaUtils.ensureValidInputSchema(root.toString());
+    }
+
+    private static void removeRequiredFields(JsonNode node) {
+        if (node == null) {
+            return;
+        }
+        if (node instanceof ObjectNode objectNode) {
+            objectNode.remove("required");
+            objectNode.fields().forEachRemaining(entry -> removeRequiredFields(entry.getValue()));
+            return;
+        }
+        if (node.isArray()) {
+            node.forEach(ChenileToolCallback::removeRequiredFields);
+        }
     }
 
     public record ChenileToolParameter(String name, String description,TypeReference<?> type, Object fixedValue) {
