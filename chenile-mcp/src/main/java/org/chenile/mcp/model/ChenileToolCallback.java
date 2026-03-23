@@ -110,9 +110,13 @@ public class ChenileToolCallback implements ToolCallback {
             }
             JsonNode schemaNode;
             try {
-                Type parameterType = parameter.type() == null ? Object.class : parameter.type().getType();
-                logger.info("Parameter type = {}",parameterType);
-                schemaNode = OBJECT_MAPPER.readTree(JsonSchemaGenerator.generateForType(parameterType));
+                if (parameter.schema() != null && !parameter.schema().isBlank()) {
+                    schemaNode = OBJECT_MAPPER.readTree(parameter.schema());
+                } else {
+                    Type parameterType = parameter.type() == null ? Object.class : parameter.type().getType();
+                    logger.info("Parameter type = {}",parameterType);
+                    schemaNode = OBJECT_MAPPER.readTree(JsonSchemaGenerator.generateForType(parameterType));
+                }
             } catch (Exception e) {
                 throw new RuntimeException("Error generating schema for " + parameter.name(), e);
             }
@@ -145,6 +149,7 @@ public class ChenileToolCallback implements ToolCallback {
         }
     }
 
-    public record ChenileToolParameter(String name, String description,TypeReference<?> type, Object fixedValue) {
+    public record ChenileToolParameter(String name, String description, TypeReference<?> type, String schema,
+                                       Object fixedValue) {
     }
 }

@@ -44,6 +44,8 @@ public class TestChenileMcp {
                 .contains("\"description\":\"Payload for event e1\""));
         Assertions.assertTrue(callbacksByName.get("fooTool_e2").getToolDefinition().inputSchema()
                 .contains("\"description\":\"Payload for event e2\""));
+        Assertions.assertTrue(callbacksByName.get("fooTool_e2").getToolDefinition().inputSchema()
+                .contains("\"type\":\"object\""));
         callbacksByName.values().forEach(callback ->
                 Assertions.assertFalse(containsRequired(readSchema(callback)),
                         "Schema should not contain required fields for tool " + callback.getToolDefinition().name()));
@@ -58,7 +60,7 @@ public class TestChenileMcp {
 
         String e2Result = callbacksByName.get("fooTool_e2")
                 .call("{\"id\":\"43\",\"eventPayload\":{\"value\":\"two\"}}");
-        Assertions.assertEquals("\"e2:E2:two\"", e2Result);
+        Assertions.assertEquals("\"e2:MAP:two\"", e2Result);
     }
 
     private JsonNode readSchema(ToolCallback callback) {

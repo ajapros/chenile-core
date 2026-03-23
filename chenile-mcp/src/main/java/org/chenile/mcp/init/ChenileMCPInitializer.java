@@ -1,5 +1,7 @@
 package org.chenile.mcp.init;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.OperationDefinition;
@@ -31,6 +33,7 @@ import java.util.StringJoiner;
  */
 
 public class ChenileMCPInitializer implements ToolCallbackProvider, InitializingBean {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     Logger logger = LoggerFactory.getLogger(ChenileMCPInitializer.class);
 
     final ChenileConfiguration chenileConfiguration;
@@ -228,17 +231,22 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
             OperationDefinition operationDefinition,
             ChenilePolymorphVariant polymorphVariant) {
         Map<String, TypeReference<?>> parameterTypes = polymorphVariant == null ? Map.of() : polymorphVariant.parameterTypes();
+        Map<String, String> parameterSchemas = polymorphVariant == null ? Map.of() : polymorphVariant.parameterSchemas();
         Map<String, String> parameterDescriptions =
                 polymorphVariant == null ? Map.of() : polymorphVariant.parameterDescriptions();
         Map<String, Object> fixedValues = polymorphVariant == null ? Map.of() : polymorphVariant.fixedParameterValues();
         List<ChenileToolCallback.ChenileToolParameter> toolParameters = new ArrayList<>();
         for (ParamDefinition paramDefinition : operationDefinition.getParams()) {
             TypeReference<?> effectiveType = parameterTypes.get(paramDefinition.getName());
+            String explicitSchema = parameterSchemas.get(paramDefinition.getName());
             if (effectiveType == null && paramDefinition.getParamType() != null) {
                 effectiveType = typeReferenceOf(paramDefinition.getParamType());
             }
             if (effectiveType == null && operationDefinition.getInput() != null) {
                 effectiveType = typeReferenceOf(operationDefinition.getInput());
+            }
+            if (!schemaCompatibleWithType(explicitSchema, effectiveType)) {
+                effectiveType = null;
             }
             logger.info("Creating effective type for {} is {}. Param type is {}",
                     operationDefinition.getName(),effectiveType,paramDefinition.getParamType());
@@ -246,6 +254,7 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
                     paramDefinition.getName(),
                     effectiveParameterDescription(paramDefinition, parameterDescriptions),
                     toJackson2(effectiveType),
+                    explicitSchema,
                     fixedValues.get(paramDefinition.getName())
             ));
         }
@@ -266,6 +275,9 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
      */
     public static <T> com.fasterxml.jackson.core.type.TypeReference<T> toJackson2(
             tools.jackson.core.type.TypeReference<T> jackson3Ref) {
+        if (jackson3Ref == null) {
+            return null;
+        }
 
         // Extract the underlying java.lang.reflect.Type
         final java.lang.reflect.Type type = jackson3Ref.getType();
@@ -291,6 +303,33 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
         return baseName + "_" + polymorphVariant.nameSuffix();
     }
 
+    private boolean schemaCompatibleWithType(String explicitSchema, TypeReference<?> effectiveType) {
+        if (explicitSchema == null || explicitSchema.isBlank() || effectiveType == null) {
+            return true;
+        }
+        try {
+            JsonNode schemaNode = OBJECT_MAPPER.readTree(explicitSchema);
+            String schemaType = schemaNode.path("type").asText(null);
+            if (schemaType == null || schemaType.isBlank()) {
+                return true;
+            }
+            Class<?> rawClass = rawClass(effectiveType.getType());
+            return switch (schemaType) {
+                case "object" -> !isScalarType(rawClass) && !isArrayLike(rawClass);
+                case "array" -> isArrayLike(rawClass);
+                case "string" -> CharSequence.class.isAssignableFrom(rawClass)
+                        || rawClass == Character.class || rawClass == char.class;
+                case "integer", "number" -> Number.class.isAssignableFrom(rawClass)
+                        || rawClass.isPrimitive() && rawClass != boolean.class && rawClass != char.class;
+                case "boolean" -> rawClass == Boolean.class || rawClass == boolean.class;
+                default -> true;
+            };
+        } catch (Exception e) {
+            logger.warn("Unable to validate explicit schema compatibility. Falling back to inferred type.", e);
+            return true;
+        }
+    }
+
     private TypeReference<?> typeReferenceOf(Type type) {
         return new TypeReference<>() {
             @Override
@@ -302,6 +341,29 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
                 return type.getTypeName();
             }
         };
+    }
+
+    private Class<?> rawClass(Type type) {
+        if (type instanceof Class<?> clazz) {
+            return clazz;
+        }
+        if (type instanceof ParameterizedType parameterizedType
+                && parameterizedType.getRawType() instanceof Class<?> clazz) {
+            return clazz;
+        }
+        return Object.class;
+    }
+
+    private boolean isArrayLike(Class<?> rawClass) {
+        return rawClass.isArray() || Iterable.class.isAssignableFrom(rawClass);
+    }
+
+    private boolean isScalarType(Class<?> rawClass) {
+        return rawClass.isPrimitive()
+                || CharSequence.class.isAssignableFrom(rawClass)
+                || Number.class.isAssignableFrom(rawClass)
+                || rawClass == Boolean.class
+                || rawClass == Character.class;
     }
 
     private String typeDisplayName(TypeReference<?> typeReference) {

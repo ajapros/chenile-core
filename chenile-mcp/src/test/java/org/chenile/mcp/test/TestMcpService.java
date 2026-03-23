@@ -1,5 +1,7 @@
 package org.chenile.mcp.test;
 
+import java.util.Map;
+
 public class TestMcpService {
 
     public String simple(SimplePayload payload) {
@@ -12,6 +14,9 @@ public class TestMcpService {
         }
         if (eventPayload instanceof E2Payload e2Payload) {
             return eventId + ":E2:" + e2Payload.value();
+        }
+        if (eventPayload instanceof Map<?, ?> mapPayload) {
+            return eventId + ":MAP:" + String.valueOf(mapPayload.get("value"));
         }
         return eventId + ":" + id + ":" + String.valueOf(eventPayload);
     }

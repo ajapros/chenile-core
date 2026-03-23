@@ -36,13 +36,24 @@ public class TestMcpTestConfig {
                                 "e1",
                                 "Event e1 variant",
                                 Map.of("eventPayload", new TypeReference<E1Payload>() {}),
+                                Map.of(),
                                 Map.of("eventPayload", "Payload for event e1"),
                                 Map.of("eventId", "e1")
                         ),
                         new ChenilePolymorphVariant(
                                 "e2",
                                 "Event e2 variant",
-                                Map.of("eventPayload", new TypeReference<E2Payload>() {}),
+                                Map.of(),
+                                Map.of("eventPayload", """
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        }
+                                        """),
                                 Map.of("eventPayload", "Payload for event e2"),
                                 Map.of("eventId", "e2")
                         )
