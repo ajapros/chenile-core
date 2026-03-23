@@ -10,8 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.definition.DefaultToolDefinition;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
+import org.springframework.ai.tool.method.MethodToolCallback;
 import org.springframework.beans.factory.InitializingBean;
 import tools.jackson.core.type.TypeReference;
 
@@ -101,10 +103,11 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
         }
         List<ChenileToolCallback.ChenileToolParameter> toolParameters =
                 buildToolParameters(operationDefinition, polymorphVariant);
+
         ToolDefinition toolDefinition = ToolDefinition.builder()
                 .name(computeToolName(serviceDefinition, operationDefinition, chenileMCP, polymorphVariant))
                 .description(computeToolDescription(serviceDefinition, operationDefinition, chenileMCP,
-                        polymorphVariant))
+                        polymorphVariant, method))
                 .inputSchema(ChenileToolCallback.buildInputSchema(toolParameters))
                 .build();
         ToolMetadata toolMetadata = ToolMetadata.builder().returnDirect(false).build();
@@ -135,24 +138,26 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
     private String computeToolDescription(ChenileServiceDefinition serviceDefinition,
                                           OperationDefinition operationDefinition,
                                           ChenileMCP chenileMCP,
-                                          ChenilePolymorphVariant polymorphVariant) {
+                                          ChenilePolymorphVariant polymorphVariant,
+                                          Method method) {
         if (chenileMCP != null && !chenileMCP.description().isBlank()) {
-            return augmentDescription(chenileMCP.description(), operationDefinition, polymorphVariant);
+            return augmentDescription(chenileMCP.description(), operationDefinition, polymorphVariant, method);
         }
         if (operationDefinition.getDescription() != null && !operationDefinition.getDescription().isBlank()) {
-            return augmentDescription(operationDefinition.getDescription(), operationDefinition, polymorphVariant);
+            return augmentDescription(operationDefinition.getDescription(), operationDefinition, polymorphVariant, method);
         }
         if (polymorphVariant != null && polymorphVariant.description() != null &&
                 !polymorphVariant.description().isBlank()) {
-            return augmentDescription(polymorphVariant.description(), operationDefinition, polymorphVariant);
+            return augmentDescription(polymorphVariant.description(), operationDefinition, polymorphVariant, method);
         }
         return augmentDescription("Chenile service " + serviceDefinition.getId() + " operation " +
-                operationDefinition.getName(), operationDefinition, polymorphVariant);
+                operationDefinition.getName(), operationDefinition, polymorphVariant, method);
     }
 
     private String augmentDescription(String description,
                                       OperationDefinition operationDefinition,
-                                      ChenilePolymorphVariant polymorphVariant) {
+                                      ChenilePolymorphVariant polymorphVariant,
+                                      Method method) {
         StringBuilder sb = new StringBuilder(description);
         String parameterSummary = buildParameterSummary(operationDefinition, polymorphVariant);
         if (!parameterSummary.isEmpty()) {
@@ -161,6 +166,10 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
         String fixedParameterSummary = buildFixedParameterSummary(polymorphVariant);
         if (!fixedParameterSummary.isEmpty()) {
             sb.append(fixedParameterSummary);
+        }
+        String returnValueSummary = buildReturnValueSummary(method);
+        if (!returnValueSummary.isEmpty()) {
+            sb.append(returnValueSummary);
         }
         return sb.toString();
     }
@@ -206,6 +215,13 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
             joiner.add(entry.getKey() + "=" + entry.getValue());
         }
         return joiner.toString();
+    }
+
+    private String buildReturnValueSummary(Method method) {
+        if (method == null || method.getGenericReturnType() == null) {
+            return "";
+        }
+        return " Returns: " + typeDisplayName(typeReferenceOf(method.getGenericReturnType()));
     }
 
     private List<ChenileToolCallback.ChenileToolParameter> buildToolParameters(

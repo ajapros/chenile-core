@@ -127,6 +127,10 @@ public class ChenileToolCallback implements ToolCallback {
         return JsonSchemaUtils.ensureValidInputSchema(root.toString());
     }
 
+    /**
+     * By default all fields are marked as required. We need to remove that from the schema manually
+     * @param node
+     */
     private static void removeRequiredFields(JsonNode node) {
         if (node == null) {
             return;
