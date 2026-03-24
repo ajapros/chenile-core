@@ -143,15 +143,15 @@ public class ChenileMCPInitializer implements ToolCallbackProvider, Initializing
                                           ChenileMCP chenileMCP,
                                           ChenilePolymorphVariant polymorphVariant,
                                           Method method) {
+        if (polymorphVariant != null && polymorphVariant.description() != null &&
+                !polymorphVariant.description().isBlank()) {
+            return augmentDescription(polymorphVariant.description(), operationDefinition, polymorphVariant, method);
+        }
         if (chenileMCP != null && !chenileMCP.description().isBlank()) {
             return augmentDescription(chenileMCP.description(), operationDefinition, polymorphVariant, method);
         }
         if (operationDefinition.getDescription() != null && !operationDefinition.getDescription().isBlank()) {
             return augmentDescription(operationDefinition.getDescription(), operationDefinition, polymorphVariant, method);
-        }
-        if (polymorphVariant != null && polymorphVariant.description() != null &&
-                !polymorphVariant.description().isBlank()) {
-            return augmentDescription(polymorphVariant.description(), operationDefinition, polymorphVariant, method);
         }
         return augmentDescription("Chenile service " + serviceDefinition.getId() + " operation " +
                 operationDefinition.getName(), operationDefinition, polymorphVariant, method);

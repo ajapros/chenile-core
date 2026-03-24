@@ -35,7 +35,13 @@ public class TestChenileMcp {
         Assertions.assertTrue(callbacksByName.containsKey("fooTool_e1"));
         Assertions.assertTrue(callbacksByName.containsKey("fooTool_e2"));
         Assertions.assertTrue(callbacksByName.get("simpleTool").getToolDefinition().description()
+                .contains("Simple MCP tool"));
+        Assertions.assertTrue(callbacksByName.get("simpleTool").getToolDefinition().description()
                 .contains("Returns: String"));
+        Assertions.assertTrue(callbacksByName.get("fooTool_e1").getToolDefinition().description()
+                .contains("Event e1 variant"));
+        Assertions.assertFalse(callbacksByName.get("fooTool_e1").getToolDefinition().description()
+                .contains("Polymorphic MCP tool"));
         Assertions.assertTrue(callbacksByName.get("fooTool_e1").getToolDefinition().description()
                 .contains("Returns: String"));
         Assertions.assertTrue(callbacksByName.get("simpleTool").getToolDefinition().inputSchema()
