@@ -28,6 +28,7 @@ public class TenantSpecificResourceLoader {
 
 	public static URL getResource(String resourceTemplate){
 		return getResource(resourceTemplate, ContextContainer.getInstance().getTenant());
+
 	}
 
 	public static InputStream getResourceAsStream(String resourceTemplate){
