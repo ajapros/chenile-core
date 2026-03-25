@@ -1,19 +1,17 @@
-package org.chenile.multids.bdd;
+package org.chenile.multids.bdd.defaulttenant;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        features = "src/test/resources/features",
+        features = "src/test/resources/features/defaulttenant",
         glue = {
-                "classpath:org/chenile/multids/bdd",
+                "classpath:org/chenile/multids/bdd/defaulttenant",
                 "classpath:org/chenile/cucumber/rest"
         },
         plugin = {"pretty"}
 )
-@ActiveProfiles("unittest")
-public class CukesRestTest {
+public class DefaultTenantCukesRestTest {
 }

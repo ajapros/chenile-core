@@ -60,13 +60,19 @@ public class MultiTenantDataSourceConfiguration {
         };
         Map<Object, Object> target = new LinkedHashMap<>(targetDataSources);
         routingDataSource.setTargetDataSources(target);
+        routingDataSource.setLenientFallback(false);
         String defaultTenantId = properties.getDefaultTenantId();
-        DataSource defaultDataSource = defaultTenantId == null ? null : targetDataSources.get(defaultTenantId);
-        if (defaultDataSource == null && !targetDataSources.isEmpty()) {
-            defaultDataSource = targetDataSources.values().iterator().next();
+        if (defaultTenantId != null) {
+            defaultTenantId = defaultTenantId.trim();
         }
-        assert defaultDataSource != null;
-        routingDataSource.setDefaultTargetDataSource(defaultDataSource);
+        if (defaultTenantId != null && !defaultTenantId.isEmpty()) {
+            DataSource defaultDataSource = targetDataSources.get(defaultTenantId);
+            if (defaultDataSource == null) {
+                throw new IllegalStateException(
+                        "chenile.multids.defaultTenantId '" + defaultTenantId + "' is not present in chenile.multids.datasources");
+            }
+            routingDataSource.setDefaultTargetDataSource(defaultDataSource);
+        }
         return routingDataSource;
     }
 }
