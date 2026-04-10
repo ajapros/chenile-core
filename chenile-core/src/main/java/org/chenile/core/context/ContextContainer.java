@@ -13,7 +13,7 @@ import java.util.Map;
  * because it can dilute the method signature. For example, an Order Service may not accept the
  * name of the user though it is available as a header.
  * <p>But it is possible that some of the header attributes may be needed by the service though
- * it is not explicitly passed to it. This class allows the service (or the classes thst it calls)
+ * it is not explicitly passed to it. This class allows the service (or the classes that the service calls)
  * to access header information. </p>
  * <p>It is important to note that this is stored as a ThreadLocal and hence will not be
  * available in Reactive environments.</p>
