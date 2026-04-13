@@ -3,6 +3,12 @@ package org.chenile.core.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.chenile.base.exception.ErrorNumException;
 import org.chenile.base.exception.ServerException;
@@ -184,6 +190,38 @@ public class TestChenileCore {
 		chenileEntryPoint.execute(exchange);
 		Object data = ((GenericResponse<Object>)exchange.getResponse()).getData();
 		assertEquals("Expected does not match the actual return value","some_stuff",data);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test public void testContextContainerIsolationAcrossThreads() throws Exception {
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		CountDownLatch ready = new CountDownLatch(2);
+		CountDownLatch start = new CountDownLatch(1);
+		try {
+			Callable<String> request1 = () -> executeContextAwareRequest("tenant-a", ready, start);
+			Callable<String> request2 = () -> executeContextAwareRequest("tenant-b", ready, start);
+
+			Future<String> future1 = executorService.submit(request1);
+			Future<String> future2 = executorService.submit(request2);
+
+			assertTrue("Both tasks must be ready before starting", ready.await(5, TimeUnit.SECONDS));
+			start.countDown();
+
+			assertEquals("tenant-a", future1.get(5, TimeUnit.SECONDS));
+			assertEquals("tenant-b", future2.get(5, TimeUnit.SECONDS));
+		} finally {
+			executorService.shutdownNow();
+		}
+	}
+
+	private String executeContextAwareRequest(String headerValue, CountDownLatch ready, CountDownLatch start) throws Exception {
+		ChenileExchange exchange = makeExchange("mockService","s9");
+		exchange.setHeader("x-id", headerValue);
+		ready.countDown();
+		assertTrue("Timed out waiting to start concurrent request", start.await(5, TimeUnit.SECONDS));
+		chenileEntryPoint.execute(exchange);
+		assertNull("Context container must be cleared after request completion", contextContainer.get("x-id"));
+		return ((GenericResponse<String>) exchange.getResponse()).getData();
 	}
 	
 	@SuppressWarnings("unchecked")

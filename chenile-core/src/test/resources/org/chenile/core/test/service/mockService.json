@@ -175,6 +175,16 @@
         "paramClass": "org.chenile.core.test.Foo",
         "description": "body"
       }
-    ]}
+    ]},{
+    "name": "s9",
+    "url": "/s9",
+    "httpMethod": "POST",
+    "produces": "JSON",
+    "consumes": "JSON",
+    "secure":false,
+    "output": "",
+    "input": "",
+    "params": []
+    }
   ]
 }

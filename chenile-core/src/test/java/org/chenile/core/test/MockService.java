@@ -1,10 +1,17 @@
 package org.chenile.core.test;
 
 import org.chenile.base.exception.ServerException;
+import org.chenile.core.context.ContextContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class MockService {
+	private final Logger logger = LoggerFactory.getLogger(MockService.class);
 	public static String bar;
 	public List<String> mockMethod(List<String> list) {
 		list.add("actual");
@@ -53,6 +60,29 @@ public class MockService {
 		MockService.bar = foo.bar;
 		foo.bar = foo.bar + "mock";
 		return foo;
+	}
+
+	private static boolean first = true;
+	private CountDownLatch latch = new CountDownLatch(1);
+	public String s9() {
+		String t = ContextContainer.CONTEXT_CONTAINER.getHeader("id");
+		boolean firstRequest = first;
+		if(first){
+			first = false;
+            try {
+                latch.await(2000, TimeUnit.MILLISECONDS);
+				String t1 = ContextContainer.CONTEXT_CONTAINER.getHeader("id");
+				if (!t.equals(t1)){
+					throw new RuntimeException("Context got mutated by a second request");
+				}
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Error waiting for count down latch.");
+            }
+        }else{
+			latch.countDown();
+		}
+		logger.info("At s9: first = " + firstRequest + " returning " + t);
+		return t;
 	}
 
 }
