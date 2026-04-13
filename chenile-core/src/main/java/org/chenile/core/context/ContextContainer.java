@@ -22,6 +22,16 @@ public enum ContextContainer {
 	CONTEXT_CONTAINER;
 	private static final ThreadLocal<Context> contexts = new ThreadLocal<Context>();
 
+	public static class ContextSnapshot {
+		private final boolean contextPresent;
+		private final Context context;
+
+		private ContextSnapshot(boolean contextPresent, Context context) {
+			this.contextPresent = contextPresent;
+			this.context = context;
+		}
+	}
+
 	
 	public static class Context extends HashMap<String,String>{
 		@Serial
@@ -86,6 +96,39 @@ public enum ContextContainer {
 
 	public void clear(){
 		contexts.remove();
+	}
+
+	public ContextSnapshot snapshot() {
+		Context existing = contexts.get();
+		return new ContextSnapshot(existing != null, (existing == null) ? null : copyContext(existing));
+	}
+
+	public void restore(ContextSnapshot snapshot) {
+		if (snapshot == null || !snapshot.contextPresent) {
+			clear();
+			return;
+		}
+		contexts.set(copyContext(snapshot.context));
+	}
+
+	private Context copyContext(Context source) {
+		Context copy = new Context();
+		copy.putAll(source);
+		copy.userId = source.userId;
+		copy.regionId = source.regionId;
+		copy.groupId = source.groupId;
+		copy.employeeId = source.employeeId;
+		copy.appType = source.appType;
+		copy.tenantType = source.tenantType;
+		copy.tenant = source.tenant;
+		copy.isActive = source.isActive;
+		copy.isVerified = source.isVerified;
+		copy.isOnDemand = source.isOnDemand;
+		copy.isInternal = source.isInternal;
+		copy.trajectory = source.trajectory;
+		copy.authentication = source.authentication;
+		copy.extensions.putAll(source.extensions);
+		return copy;
 	}
 
 	public void setAuthentication(Authentication authenticationContext){
