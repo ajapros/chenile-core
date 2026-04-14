@@ -16,6 +16,7 @@ import org.chenile.base.response.GenericResponse;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.context.ChenileExchangeBuilder;
 import org.chenile.core.context.ContextContainer;
+import org.chenile.core.context.HeaderUtils;
 import org.chenile.core.entrypoint.ChenileEntryPoint;
 import org.chenile.core.event.EventProcessor;
 import org.chenile.core.service.HealthCheckInfo;
@@ -222,6 +223,38 @@ public class TestChenileCore {
 		chenileEntryPoint.execute(exchange);
 		assertNull("Context container must be cleared after request completion", contextContainer.get("x-id"));
 		return ((GenericResponse<String>) exchange.getResponse()).getData();
+	}
+
+	@Test public void testContextContainerSnapshotRestore() {
+		contextContainer.clear();
+		contextContainer.setTenant("tenant-a");
+		contextContainer.setRequestId("req-a");
+		ContextContainer.putExtension("trace", "original");
+		ContextContainer.ContextSnapshot snapshot = contextContainer.snapshot();
+
+		contextContainer.setTenant("tenant-b");
+		contextContainer.setRequestId("req-b");
+		ContextContainer.putExtension("trace", "updated");
+
+		contextContainer.restore(snapshot);
+
+		assertEquals("tenant-a", contextContainer.getTenant());
+		assertEquals("req-a", contextContainer.getRequestId());
+		assertEquals("original", ContextContainer.getExtension("trace"));
+		contextContainer.clear();
+	}
+
+	@Test public void testContextContainerSnapshotRestoreNoContext() {
+		contextContainer.clear();
+		ContextContainer.ContextSnapshot snapshot = contextContainer.snapshot();
+
+		contextContainer.setTenant("tenant-a");
+		contextContainer.setRequestId("req-a");
+
+		contextContainer.restore(snapshot);
+
+		assertNull("Restoring a missing context must clear thread local state", contextContainer.get(HeaderUtils.TENANT_ID_KEY));
+		assertNull("Restoring a missing context must clear request id", contextContainer.getRequestId());
 	}
 	
 	@SuppressWarnings("unchecked")
