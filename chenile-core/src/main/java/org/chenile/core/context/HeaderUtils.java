@@ -29,6 +29,10 @@ public class HeaderUtils {
 	 * Keeps track of the original entry point (HTTP, MQTT etc.) of Chenile.
 	 */
 	public static final String ENTRY_POINT = "x-chenile-entry-point";
+	/**
+	 * Keeps track of a more specific invocation subtype such as proxy-originated requests.
+	 */
+	public static final String ENTRY_POINT_SUB_TYPE = "x-chenile-entry-point-sub-type";
 	public static final String TRAJECTORY_ID = "x-chenile-trajectory-id";
 	public static final String MOCK_HEADER = "x-chenile-mock-mode";
 	public static final String AUTH_TOKEN_HEADER = "Authorization";
@@ -80,6 +84,9 @@ public class HeaderUtils {
 	public static String getEntryPoint(Map<String, Object> headers) {
 		return convertToString(headers.get(ENTRY_POINT));
 	}
+	public static String getEntryPointSubType(Map<String, Object> headers) {
+		return convertToString(headers.get(ENTRY_POINT_SUB_TYPE));
+	}
 	public static String getTrajectoryId(Map<String, Object> headers) {
 		return convertToString(headers.get(TRAJECTORY_ID));
 	}
@@ -121,6 +128,9 @@ public class HeaderUtils {
 	}
 	public static void setEntryPoint(Map<String, Object> headers, String entryPoint) {
 		headers.put(ENTRY_POINT,entryPoint);
+	}
+	public static void setEntryPointSubType(Map<String, Object> headers, String entryPointSubType) {
+		headers.put(ENTRY_POINT_SUB_TYPE,entryPointSubType);
 	}
 	public static void setTrajectoryId(Map<String, Object> headers, String trajectoryId) {
 		headers.put(TRAJECTORY_ID,trajectoryId);

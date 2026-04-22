@@ -307,11 +307,32 @@ public class ChenileExchange implements Serializable, ChainContextContainer<Chen
 	}
 
 	public void setLocalInvocation(boolean b) {
-		this.localInvocation = b;		
+		this.localInvocation = b;
+		if (b) {
+			setEntryPointSubType(EntryPointSubType.LOCAL_PROXY);
+		} else if (getEntryPointSubType() == EntryPointSubType.LOCAL_PROXY) {
+			setEntryPointSubType(EntryPointSubType.NONE);
+		}
 	}
 	
 	public boolean isLocalInvocation() {
 		return localInvocation;
+	}
+
+	public EntryPointSubType getEntryPointSubType() {
+		return EntryPointSubType.fromValue(HeaderUtils.getEntryPointSubType(headers));
+	}
+
+	public void setEntryPointSubType(EntryPointSubType entryPointSubType) {
+		HeaderUtils.setEntryPointSubType(headers,
+				(entryPointSubType == null ? EntryPointSubType.NONE : entryPointSubType).name());
+	}
+
+	public boolean isProxyInvocation() {
+		return switch (getEntryPointSubType()) {
+			case LOCAL_PROXY, REMOTE_PROXY -> true;
+			case NONE -> false;
+		};
 	}
 
 	/**

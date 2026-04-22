@@ -62,9 +62,9 @@ public class HttpEntryPoint implements HttpRequestHandler {
 			throws ServletException, IOException {
 		ChenileExchange exchange = new ChenileExchange();
 		exchange.setServiceDefinition(serviceDefinition);
-		exchange.setHeader(HeaderUtils.ENTRY_POINT, Constants.HTTP_ENTRY_POINT);
 		exchange.setOperationDefinition(operationDefinition);
 		exchange.setHeaders(getHeaders(operationDefinition,httpServletRequest));
+		exchange.setHeader(HeaderUtils.ENTRY_POINT, Constants.HTTP_ENTRY_POINT);
 		exchange.setMultiPartMap(getMultiPartMap(httpServletRequest));
 		exchange.setLocale(localeResolver.resolveLocale(httpServletRequest));
 		setBody(httpServletRequest, exchange);
