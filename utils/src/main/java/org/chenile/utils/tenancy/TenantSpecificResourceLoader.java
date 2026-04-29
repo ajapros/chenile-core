@@ -4,7 +4,6 @@ import org.chenile.base.exception.ServerException;
 import org.chenile.core.context.ContextContainer;
 import org.chenile.utils.str.StrSubstitutor;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -45,10 +44,9 @@ public class TenantSpecificResourceLoader {
 	 * @return the input stream of the discovered resource. null if absent.
 	 */
 	public static InputStream getResourceAsStream(String resourceTemplate, String tenantId) {
-		URL url = getResource(resourceTemplate,tenantId);
-		if (url == null) return null;
+		String genericPath = resourceTemplate.replace("/%{tenantId}/","/");
 		try {
-			return new FileInputStream(url.getFile());
+			return new TenantSpecificResourceLoader(resourceTemplate,genericPath).obtainInputStream("",tenantId);
 		}catch(Exception e){ return null;}
 	}
 	/**
@@ -81,6 +79,13 @@ public class TenantSpecificResourceLoader {
 		CachedValue value = obtainValue(name,tenantId);
 		return value.url;
 	}
+
+	public InputStream obtainInputStream(String name, String tenantId) throws Exception {
+		CachedValue value = obtainValue(name,tenantId);
+		InputStream inputStream = classLoader().getResourceAsStream(value.fileName);
+		if (inputStream != null) return inputStream;
+		return value.url.openStream();
+	}
 	
 	public String obtainFileName(String name,String tenantId) {
 		CachedValue value = obtainValue(name,tenantId);
@@ -112,7 +117,7 @@ public class TenantSpecificResourceLoader {
 		valueMap.put("name", key.name);
 		// first see if we can find a specific file for the tenant
 		String filename = StrSubstitutor.replaceNamedKeysInTemplate(tenantSpecificPath, valueMap,delimiter);
-		URL res = this.getClass().getClassLoader().getResource(filename);
+		URL res = classLoader().getResource(filename);
 		if (res == null) {
 			// try with the generic key to see if the template exists.
 			Key genericKey = new Key();
@@ -123,7 +128,7 @@ public class TenantSpecificResourceLoader {
 			if (genericValue != null) return genericValue;
 			
 			filename = StrSubstitutor.replaceNamedKeysInTemplate(genericPath, valueMap,delimiter);
-			res = this.getClass().getClassLoader().getResource(filename);
+			res = classLoader().getResource(filename);
 			if (res == null)
 				throw new ServerException(601, 
 						"Class " + getClass().getName() + ": Unable to find a default template for " + key.name);
@@ -148,6 +153,14 @@ public class TenantSpecificResourceLoader {
 	 */
 	protected CachedValue populateValue(String filename, URL url) throws Exception{
 		return new CachedValue(url,filename);
+	}
+
+	protected ClassLoader classLoader() {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null) {
+			classLoader = this.getClass().getClassLoader();
+		}
+		return classLoader;
 	}
 
 }
