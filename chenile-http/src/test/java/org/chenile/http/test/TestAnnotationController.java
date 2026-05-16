@@ -1,5 +1,7 @@
 package org.chenile.http.test;
 
+import org.chenile.core.model.ChenileConfiguration;
+import org.chenile.core.model.ChenileServiceDefinition;
 import org.junit.Test;
 import org.junit.jupiter.api.Order;
 import org.junit.runner.RunWith;
@@ -17,6 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class TestAnnotationController {
 
    @Autowired TestUtil testUtil;
+   @Autowired ChenileConfiguration chenileConfiguration;
     
    @Test @Order(1)
     public void testService() throws Exception {
@@ -57,4 +60,18 @@ public class TestAnnotationController {
     public void testDoubleInterceptorException() throws Exception {
         testUtil.testDoubleInterceptorException("/c/ping");
     }
+
+	@Test @Order(9)
+	public void testAnnotationDefaultVersionProperty() {
+		ChenileServiceDefinition service = chenileConfiguration.getServices().get("jsonController");
+		org.junit.Assert.assertEquals("jsonController", service.getVersionProperty());
+		org.junit.Assert.assertEquals("testcase-json-controller", service.getVersion());
+	}
+
+	@Test @Order(10)
+	public void testAnnotationExplicitVersionProperty() {
+		ChenileServiceDefinition service = chenileConfiguration.getServices().get("capacityService");
+		org.junit.Assert.assertEquals("custom-capacity", service.getVersionProperty());
+		org.junit.Assert.assertEquals("testcase-capacity-service", service.getVersion());
+	}
 }

@@ -114,6 +114,7 @@ public class OperationDefinition {
 	protected Map<String,Object> extensions = new HashMap<>();
 	protected Map<Class<? extends Annotation>, Annotation> extensionsAsAnnotation = new HashMap<>();
 	
+	@JsonIgnore
 	public List<Command<ChenileExchange>> getClientInterceptorCommands() {
 		return clientInterceptorCommands;
 	}
@@ -165,6 +166,7 @@ public class OperationDefinition {
 		this.bodyTypeSelector = command;
 	}
 
+    @JsonIgnore
     public Method getMethod() {
 		return method;
 	}
@@ -296,6 +298,7 @@ public class OperationDefinition {
         this.serviceName = serviceName;
     }
 
+	@JsonIgnore
 	public List<Command<ChenileExchange>> getInterceptorCommands() {
 		return this.interceptorCommands;
 	}
@@ -304,6 +307,7 @@ public class OperationDefinition {
 		this.interceptorCommands = commands;
 	}
 
+	@JsonIgnore
 	public Command<ChenileExchange> getBodyTypeSelector() {
 		return bodyTypeSelector;
 	}
@@ -389,10 +393,12 @@ public class OperationDefinition {
 		extensions.put(key, value);
 	}
 	@Deprecated
+	@JsonIgnore
 	public Map<String,Object> getExtensions() {
 		return this.extensions;
 	}
 
+    @JsonIgnore
     public ParameterizedTypeReference<?> getOutputAsParameterizedReference() {
 		return this.outputAsParameterizedReference;
     }

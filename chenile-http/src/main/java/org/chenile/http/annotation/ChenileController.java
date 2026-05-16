@@ -21,6 +21,7 @@ import java.lang.annotation.Target;
 public @interface ChenileController {
 	String value();
 	String serviceName() default "";
+	String versionProperty() default "";
 	String healthCheckerName() default "";
 	String mockName() default "";
 	Class<?> interfaceClass() default Object.class;

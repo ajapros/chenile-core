@@ -1,0 +1,1 @@
+mockService.version=testcase-mock-service

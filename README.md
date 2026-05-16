@@ -17,6 +17,10 @@ This contains the source code of all the core modules and test modules for Cheni
 - [ServiceInvoker and domain binding](docs/service-invoker.md)
 - [Intro video outline](docs/intro-video-outline.md)
 
+## Frontend tools
+
+- [Chenile Admin UI](chenile-admin-ui/README.md) - a standalone React UI for browsing `/info`, `/service-info/{service}` and `/health-check/{service}`
+
 # About chenile
 
 Chenile is an open source framework for creating Micro services using Java and Spring Boot. 

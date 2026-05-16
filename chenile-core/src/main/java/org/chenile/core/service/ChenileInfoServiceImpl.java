@@ -19,6 +19,7 @@ public class ChenileInfoServiceImpl implements ChenileInfoService{
 	public Info info() {
 		Info versionInfo = new Info();
 		versionInfo.version = chenileConfiguration.getVersion();
+		versionInfo.versions.putAll(chenileConfiguration.getVersions());
 		versionInfo.moduleName = chenileConfiguration.getModuleName();
 		for (ChenileServiceDefinition csd: chenileConfiguration.getServices().values()) {
 			Info.ServiceInfo s = new Info.ServiceInfo(csd.getId());
@@ -26,7 +27,7 @@ public class ChenileInfoServiceImpl implements ChenileInfoService{
 				OperationInfo o = new OperationInfo();
 				o.name = od.getName();
 				o.url = od.getUrl();
-				o.method = od.getHttpMethod().name();
+				o.method = od.getHttpMethod() == null ? null : od.getHttpMethod().name();
 				s.operations.add(o);
 			}
 			versionInfo.services.add(s);

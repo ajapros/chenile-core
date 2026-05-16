@@ -32,12 +32,14 @@ public class TrajectoryOverride {
 	public void setNewHealthCheckerReferenceId(String newHealthCheckerReferenceId) {
 		this.newHealthCheckerReferenceId = newHealthCheckerReferenceId;
 	}
+	@com.fasterxml.jackson.annotation.JsonIgnore
 	public Object getNewServiceReference() {
 		return newServiceReference;
 	}
 	public void setNewServiceReference(Object newServiceReference) {
 		this.newServiceReference = newServiceReference;
 	}
+	@com.fasterxml.jackson.annotation.JsonIgnore
 	public HealthChecker getNewHealthCheckerReference() {
 		return newHealthCheckerReference;
 	}

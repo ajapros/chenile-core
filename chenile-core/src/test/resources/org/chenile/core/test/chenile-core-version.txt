@@ -1,0 +1,1 @@
+chenile-core.version=testcase-core

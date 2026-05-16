@@ -19,7 +19,9 @@ import org.chenile.core.context.ContextContainer;
 import org.chenile.core.context.HeaderUtils;
 import org.chenile.core.entrypoint.ChenileEntryPoint;
 import org.chenile.core.event.EventProcessor;
+import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.service.HealthCheckInfo;
+import org.chenile.core.service.Info;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,7 @@ public class TestChenileCore {
 	@Autowired private EventProcessor eventProcessor;
 	@Autowired private ChenileEntryPoint chenileEntryPoint;
 	@Autowired private ChenileExchangeBuilder chenileExchangeBuilder;
+	@Autowired private ChenileConfiguration chenileConfiguration;
 	@Autowired ContextContainer contextContainer;
 	
 	private ChenileExchange makeExchange(String serviceName,String operationName) {
@@ -256,6 +259,14 @@ public class TestChenileCore {
 		assertNull("Restoring a missing context must clear thread local state", contextContainer.get(HeaderUtils.TENANT_ID_KEY));
 		assertNull("Restoring a missing context must clear request id", contextContainer.getRequestId());
 	}
+
+	@Test public void testChenileVersionFromParentProperty() {
+		assertNotNull("versions map must be initialized", chenileConfiguration.getVersions());
+		assertEquals("chenile.version must be loaded from the main version.txt resource",
+				chenileConfiguration.getVersions().get("chenile.version"),
+				chenileConfiguration.getVersion("chenile"));
+		assertNotNull("chenile.version must be available", chenileConfiguration.getVersion("chenile"));
+	}
 	
 	@SuppressWarnings("unchecked")
 	@Test public void testMockingAbility() {
@@ -288,6 +299,36 @@ public class TestChenileCore {
 		HealthCheckInfo hci = (HealthCheckInfo)data;
 		assertEquals("Response message for health check did not match", MockHealthChecker.HEALTH_CHECK_MESSAGE,hci.message);
 		assertTrue("Response message for health check is not returning healthy",hci.healthy);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test public void testVersionAggregation() {
+		ChenileExchange exchange = makeExchange("infoService","info");
+		chenileEntryPoint.execute(exchange);
+		Info info = (Info) ((GenericResponse<Object>)exchange.getResponse()).getData();
+		assertEquals("testcase", info.version);
+		assertEquals("testcase", info.versions.get("version"));
+		assertEquals("testcase-core", info.versions.get("chenile-core.version"));
+		assertEquals("testcase-http", info.versions.get("chenile-http.version"));
+	}
+
+	@Test public void testNamedVersionLookup() {
+		assertEquals("testcase-core", chenileConfiguration.getVersion("chenile-core"));
+		assertEquals("testcase-http", chenileConfiguration.getVersion("chenile-http"));
+		assertEquals("testcase-mock-service", chenileConfiguration.getVersion("mockService"));
+		assertNull(chenileConfiguration.getVersion("missing-module"));
+	}
+
+	@Test public void testJsonServiceVersionProperty() {
+		var service = chenileConfiguration.getServices().get("mockService");
+		assertEquals("mockService", service.getVersionProperty());
+		assertEquals("testcase-mock-service", service.getVersion());
+	}
+
+	@Test public void testInfoServiceVersionProperty() {
+		var service = chenileConfiguration.getServices().get("infoService");
+		assertEquals("chenile", service.getVersionProperty());
+		assertEquals(chenileConfiguration.getVersion("chenile"), service.getVersion());
 	}
 
 	@SuppressWarnings("unchecked")

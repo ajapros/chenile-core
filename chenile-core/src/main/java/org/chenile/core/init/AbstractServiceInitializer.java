@@ -67,7 +67,9 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
     protected void registerService(ChenileServiceDefinition csd) {
 		csd.setBaseUrl(serviceConfiguration.getBaseUrl());
         csd.setModuleName(serviceConfiguration.getModuleName());
-        csd.setVersion(serviceConfiguration.getVersion());
+        String versionProperty = computeVersionProperty(csd);
+        csd.setVersionProperty(versionProperty);
+        csd.setVersion(resolveVersion(versionProperty));
         if (csd.getInterceptorComponentNames() != null ) {
         	csd.setInterceptorCommands(initInterceptors(csd.getInterceptorComponentNames()));
         }
@@ -96,6 +98,22 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
         String id = csd.getId();
     	serviceConfiguration.setService(id, csd);
     } 
+
+	private String computeVersionProperty(ChenileServiceDefinition csd) {
+		String versionProperty = csd.getVersionProperty();
+		if (versionProperty != null && !versionProperty.isBlank()) {
+			return versionProperty;
+		}
+		if (csd.getId() != null && !csd.getId().isBlank()) {
+			return csd.getId();
+		}
+		return csd.getName();
+	}
+
+	private String resolveVersion(String versionProperty) {
+		String version = serviceConfiguration.getVersion(versionProperty);
+		return version != null ? version : serviceConfiguration.getVersion();
+	}
     
     private void validate(ChenileServiceDefinition csd) {
 		try {

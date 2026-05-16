@@ -59,13 +59,17 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 			ChenileController chenileController = bean.getClass().getAnnotation(ChenileController.class);
 			ChenileServiceDefinition csd = new ChenileServiceDefinition();
 			csd.setModuleName(serviceConfiguration.getModuleName());
-	        csd.setVersion(serviceConfiguration.getVersion());
 			String id = chenileController.value();
 			csd.setId(id);
 			String name = chenileController.serviceName();
 			if (name.isEmpty()) {
 				name = "_" + id + "_";
 			}
+			String versionProperty = chenileController.versionProperty();
+			if (versionProperty.isEmpty()) {
+				versionProperty = id;
+			}
+			csd.setVersionProperty(versionProperty);
 
 			Object serviceRef = lookup(name);
 			if (serviceRef != null) {

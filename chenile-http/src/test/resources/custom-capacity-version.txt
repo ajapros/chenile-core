@@ -1,0 +1,1 @@
+custom-capacity.version=testcase-capacity-service

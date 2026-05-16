@@ -40,6 +40,7 @@ public class ChenileServiceDefinition  {
 	private String id;
     private String moduleName;
     private String version;
+    private String versionProperty;
     private List<OperationDefinition> operations;
     private List<String> interceptorComponentNames;
     @JsonIgnore
@@ -70,6 +71,7 @@ public class ChenileServiceDefinition  {
 		return bodyTypeSelectorComponentName;
 	}
 	
+	@JsonIgnore
 	public Object getMockServiceReference() {
 		return mockServiceReference;
 	}
@@ -131,6 +133,7 @@ public class ChenileServiceDefinition  {
 		return "ChenileServiceDefinition [name=" + name + ", id=" + id + "]";
 	}
 
+	@JsonIgnore
 	public Object getServiceReference() {
 		return serviceReference;
 	}
@@ -139,6 +142,7 @@ public class ChenileServiceDefinition  {
 		this.serviceReference = serviceReference;
 	}
 
+	@JsonIgnore
 	public Command<ChenileExchange> getBodyTypeSelector() {
 		return bodyTypeSelector;
 	}
@@ -187,6 +191,15 @@ public class ChenileServiceDefinition  {
 		this.version = version;
 	}
 
+	public String getVersionProperty() {
+		return versionProperty;
+	}
+
+	public void setVersionProperty(String versionProperty) {
+		this.versionProperty = versionProperty;
+	}
+
+	@JsonIgnore
 	public HealthChecker getHealthChecker() {
 		return this.healthChecker;
 	}
@@ -211,6 +224,7 @@ public class ChenileServiceDefinition  {
 		return extensions.get(key);		
 	}
 	@Deprecated
+	@JsonIgnore
 	public Map<String,Object> getExtensions() {
 		return this.extensions;
 	}
@@ -224,6 +238,7 @@ public class ChenileServiceDefinition  {
 		return (T)extensionsAsAnnotation.get(klass);
 	}
 
+	@JsonIgnore
 	public Map<String,TrajectoryOverride> getTrajectoryOverrides() {
 		return trajectoryOverrides;
 	}

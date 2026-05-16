@@ -1,13 +1,16 @@
 package org.chenile.core.service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A DTO that provides a condensed version of services along with the operations that they support
  */
 public class Info {
 	public String version;
+	public Map<String,String> versions = new LinkedHashMap<>();
 	public String moduleName;
 	public static class ServiceInfo{
 		public String name;

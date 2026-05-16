@@ -40,6 +40,7 @@ public class ChenileConfiguration {
 	private String preProcessorNames;
 	private String postProcessorNames;
 	private String version;
+	private Map<String,String> versions = new HashMap<String,String>();
 	private Map<String, ChenileServiceDefinition> services = new HashMap<String, ChenileServiceDefinition>();
 	private Map<String, ChenileEventDefinition> events = new HashMap<String, ChenileEventDefinition>();
 	/**
@@ -131,11 +132,45 @@ public class ChenileConfiguration {
 	}
 
 	public String getVersion() {
-		return this.version;
+		if (this.version != null) return this.version;
+		String moduleVersion = versions.get(moduleName + ".version");
+		if (moduleVersion != null) return moduleVersion;
+		String defaultVersion = versions.get("version");
+		if (defaultVersion != null) return defaultVersion;
+		return versions.values().stream().findFirst().orElse(null);
+	}
+
+	public String getVersion(String moduleOrServiceName) {
+		if (moduleOrServiceName == null || moduleOrServiceName.isEmpty()) return null;
+		return versions.get(moduleOrServiceName + ".version");
 	}
 	
 	public void setVersion(String version) {
 		this.version = version;
+		if (version != null) {
+			this.versions.put("version", version);
+		}
+	}
+
+	public Map<String, String> getVersions() {
+		return versions;
+	}
+
+	public void setVersions(Map<String, String> versions) {
+		this.versions = new HashMap<String, String>(versions);
+		if (this.version == null) {
+			this.version = getVersion();
+		}
+	}
+
+	public void addVersion(String key, String value) {
+		if (key == null || value == null) return;
+		this.versions.put(key, value);
+		if ("version".equals(key) || (moduleName + ".version").equals(key)) {
+			this.version = value;
+		} else if (this.version == null) {
+			this.version = value;
+		}
 	}
 
 	public EventLogger getEventLogger() {
