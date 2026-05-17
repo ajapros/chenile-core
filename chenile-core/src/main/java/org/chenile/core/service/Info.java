@@ -12,6 +12,7 @@ public class Info {
 	public String version;
 	public Map<String,String> versions = new LinkedHashMap<>();
 	public String moduleName;
+	public String monolithName;
 	public static class ServiceInfo{
 		public String name;
 		public ServiceInfo() {}

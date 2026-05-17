@@ -307,6 +307,8 @@ public class TestChenileCore {
 		chenileEntryPoint.execute(exchange);
 		Info info = (Info) ((GenericResponse<Object>)exchange.getResponse()).getData();
 		assertEquals("testcase", info.version);
+		assertEquals("chenile-core-test", info.monolithName);
+		assertEquals("chenile-core-test", info.moduleName);
 		assertEquals("testcase", info.versions.get("version"));
 		assertEquals("testcase-core", info.versions.get("chenile-core.version"));
 		assertEquals("testcase-http", info.versions.get("chenile-http.version"));
@@ -329,6 +331,11 @@ public class TestChenileCore {
 		var service = chenileConfiguration.getServices().get("infoService");
 		assertEquals("chenile", service.getVersionProperty());
 		assertEquals(chenileConfiguration.getVersion("chenile"), service.getVersion());
+	}
+
+	@Test public void testMonolithNameResolution() {
+		assertEquals("chenile-core-test", chenileConfiguration.getMonolithName());
+		assertEquals("chenile-core-test", chenileConfiguration.getModuleName());
 	}
 
 	@SuppressWarnings("unchecked")

@@ -21,6 +21,7 @@ public class ChenileInfoServiceImpl implements ChenileInfoService{
 		versionInfo.version = chenileConfiguration.getVersion();
 		versionInfo.versions.putAll(chenileConfiguration.getVersions());
 		versionInfo.moduleName = chenileConfiguration.getModuleName();
+		versionInfo.monolithName = chenileConfiguration.getMonolithName();
 		for (ChenileServiceDefinition csd: chenileConfiguration.getServices().values()) {
 			Info.ServiceInfo s = new Info.ServiceInfo(csd.getId());
 			for (OperationDefinition od: csd.getOperations()) {

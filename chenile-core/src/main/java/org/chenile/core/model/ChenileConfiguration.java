@@ -34,7 +34,7 @@ public class ChenileConfiguration {
 	}
 
 	private String baseUrl;
-	private String moduleName;
+	private String monolithName;
 	private List<Command<ChenileExchange>> preProcessorCommands;
 	private List<Command<ChenileExchange>> postProcessorCommands;
 	private String preProcessorNames;
@@ -59,8 +59,8 @@ public class ChenileConfiguration {
 		this.eventLoggerName = eventLoggerName;
 	}
 
-	public ChenileConfiguration(String moduleName,ApplicationContext applicationContext) {
-		this.moduleName = moduleName;
+	public ChenileConfiguration(String monolithName,ApplicationContext applicationContext) {
+		this.monolithName = monolithName;
 		this.applicationContext = applicationContext;
 	}
 		
@@ -72,8 +72,13 @@ public class ChenileConfiguration {
         this.services.put(serviceName,service);
     }
 
+	public String getMonolithName() {
+		return monolithName;
+	}
+
+	@Deprecated
 	public String getModuleName() {
-		return moduleName;
+		return monolithName;
 	}
 
 	public void addPreProcessors(String preProcessors) {
@@ -133,7 +138,7 @@ public class ChenileConfiguration {
 
 	public String getVersion() {
 		if (this.version != null) return this.version;
-		String moduleVersion = versions.get(moduleName + ".version");
+		String moduleVersion = versions.get(monolithName + ".version");
 		if (moduleVersion != null) return moduleVersion;
 		String defaultVersion = versions.get("version");
 		if (defaultVersion != null) return defaultVersion;
@@ -166,7 +171,7 @@ public class ChenileConfiguration {
 	public void addVersion(String key, String value) {
 		if (key == null || value == null) return;
 		this.versions.put(key, value);
-		if ("version".equals(key) || (moduleName + ".version").equals(key)) {
+		if ("version".equals(key) || (monolithName + ".version").equals(key)) {
 			this.version = value;
 		} else if (this.version == null) {
 			this.version = value;

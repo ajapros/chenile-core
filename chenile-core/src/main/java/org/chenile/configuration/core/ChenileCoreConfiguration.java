@@ -35,6 +35,8 @@ import org.chenile.owiz.config.impl.XmlOrchConfigurator;
 import org.chenile.owiz.impl.Chain;
 import org.chenile.owiz.impl.FilterChain;
 import org.chenile.owiz.impl.OrchExecutorImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -50,6 +52,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 @Configuration
 @PropertySource("classpath:${chenile.properties:chenile.properties}")
 public class ChenileCoreConfiguration {
+	private static final Logger logger = LoggerFactory.getLogger(ChenileCoreConfiguration.class);
 
 	@Value("${chenile.base.url}")
 	private String baseUrl;
@@ -65,7 +68,10 @@ public class ChenileCoreConfiguration {
 	@Value("${chenile.trajectory.json.package:}")
 	private String chenileTrajectoryJsonResources;
 	
-	@Value("${chenile.module.name}")
+	@Value("${chenile.monolith.name:}")
+	private String monolithName;
+
+	@Value("${chenile.module.name:}")
 	private String moduleName;
 	
 	@Value("${chenile.pre.processors}")
@@ -97,10 +103,26 @@ public class ChenileCoreConfiguration {
 	@Autowired EventLogger eventLogger;
 	
 	@Autowired ApplicationContext applicationContext;
+
+	private String resolveMonolithName() {
+		boolean hasMonolithName = monolithName != null && !monolithName.isBlank();
+		boolean hasModuleName = moduleName != null && !moduleName.isBlank();
+		if (hasMonolithName) {
+			if (hasModuleName && !monolithName.equals(moduleName)) {
+				logger.warn("Both chenile.monolith.name and deprecated chenile.module.name are configured. Using chenile.monolith.name={}", monolithName);
+			}
+			return monolithName;
+		}
+		if (hasModuleName) {
+			logger.warn("chenile.module.name is deprecated. Use chenile.monolith.name instead.");
+			return moduleName;
+		}
+		throw new IllegalStateException("Either chenile.monolith.name or chenile.module.name must be configured");
+	}
 	
     @Bean
     public ChenileConfiguration chenileServiceConfiguration(){
-        ChenileConfiguration configuration = new ChenileConfiguration(moduleName,applicationContext);
+        ChenileConfiguration configuration = new ChenileConfiguration(resolveMonolithName(),applicationContext);
 		configuration.setBaseUrl(baseUrl);
         configuration.addPreProcessors(preProcessors);
         configuration.addPostProcessors(postProcessors);

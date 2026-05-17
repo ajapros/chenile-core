@@ -29,8 +29,8 @@ public class ChenileEventSubscribersInitializer {
 	@Order(20)
 	public void init() {
 		for (ChenileServiceDefinition s : chenileConfiguration.getServices().values()) {
-			// ignore if the service does not belong to the current module.
-			if (!s.getModuleName().equals(chenileConfiguration.getModuleName())) continue; 
+			// ignore if the service does not belong to the current monolith.
+			if (!s.getMonolithName().equals(chenileConfiguration.getMonolithName())) continue;
 			for (OperationDefinition operationDefinition : s.getOperations()) {
 				Set<String> subscriptions = operationDefinition.getEventSubscribedTo();
 				if (subscriptions == null || subscriptions.isEmpty()) continue;

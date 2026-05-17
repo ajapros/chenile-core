@@ -118,7 +118,7 @@ function normalizeRegistryService(service) {
     version: serviceVersion,
     serviceId,
     serviceVersion,
-    sourceLabel: service.baseUrl || service.moduleName || "Remote monolith",
+    sourceLabel: service.baseUrl || service.monolithName || service.moduleName || "Remote monolith",
   };
 }
 
@@ -347,7 +347,7 @@ function App() {
                 </div>
                 <div className="metric-card">
                   <span>Module</span>
-                  <strong>{valueOrDash(info.moduleName)}</strong>
+                  <strong>{valueOrDash(info.monolithName || info.moduleName)}</strong>
                 </div>
                 <div className="metric-card">
                   <span>Version</span>
@@ -491,7 +491,7 @@ function App() {
                   label="Version"
                   value={selectedService.serviceVersion || selectedService.version}
                 />
-                <DetailRow label="Module" value={selectedService.moduleName} />
+                <DetailRow label="Monolith" value={selectedService.monolithName || selectedService.moduleName} />
                 <DetailRow label="Base URL" value={selectedService.baseUrl} />
                 <DetailRow
                   label="Health checker"

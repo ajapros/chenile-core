@@ -155,6 +155,14 @@ public class ChenileServiceDefinition  {
 		this.moduleName = moduleName;
 	}
 
+	public String getMonolithName() {
+		return moduleName;
+	}
+
+	public void setMonolithName(String monolithName) {
+		this.moduleName = monolithName;
+	}
+
 	public List<String> getClientInterceptorComponentNames() {
 		return clientInterceptorComponentNames;
 	}

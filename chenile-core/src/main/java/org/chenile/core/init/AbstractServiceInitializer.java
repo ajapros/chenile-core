@@ -66,7 +66,7 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
 	@SuppressWarnings("unchecked")
     protected void registerService(ChenileServiceDefinition csd) {
 		csd.setBaseUrl(serviceConfiguration.getBaseUrl());
-        csd.setModuleName(serviceConfiguration.getModuleName());
+        csd.setMonolithName(serviceConfiguration.getMonolithName());
         String versionProperty = computeVersionProperty(csd);
         csd.setVersionProperty(versionProperty);
         csd.setVersion(resolveVersion(versionProperty));

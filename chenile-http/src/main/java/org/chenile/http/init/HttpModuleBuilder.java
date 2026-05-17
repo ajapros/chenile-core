@@ -29,8 +29,8 @@ public class HttpModuleBuilder extends SimpleUrlHandlerMapping {
 	public void build() throws Exception {
 		final Map<String, Object> urlMap = new HashMap<>();
 		for (ChenileServiceDefinition s : serviceConfiguration.getServices().values()) {
-			// ignore if the service does not belong to the current module.
-			if (!s.getModuleName().equals(serviceConfiguration.getModuleName())) continue; 
+			// ignore if the service does not belong to the current monolith.
+			if (!s.getMonolithName().equals(serviceConfiguration.getMonolithName())) continue;
 			for (OperationDefinition operationDefinition : s.getOperations()) {
 				if (operationDefinition.getUrl() == null) continue;
 				urlMap.put(operationDefinition.getUrl(), new HttpEntryPoint(s, operationDefinition, chenileEntryPoint));
