@@ -326,12 +326,14 @@ public class TestChenileCore {
 
 	@Test public void testJsonServiceVersionProperty() {
 		var service = chenileConfiguration.getServices().get("mockService");
+		assertEquals("mockService", service.getServiceModule());
 		assertEquals("mockService", service.getVersionProperty());
 		assertEquals("testcase-mock-service", service.getVersion());
 	}
 
 	@Test public void testInfoServiceVersionProperty() {
 		var service = chenileConfiguration.getServices().get("infoService");
+		assertEquals("chenile", service.getServiceModule());
 		assertEquals("chenile", service.getVersionProperty());
 		assertEquals(chenileConfiguration.getVersion("chenile"), service.getVersion());
 	}
@@ -354,13 +356,20 @@ public class TestChenileCore {
 		ObjectMapper objectMapper = new ObjectMapper();
 		ChenileServiceDefinition serviceDefinition = new ChenileServiceDefinition();
 		serviceDefinition.setMonolithName("m1");
+		serviceDefinition.setServiceModule("svcmod");
 		String json = objectMapper.writeValueAsString(serviceDefinition);
 		assertTrue(json.contains("\"monolithName\":\"m1\""));
 		assertFalse(json.contains("\"moduleName\""));
+		assertTrue(json.contains("\"serviceModule\":\"svcmod\""));
+		assertFalse(json.contains("\"versionProperty\""));
 
 		ChenileServiceDefinition deserialized = objectMapper.readValue("{\"moduleName\":\"legacy-m1\"}",
 				ChenileServiceDefinition.class);
 		assertEquals("legacy-m1", deserialized.getMonolithName());
+
+		ChenileServiceDefinition legacyServiceModule = objectMapper.readValue("{\"versionProperty\":\"legacy-service-module\"}",
+				ChenileServiceDefinition.class);
+		assertEquals("legacy-service-module", legacyServiceModule.getServiceModule());
 	}
 
 	@SuppressWarnings("unchecked")

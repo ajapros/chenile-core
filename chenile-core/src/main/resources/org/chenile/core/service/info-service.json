@@ -1,7 +1,7 @@
 {
 	"name": "infoService",
 	"id": "infoService",
-	"versionProperty": "chenile",
+	"serviceModule": "chenile",
 	"healthCheckerName":"infoHealthChecker",
 	
 	"operations": [

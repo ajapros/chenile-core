@@ -67,9 +67,9 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
     protected void registerService(ChenileServiceDefinition csd) {
 		csd.setBaseUrl(serviceConfiguration.getBaseUrl());
         csd.setMonolithName(serviceConfiguration.getMonolithName());
-        String versionProperty = computeVersionProperty(csd);
-        csd.setVersionProperty(versionProperty);
-        csd.setVersion(resolveVersion(versionProperty));
+        String serviceModule = computeServiceModule(csd);
+        csd.setServiceModule(serviceModule);
+        csd.setVersion(resolveVersion(serviceModule));
         if (csd.getInterceptorComponentNames() != null ) {
         	csd.setInterceptorCommands(initInterceptors(csd.getInterceptorComponentNames()));
         }
@@ -99,10 +99,10 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
     	serviceConfiguration.setService(id, csd);
     } 
 
-	private String computeVersionProperty(ChenileServiceDefinition csd) {
-		String versionProperty = csd.getVersionProperty();
-		if (versionProperty != null && !versionProperty.isBlank()) {
-			return versionProperty;
+	private String computeServiceModule(ChenileServiceDefinition csd) {
+		String serviceModule = csd.getServiceModule();
+		if (serviceModule != null && !serviceModule.isBlank()) {
+			return serviceModule;
 		}
 		if (csd.getId() != null && !csd.getId().isBlank()) {
 			return csd.getId();
@@ -110,8 +110,8 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
 		return csd.getName();
 	}
 
-	private String resolveVersion(String versionProperty) {
-		String version = serviceConfiguration.getVersion(versionProperty);
+	private String resolveVersion(String serviceModule) {
+		String version = serviceConfiguration.getVersion(serviceModule);
 		return version != null ? version : serviceConfiguration.getVersion();
 	}
     

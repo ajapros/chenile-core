@@ -1,7 +1,7 @@
 {
   "name": "mockService",
   "id": "mockService",
-  "versionProperty": "mockService",
+  "serviceModule": "mockService",
   "mockName": "_mockMockService_",
   "healthCheckerName":"mockHealthChecker",
   "operations":

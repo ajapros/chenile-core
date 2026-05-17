@@ -42,7 +42,7 @@ public class ChenileServiceDefinition  {
 	private String id;
     private String moduleName;
     private String version;
-    private String versionProperty;
+    private String serviceModule;
     private List<OperationDefinition> operations;
     private List<String> interceptorComponentNames;
     @JsonIgnore
@@ -205,12 +205,24 @@ public class ChenileServiceDefinition  {
 		this.version = version;
 	}
 
+	@JsonIgnore
 	public String getVersionProperty() {
-		return versionProperty;
+		return serviceModule;
 	}
 
 	public void setVersionProperty(String versionProperty) {
-		this.versionProperty = versionProperty;
+		this.serviceModule = versionProperty;
+	}
+
+	@JsonProperty("serviceModule")
+	public String getServiceModule() {
+		return serviceModule;
+	}
+
+	@JsonProperty("serviceModule")
+	@JsonAlias("versionProperty")
+	public void setServiceModule(String serviceModule) {
+		this.serviceModule = serviceModule;
 	}
 
 	@JsonIgnore

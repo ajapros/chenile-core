@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@ChenileController(value = "capacityService", serviceName = "capacityService", versionProperty = "custom-capacity")
+@ChenileController(value = "capacityService", serviceName = "capacityService", serviceModule = "custom-capacity")
 public class CapacityController extends ControllerSupport {
     @PostMapping("/add-capacity")
     @BodyTypeSelector("subclassBodyTypeSelector")
