@@ -10,7 +10,9 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.service.HealthChecker;
 import org.chenile.owiz.Command;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Defines a chenile service. A chenile service is more than its implementation. It is
@@ -147,6 +149,7 @@ public class ChenileServiceDefinition  {
 		return bodyTypeSelector;
 	}
 
+	@JsonIgnore
 	public String getModuleName() {
 		return moduleName;
 	}
@@ -155,10 +158,13 @@ public class ChenileServiceDefinition  {
 		this.moduleName = moduleName;
 	}
 
+	@JsonProperty("monolithName")
 	public String getMonolithName() {
 		return moduleName;
 	}
 
+	@JsonProperty("monolithName")
+	@JsonAlias("moduleName")
 	public void setMonolithName(String monolithName) {
 		this.moduleName = monolithName;
 	}

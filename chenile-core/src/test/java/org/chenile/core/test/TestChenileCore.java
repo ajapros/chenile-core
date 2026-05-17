@@ -20,6 +20,7 @@ import org.chenile.core.context.HeaderUtils;
 import org.chenile.core.entrypoint.ChenileEntryPoint;
 import org.chenile.core.event.EventProcessor;
 import org.chenile.core.model.ChenileConfiguration;
+import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.service.HealthCheckInfo;
 import org.chenile.core.service.Info;
 import org.junit.Test;
@@ -36,6 +37,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.*;
+
+import tools.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SpringTestConfig.class)
@@ -336,6 +339,28 @@ public class TestChenileCore {
 	@Test public void testMonolithNameResolution() {
 		assertEquals("chenile-core-test", chenileConfiguration.getMonolithName());
 		assertEquals("chenile-core-test", chenileConfiguration.getModuleName());
+	}
+
+	@Test public void testInfoSerializesMonolithNameOnly() throws Exception {
+		Info info = new Info();
+		info.monolithName = "m1";
+		info.moduleName = "m1";
+		String json = new ObjectMapper().writeValueAsString(info);
+		assertTrue(json.contains("\"monolithName\":\"m1\""));
+		assertFalse(json.contains("\"moduleName\""));
+	}
+
+	@Test public void testServiceDefinitionSerializesMonolithNameAndAcceptsModuleName() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+		ChenileServiceDefinition serviceDefinition = new ChenileServiceDefinition();
+		serviceDefinition.setMonolithName("m1");
+		String json = objectMapper.writeValueAsString(serviceDefinition);
+		assertTrue(json.contains("\"monolithName\":\"m1\""));
+		assertFalse(json.contains("\"moduleName\""));
+
+		ChenileServiceDefinition deserialized = objectMapper.readValue("{\"moduleName\":\"legacy-m1\"}",
+				ChenileServiceDefinition.class);
+		assertEquals("legacy-m1", deserialized.getMonolithName());
 	}
 
 	@SuppressWarnings("unchecked")

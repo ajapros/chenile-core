@@ -5,12 +5,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * A DTO that provides a condensed version of services along with the operations that they support
  */
 public class Info {
 	public String version;
 	public Map<String,String> versions = new LinkedHashMap<>();
+	@JsonIgnore
 	public String moduleName;
 	public String monolithName;
 	public static class ServiceInfo{
