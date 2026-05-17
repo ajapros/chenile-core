@@ -485,7 +485,7 @@ function App() {
                 <DetailRow label="Bean name" value={selectedService.name} />
                 <DetailRow
                   label="Service module"
-                  value={selectedService.serviceModule || selectedService.versionProperty}
+                  value={selectedService.serviceModule}
                 />
                 <DetailRow
                   label="Version"
