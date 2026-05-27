@@ -129,6 +129,34 @@ function isRegistryHost(infoPayload) {
   });
 }
 
+function deriveWorkflowInfoLookupName(service) {
+  const lookupName = service?.lookupName || service?.serviceId || service?.id;
+  if (!lookupName || lookupName.endsWith("StateEntityInfoService")) {
+    return "";
+  }
+  if (lookupName.endsWith("Service")) {
+    return `${lookupName.slice(0, -"Service".length)}StateEntityInfoService`;
+  }
+  return `${lookupName}StateEntityInfoService`;
+}
+
+function resolveWorkflowInfoService(service, services) {
+  const infoLookupName = deriveWorkflowInfoLookupName(service);
+  if (!infoLookupName) {
+    return null;
+  }
+  return (
+    services.find((candidate) => candidate.lookupName === infoLookupName) || null
+  );
+}
+
+function getOperationUrl(service, suffix) {
+  const operation = (service?.operations || []).find((item) =>
+    (item.url || "").endsWith(suffix)
+  );
+  return operation?.url || "";
+}
+
 function App() {
   const [baseUrlInput, setBaseUrlInput] = useState(
     window.localStorage.getItem("chenile-admin-base-url") || DEFAULT_BASE_URL
@@ -149,6 +177,12 @@ function App() {
   const [healthInfo, setHealthInfo] = useState(null);
   const [healthLoading, setHealthLoading] = useState(false);
   const [healthError, setHealthError] = useState("");
+  const [workflowDiagram, setWorkflowDiagram] = useState("");
+  const [workflowDiagramLoading, setWorkflowDiagramLoading] = useState(false);
+  const [workflowDiagramError, setWorkflowDiagramError] = useState("");
+  const [testDiagramImages, setTestDiagramImages] = useState([]);
+  const [testDiagramLoading, setTestDiagramLoading] = useState(false);
+  const [testDiagramError, setTestDiagramError] = useState("");
   const [swaggerUrl, setSwaggerUrl] = useState("");
 
   useEffect(() => {
@@ -184,6 +218,10 @@ function App() {
   }, [catalogMode, sortedEcosystemServices, sortedLocalServices]);
 
   const registryHostDetected = useMemo(() => isRegistryHost(info), [info]);
+  const workflowInfoService = useMemo(
+    () => resolveWorkflowInfoService(selectedService, activeServices),
+    [selectedService, activeServices]
+  );
 
   async function loadServices() {
     const normalized = normalizeBaseUrl(baseUrlInput);
@@ -198,6 +236,10 @@ function App() {
     setServiceError("");
     setHealthInfo(null);
     setHealthError("");
+    setWorkflowDiagram("");
+    setWorkflowDiagramError("");
+    setTestDiagramImages([]);
+    setTestDiagramError("");
     setSwaggerUrl("");
     try {
       const [payload, detectedSwaggerUrl] = await Promise.all([
@@ -237,6 +279,10 @@ function App() {
     setSelectedService(null);
     setHealthInfo(null);
     setHealthError("");
+    setWorkflowDiagram("");
+    setWorkflowDiagramError("");
+    setTestDiagramImages([]);
+    setTestDiagramError("");
     try {
       if (serviceSummary.catalog === "ecosystem") {
         setSelectedService(serviceSummary);
@@ -284,6 +330,71 @@ function App() {
       setHealthError(error.message);
     } finally {
       setHealthLoading(false);
+    }
+  }
+
+  async function loadWorkflowDiagram() {
+    if (!workflowInfoService) {
+      return;
+    }
+    const operationUrl = getOperationUrl(workflowInfoService, "/info/state-diagram");
+    if (!operationUrl) {
+      return;
+    }
+    setWorkflowDiagramLoading(true);
+    setWorkflowDiagramError("");
+    setWorkflowDiagram("");
+    try {
+      const targetBaseUrl =
+        workflowInfoService.catalog === "ecosystem" && workflowInfoService.baseUrl
+          ? normalizeBaseUrl(workflowInfoService.baseUrl)
+          : baseUrl;
+      const payload = await fetchJson(buildRequestUrl(targetBaseUrl, operationUrl), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      setWorkflowDiagram(payload?.data ? `data:image/png;base64,${payload.data}` : "");
+    } catch (error) {
+      setWorkflowDiagramError(error.message);
+    } finally {
+      setWorkflowDiagramLoading(false);
+    }
+  }
+
+  async function loadWorkflowTestDiagrams() {
+    if (!workflowInfoService) {
+      return;
+    }
+    const operationUrl = getOperationUrl(
+      workflowInfoService,
+      "/info/test-state-diagrams"
+    );
+    if (!operationUrl) {
+      return;
+    }
+    setTestDiagramLoading(true);
+    setTestDiagramError("");
+    setTestDiagramImages([]);
+    try {
+      const targetBaseUrl =
+        workflowInfoService.catalog === "ecosystem" && workflowInfoService.baseUrl
+          ? normalizeBaseUrl(workflowInfoService.baseUrl)
+          : baseUrl;
+      const payload = await fetchJson(buildRequestUrl(targetBaseUrl, operationUrl), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const images = Object.entries(payload?.data || {}).map(([name, value]) => ({
+        name,
+        src: `data:image/png;base64,${value}`,
+      }));
+      setTestDiagramImages(images);
+    } catch (error) {
+      setTestDiagramError(error.message);
+    } finally {
+      setTestDiagramLoading(false);
     }
   }
 
@@ -398,6 +509,10 @@ function App() {
                       setServiceError("");
                       setHealthInfo(null);
                       setHealthError("");
+                      setWorkflowDiagram("");
+                      setWorkflowDiagramError("");
+                      setTestDiagramImages([]);
+                      setTestDiagramError("");
                     }}
                     type="button"
                   >
@@ -412,6 +527,10 @@ function App() {
                       setServiceError("");
                       setHealthInfo(null);
                       setHealthError("");
+                      setWorkflowDiagram("");
+                      setWorkflowDiagramError("");
+                      setTestDiagramImages([]);
+                      setTestDiagramError("");
                     }}
                     type="button"
                   >
@@ -485,7 +604,7 @@ function App() {
                 <DetailRow label="Bean name" value={selectedService.name} />
                 <DetailRow
                   label="Service module"
-                  value={selectedService.serviceModule || selectedService.versionProperty}
+                  value={selectedService.serviceModule}
                 />
                 <DetailRow
                   label="Version"
@@ -560,6 +679,59 @@ function App() {
                   </tbody>
                 </table>
               </div>
+
+              {workflowInfoService ? (
+                <div className="workflow-info-block">
+                  <div className="workflow-info-header">
+                    <div>
+                      <h3>Workflow Tools</h3>
+                      <p className="muted-text">
+                        Available because <code>{workflowInfoService.lookupName}</code> is
+                        exposed by this deployment.
+                      </p>
+                    </div>
+                    <div className="workflow-actions">
+                      <button
+                        type="button"
+                        onClick={() => void loadWorkflowDiagram()}
+                        disabled={workflowDiagramLoading}
+                      >
+                        {workflowDiagramLoading ? "Rendering..." : "Load State Diagram"}
+                      </button>
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => void loadWorkflowTestDiagrams()}
+                        disabled={testDiagramLoading}
+                      >
+                        {testDiagramLoading ? "Rendering..." : "Load Test Diagrams"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {workflowDiagramError ? (
+                    <p className="error-text">{workflowDiagramError}</p>
+                  ) : null}
+                  {workflowDiagram ? (
+                    <div className="workflow-image-card">
+                      <span>State Diagram</span>
+                      <img src={workflowDiagram} alt="Workflow state diagram" />
+                    </div>
+                  ) : null}
+
+                  {testDiagramError ? <p className="error-text">{testDiagramError}</p> : null}
+                  {testDiagramImages.length ? (
+                    <div className="workflow-gallery">
+                      {testDiagramImages.map((image) => (
+                        <div key={image.name} className="workflow-image-card">
+                          <span>{image.name}</span>
+                          <img src={image.src} alt={image.name} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </>
           ) : !serviceLoading ? (
             <div className="empty-state">

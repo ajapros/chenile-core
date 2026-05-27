@@ -67,9 +67,6 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 			}
 			String serviceModule = chenileController.serviceModule();
 			if (serviceModule.isEmpty()) {
-				serviceModule = chenileController.versionProperty();
-			}
-			if (serviceModule.isEmpty()) {
 				serviceModule = id;
 			}
 			csd.setServiceModule(serviceModule);

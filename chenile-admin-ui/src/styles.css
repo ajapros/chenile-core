@@ -190,7 +190,8 @@ button:disabled {
 
 .versions-block,
 .health-block,
-.operations-block {
+.operations-block,
+.workflow-info-block {
   margin-top: 20px;
 }
 
@@ -356,6 +357,49 @@ button:disabled {
   margin-top: 12px;
 }
 
+.workflow-info-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.workflow-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.workflow-gallery {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 14px;
+}
+
+.workflow-image-card {
+  margin-top: 14px;
+  border: 1px solid rgba(23, 51, 46, 0.1);
+  border-radius: 18px;
+  background: #f9fbfa;
+  padding: 14px;
+}
+
+.workflow-image-card span {
+  display: block;
+  margin-bottom: 10px;
+  color: #60736d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.workflow-image-card img {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+  background: #fff;
+}
+
 .operations-block th,
 .operations-block td {
   text-align: left;
@@ -401,7 +445,8 @@ button:disabled {
   }
 
   .registry-callout,
-  .swagger-callout {
+  .swagger-callout,
+  .workflow-info-header {
     flex-direction: column;
   }
 

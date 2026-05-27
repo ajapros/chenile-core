@@ -65,7 +65,6 @@ public class TestAnnotationController {
 	public void testAnnotationDefaultVersionProperty() {
 		ChenileServiceDefinition service = chenileConfiguration.getServices().get("jsonController");
 		org.junit.Assert.assertEquals("jsonController", service.getServiceModule());
-		org.junit.Assert.assertEquals("jsonController", service.getVersionProperty());
 		org.junit.Assert.assertEquals("testcase-json-controller", service.getVersion());
 	}
 
@@ -73,7 +72,6 @@ public class TestAnnotationController {
 	public void testAnnotationExplicitVersionProperty() {
 		ChenileServiceDefinition service = chenileConfiguration.getServices().get("capacityService");
 		org.junit.Assert.assertEquals("custom-capacity", service.getServiceModule());
-		org.junit.Assert.assertEquals("custom-capacity", service.getVersionProperty());
 		org.junit.Assert.assertEquals("testcase-capacity-service", service.getVersion());
 	}
 }

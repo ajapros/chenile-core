@@ -22,8 +22,6 @@ public @interface ChenileController {
 	String value();
 	String serviceName() default "";
 	String serviceModule() default "";
-	@Deprecated
-	String versionProperty() default "";
 	String healthCheckerName() default "";
 	String mockName() default "";
 	Class<?> interfaceClass() default Object.class;

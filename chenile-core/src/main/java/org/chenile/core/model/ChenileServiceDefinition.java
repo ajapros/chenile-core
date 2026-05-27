@@ -205,22 +205,12 @@ public class ChenileServiceDefinition  {
 		this.version = version;
 	}
 
-	@JsonIgnore
-	public String getVersionProperty() {
-		return serviceModule;
-	}
-
-	public void setVersionProperty(String versionProperty) {
-		this.serviceModule = versionProperty;
-	}
-
 	@JsonProperty("serviceModule")
 	public String getServiceModule() {
 		return serviceModule;
 	}
 
 	@JsonProperty("serviceModule")
-	@JsonAlias("versionProperty")
 	public void setServiceModule(String serviceModule) {
 		this.serviceModule = serviceModule;
 	}
