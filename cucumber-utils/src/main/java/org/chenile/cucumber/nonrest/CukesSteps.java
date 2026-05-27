@@ -125,7 +125,7 @@ public class CukesSteps {
 	   assertTrue(exception instanceof ErrorNumException);
 	   ErrorNumException ene = (ErrorNumException)exception;
 	   assertEquals("Could not find error code " + int1 + " in the exception thrown",
-			   int1.intValue(),ene.getSubErrorNum());
+			   String.valueOf(int1),ene.getSubErrorNum());
 	}
 	
 	@Then("an exception is thrown with param number {int} value {string}")
@@ -144,7 +144,7 @@ public class CukesSteps {
 	public void a_warning_must_be_thrown_with_code(Integer int1) {		
 		List<ResponseMessage> warnings = (List<ResponseMessage>)context.get("responseMessages");
 		for (ResponseMessage rm: warnings) {
-			if (rm.getSubErrorCode()== int1)
+			if (rm.getSubErrorCode().equals(String.valueOf(int1)))
 				return;
 		}
 		fail("Could not find a warning with error code " + int1);

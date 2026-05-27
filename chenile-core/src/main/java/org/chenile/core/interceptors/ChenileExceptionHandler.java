@@ -63,7 +63,7 @@ public class ChenileExceptionHandler extends BaseChenileInterceptor{
 		}
 	}
 	
-	private String translate(int code,Object[] params,Locale locale) {
+	private String translate(String code,Object[] params,Locale locale) {
 		String defaultMessage = "Message code " + code + " not found in resource bundle";
 		
 		try {

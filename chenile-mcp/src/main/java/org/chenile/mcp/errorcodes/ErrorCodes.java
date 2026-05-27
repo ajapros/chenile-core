@@ -5,14 +5,14 @@ package org.chenile.mcp.errorcodes;
  */
 public enum ErrorCodes {
 
-	MISCONFIGURATION(900);
+	MISCONFIGURATION("900");
 
-	final int subError;
-	private ErrorCodes(int subError) {
+	final String subError;
+	private ErrorCodes(String subError) {
 		this.subError = subError;
 	}
 	
-	public int getSubError() {
+	public String getSubError() {
 		return this.subError;
 	}
 }

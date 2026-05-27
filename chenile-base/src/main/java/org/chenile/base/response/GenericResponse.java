@@ -82,11 +82,15 @@ public class GenericResponse<T> implements WarningAware{
 	}
 
 	//@JsonSerialize(using = ToStringSerializer.class)
-	public int getSubErrorCode() {
+	public String getSubErrorCode() {
 		return this.responseMessage.getSubErrorCode();
 	}
 
 	//@JsonSerialize(using = ToStringSerializer.class)
+	public void setSubErrorCode(String subErrorCode) {
+		this.responseMessage.setSubErrorCode(subErrorCode);
+	}
+
 	public void setSubErrorCode(int subErrorCode) {
 		this.responseMessage.setSubErrorCode(subErrorCode);
 	}

@@ -162,7 +162,7 @@ public class TestChenileCore {
 		assertEquals("Exception returned must be of type ServerException", 
 				ServerException.class,e.getClass());
 		ServerException e1 = (ServerException)e;
-		assertEquals("Sub error code of exception does not match",exceptionNum,e1.getSubErrorNum());
+		assertEquals("Sub error code of exception does not match",String.valueOf(exceptionNum),e1.getSubErrorNum());
 		
 	}
 	

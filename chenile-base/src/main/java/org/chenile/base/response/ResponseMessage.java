@@ -60,7 +60,7 @@ public class ResponseMessage {
 	/**
 	 * The error code specific to the service
 	 */
-	private int subErrorCode; 
+	private String subErrorCode;
 	/**
 	 * Params that might be needed to render the description. 
 	 * These contain substitutable parameters
@@ -90,13 +90,14 @@ public class ResponseMessage {
 	public void setField(String field) {
 		this.field = field;
 	}
-	@JsonSerialize(using = ToStringSerializer.class)
-	public int getSubErrorCode() {
+	public String getSubErrorCode() {
 		return subErrorCode;
 	}
-	@JsonSerialize(using = ToStringSerializer.class)
-	public void setSubErrorCode(int subErrorCode) {
+	public void setSubErrorCode(String subErrorCode) {
 		this.subErrorCode = subErrorCode;
+	}
+	public void setSubErrorCode(int subErrorCode) {
+		this.subErrorCode = String.valueOf(subErrorCode);
 	}
 	
 	public ResponseMessage clone() {

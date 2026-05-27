@@ -109,7 +109,7 @@ public class ParallelChain<InputType> extends Chain<InputType> {
 		// Ignore 903 sub error code since these messages were generated 
 		// when the framework realizes that all its sub commands have errored out
 		// Since sub commands have already logged warning it is redundant to re-log them again
-		if (mesg.getSubErrorCode() != 903)
+		if (!mesg.getSubErrorCode().equals("903"))
 			WarningAware.addWarningMessage(context,mesg);		
 	}
 	

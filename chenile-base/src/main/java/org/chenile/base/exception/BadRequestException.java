@@ -17,6 +17,9 @@ public class BadRequestException extends ErrorNumException {
 	public BadRequestException(int subErrorNum, String message) {
 		super(400, subErrorNum, message);
 	}
+	public BadRequestException(String subErrorNum, String message) {
+		super(400, subErrorNum, message);
+	}
 
 	/**
 	 *
@@ -24,6 +27,9 @@ public class BadRequestException extends ErrorNumException {
 	 * @param params params that need to be substituted in the resource bundle
 	 */
 	public BadRequestException(int subErrorNum, Object[]params) {
+		super(400, subErrorNum, params);
+	}
+	public BadRequestException(String subErrorNum, Object[]params) {
 		super(400, subErrorNum, params);
 	}
 
@@ -53,6 +59,9 @@ public class BadRequestException extends ErrorNumException {
 	public BadRequestException(int subErrorNum, String message, Throwable cause) {
 		super(400, subErrorNum, message, cause);
 	}
+	public BadRequestException(String subErrorNum, String message, Throwable cause) {
+		super(400, subErrorNum, message, cause);
+	}
 
 	/**
 	 *
@@ -62,6 +71,9 @@ public class BadRequestException extends ErrorNumException {
 	 *
 	 */
 	public BadRequestException(int subErrorNum, Object[] params, Throwable cause) {
+		super(400, subErrorNum, params, cause);
+	}
+	public BadRequestException(String subErrorNum, Object[] params, Throwable cause) {
 		super(400, subErrorNum, params, cause);
 	}
 

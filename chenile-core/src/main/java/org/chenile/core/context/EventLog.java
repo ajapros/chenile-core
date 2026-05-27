@@ -7,7 +7,7 @@ public class EventLog {
 		SUCCESS, FAIL, WARNING
 	}
 	private String eventId;
-	private int subErrorNum;
+	private String subErrorNum;
 	
 	public String getEventId() {
 		return eventId;
@@ -45,11 +45,14 @@ public class EventLog {
 	public void setApp(String app) {
 		this.app = app;
 	}
-	public int getSubErrorNum() {
+	public String getSubErrorNum() {
 		return subErrorNum;
 	}
-	public void setSubErrorNum(int subErrorNum) {
+	public void setSubErrorNum(String subErrorNum) {
 		this.subErrorNum = subErrorNum;
+	}
+	public void setSubErrorNum(int subErrorNum) {
+		this.subErrorNum = String.valueOf(subErrorNum);
 	}
 	private StatusEnum status;
 	private String message;

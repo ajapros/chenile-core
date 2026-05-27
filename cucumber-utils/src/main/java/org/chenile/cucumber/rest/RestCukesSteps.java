@@ -249,7 +249,13 @@ public class RestCukesSteps {
     @Then("the top level subErrorCode is {int}")
     public void the_top_level_subErrorCode_is(Integer code) throws Exception {
         ResultActions response = context.get("actions");
-        response.andExpect(jsonPath("$.subErrorCode").value(code));
+        response.andExpect(jsonPath("$.subErrorCode").value(String.valueOf(code)));
+    }
+
+    @Then("the top level subErrorCode is {string}")
+    public void the_top_level_subErrorCode_is(String code) throws Exception {
+        ResultActions response = context.get("actions");
+        response.andExpect(jsonPath("$.subErrorCode").value(substituteVariables(code)));
     }
 
     @Then("the top level description is {string}")
@@ -264,7 +270,7 @@ public class RestCukesSteps {
         warningMessage = substituteVariables(warningMessage);
         GenericResponse<?> response = extractGenericResponse();
         for (ResponseMessage m : response.getErrors()) {
-            if (m.getSubErrorCode() == errorNum && m.getDescription().equals(warningMessage)) {
+            if (m.getSubErrorCode().equals(String.valueOf(errorNum)) && m.getDescription().equals(warningMessage)) {
                 return;
             }
         }
@@ -277,7 +283,7 @@ public class RestCukesSteps {
         warningMessage = substituteVariables(warningMessage);
         GenericResponse<?> response = extractGenericResponse();
         for (ResponseMessage m : response.getErrors()) {
-            if (m.getSubErrorCode() == subErrorCode &&
+            if (m.getSubErrorCode().equals(String.valueOf(subErrorCode)) &&
                     m.getDescription().equals(warningMessage) &&
                     m.getCode() == httpStatus) {
                 return;
@@ -290,8 +296,8 @@ public class RestCukesSteps {
     public void a_REST_warning_must_be_thrown_with_code(Integer errorNum) throws Exception {
         GenericResponse<?> response = extractGenericResponse();
         for (ResponseMessage m : response.getErrors()) {
-            int code = m.getSubErrorCode();
-            if (code == errorNum)
+            String code = m.getSubErrorCode();
+            if (code.equals(String.valueOf(errorNum)))
                 return;
         }
         fail("Unable to find " + errorNum + " in warnings");
@@ -411,4 +417,3 @@ public class RestCukesSteps {
         return VariableHelper.substituteVariables(string);
     }
 }
-
