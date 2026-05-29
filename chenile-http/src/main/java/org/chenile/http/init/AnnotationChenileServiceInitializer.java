@@ -10,6 +10,7 @@ import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.service.HealthChecker;
 import org.chenile.core.util.MethodUtils;
 import org.chenile.http.annotation.ChenileController;
+import org.chenile.http.annotation.ChenileAdditionalAttribute;
 import org.chenile.http.init.od.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -70,6 +72,15 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 				serviceModule = id;
 			}
 			csd.setServiceModule(serviceModule);
+			String bluePrintName = chenileController.bluePrintName();
+			if (!bluePrintName.isEmpty()) {
+				csd.setBluePrintName(bluePrintName);
+			}
+			Map<String,String> additionalAttributes = new HashMap<>();
+			for (ChenileAdditionalAttribute additionalAttribute : chenileController.additionalAttributes()) {
+				additionalAttributes.put(additionalAttribute.key(), additionalAttribute.value());
+			}
+			csd.setAdditionalAttributes(additionalAttributes);
 
 			Object serviceRef = lookup(name);
 			if (serviceRef != null) {

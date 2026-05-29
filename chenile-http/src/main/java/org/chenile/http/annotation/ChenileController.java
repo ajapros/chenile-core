@@ -22,6 +22,8 @@ public @interface ChenileController {
 	String value();
 	String serviceName() default "";
 	String serviceModule() default "";
+	String bluePrintName() default "";
+	ChenileAdditionalAttribute[] additionalAttributes() default {};
 	String healthCheckerName() default "";
 	String mockName() default "";
 	Class<?> interfaceClass() default Object.class;

@@ -3,6 +3,7 @@ package org.chenile.http.test.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.http.annotation.BodyTypeSelector;
+import org.chenile.http.annotation.ChenileAdditionalAttribute;
 import org.chenile.http.annotation.ChenileController;
 import org.chenile.http.annotation.ChenileParamType;
 import org.chenile.http.handler.ControllerSupport;
@@ -15,7 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@ChenileController(value = "capacityService", serviceName = "capacityService", serviceModule = "custom-capacity")
+@ChenileController(
+        value = "capacityService",
+        serviceName = "capacityService",
+        serviceModule = "custom-capacity",
+        bluePrintName = "vehicle-capacity",
+        additionalAttributes = {
+                @ChenileAdditionalAttribute(key = "domain", value = "logistics"),
+                @ChenileAdditionalAttribute(key = "mode", value = "capacity-planning")
+        })
 public class CapacityController extends ControllerSupport {
     @PostMapping("/add-capacity")
     @BodyTypeSelector("subclassBodyTypeSelector")
