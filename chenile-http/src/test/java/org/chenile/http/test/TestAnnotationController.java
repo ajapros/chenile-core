@@ -1,7 +1,9 @@
 package org.chenile.http.test;
 
+import org.chenile.core.annotation.ExternalApi;
 import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.model.ChenileServiceDefinition;
+import org.chenile.core.model.OperationDefinition;
 import org.junit.Test;
 import org.junit.jupiter.api.Order;
 import org.junit.runner.RunWith;
@@ -10,6 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 @RunWith(SpringRunner.class)
@@ -71,7 +76,24 @@ public class TestAnnotationController {
 	@Test @Order(10)
 	public void testAnnotationExplicitVersionProperty() {
 		ChenileServiceDefinition service = chenileConfiguration.getServices().get("capacityService");
-		org.junit.Assert.assertEquals("custom-capacity", service.getServiceModule());
-		org.junit.Assert.assertEquals("testcase-capacity-service", service.getVersion());
+		assertEquals("custom-capacity", service.getServiceModule());
+		assertEquals("testcase-capacity-service", service.getVersion());
+	}
+
+	@Test @Order(11)
+	public void testExternalApiAnnotationIsRegisteredOnServiceAndOperation() {
+		ChenileServiceDefinition service = chenileConfiguration.getServices().get("jsonController");
+		ExternalApi serviceExternalApi = service.getExtensionAsAnnotation(ExternalApi.class);
+		assertNotNull(serviceExternalApi);
+		assertEquals("json-client", serviceExternalApi.system());
+
+		OperationDefinition saveOperation = service.getOperations().stream()
+				.filter(operation -> "save".equals(operation.getName()))
+				.findFirst()
+				.orElseThrow();
+		ExternalApi operationExternalApi = saveOperation.getExtensionAsAnnotation(ExternalApi.class);
+		assertNotNull(operationExternalApi);
+		assertEquals("json-client", operationExternalApi.system());
+		assertEquals("save-json", operationExternalApi.operation());
 	}
 }
