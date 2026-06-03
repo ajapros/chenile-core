@@ -15,6 +15,9 @@ import java.util.Map;
  * can be implemented using a workflow.<br/>
  */
 public class LogRecord {
+    public enum Direction {
+        INBOUND, OUTBOUND
+    }
     public boolean success;
     public List<ResponseMessage> responseMessages;
     public String serviceName;
@@ -35,4 +38,20 @@ public class LogRecord {
      */
     public String originalSourceReference;
     public ErrorNumException exception;
+    public Direction direction;
+    public boolean external;
+    public String externalSystem;
+    public String externalOperation;
+    public String protocol;
+    public String target;
+    public String httpMethod;
+    public Integer httpStatusCode;
+    public Long durationMillis;
+    public Long timestamp;
+    public String requestId;
+    public String correlationId;
+    public String requestPayload;
+    public String responsePayload;
+    public String errorCode;
+    public String errorMessage;
 }

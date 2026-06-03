@@ -13,6 +13,11 @@ import org.chenile.core.context.PopulateContextContainer;
 import org.chenile.core.entrypoint.ChenileEntryPoint;
 import org.chenile.core.event.EventLogger;
 import org.chenile.core.event.EventProcessor;
+import org.chenile.core.external.ChenileExternalClient;
+import org.chenile.core.external.ExternalApiPublisher;
+import org.chenile.core.external.ExternalApiLogSupport;
+import org.chenile.core.external.ExternalApiProperties;
+import org.chenile.core.external.NoopExternalApiPublisher;
 import org.chenile.core.init.*;
 import org.chenile.core.interceptors.*;
 import org.chenile.core.interceptors.interpolations.ExceptionHandlerInterpolation;
@@ -39,12 +44,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.web.client.RestTemplate;
 
 /**
  Class creates a bunch of Spring Beans. These beans are required for Chenile core.
@@ -85,6 +93,21 @@ public class ChenileCoreConfiguration {
 	
 	@Value("${chenile.event.logger:eventLogger}")
 	private String eventLoggerName;
+
+	@Value("${chenile.external-api.logging.enabled:true}")
+	private boolean externalApiLoggingEnabled;
+
+	@Value("${chenile.external-api.logging.inbound-topic:}")
+	private String externalApiInboundTopic;
+
+	@Value("${chenile.external-api.logging.outbound-topic:}")
+	private String externalApiOutboundTopic;
+
+	@Value("${chenile.external-api.logging.max-payload-bytes:65536}")
+	private int externalApiMaxPayloadBytes;
+
+	@Value("${chenile.external-api.logging.masked-headers:Authorization,x-Authorization}")
+	private String externalApiMaskedHeaders;
 	
 	
 	Resource[] toResources(String resourceList) throws IOException{
@@ -270,5 +293,29 @@ public class ChenileCoreConfiguration {
 	}
 	@Bean public LogOutput logOutput(){
 		return new LogOutput();
+	}
+
+	@Bean public ExternalApiProperties externalApiProperties() {
+		return new ExternalApiProperties(externalApiLoggingEnabled, externalApiInboundTopic,
+				externalApiOutboundTopic, externalApiMaxPayloadBytes, externalApiMaskedHeaders);
+	}
+
+	@Bean public ExternalApiLogSupport externalApiLogSupport(ExternalApiProperties externalApiProperties) {
+		return new ExternalApiLogSupport(externalApiProperties);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(ExternalApiPublisher.class)
+	@ConditionalOnProperty(prefix = "chenile.external-api.logging", name = "publisher",
+			havingValue = "none", matchIfMissing = true)
+	public ExternalApiPublisher externalApiPublisher() {
+		return new NoopExternalApiPublisher();
+	}
+
+	@Bean public ChenileExternalClient chenileExternalClient(
+			ExternalApiPublisher externalApiPublisher, ExternalApiProperties externalApiProperties,
+			ExternalApiLogSupport externalApiLogSupport) {
+		return new ChenileExternalClient(new RestTemplate(), externalApiPublisher,
+				externalApiProperties, externalApiLogSupport);
 	}
 }

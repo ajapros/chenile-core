@@ -91,9 +91,7 @@ public class GenericResponse<T> implements WarningAware{
 		this.responseMessage.setSubErrorCode(subErrorCode);
 	}
 
-	public void setSubErrorCode(int subErrorCode) {
-		this.responseMessage.setSubErrorCode(subErrorCode);
-	}
+
 	
 	public List<ResponseMessage> getErrors() {
 		return errors;

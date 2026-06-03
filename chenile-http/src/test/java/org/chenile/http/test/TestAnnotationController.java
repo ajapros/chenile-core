@@ -78,6 +78,9 @@ public class TestAnnotationController {
 		ChenileServiceDefinition service = chenileConfiguration.getServices().get("capacityService");
 		assertEquals("custom-capacity", service.getServiceModule());
 		assertEquals("testcase-capacity-service", service.getVersion());
+		assertEquals("vehicle-capacity", service.getBluePrintName());
+		assertEquals("logistics", service.getAdditionalAttributes().get("domain"));
+		assertEquals("capacity-planning", service.getAdditionalAttributes().get("mode"));
 	}
 
 	@Test @Order(11)

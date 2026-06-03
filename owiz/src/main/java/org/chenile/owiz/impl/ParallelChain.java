@@ -116,7 +116,7 @@ public class ParallelChain<InputType> extends Chain<InputType> {
 	protected ResponseMessage handleNonErrorNumExceptions(InputType context, Throwable cause) {
 		ResponseMessage mesg = new ResponseMessage();	
 		mesg.setCode(HttpStatus.INTERNAL_SERVER_ERROR);
-		mesg.setSubErrorCode(904);
+		mesg.setSubErrorCode("904");
 		mesg.setSeverity(ErrorType.ERROR);
 		mesg.setDescription(cause.getMessage());	
 		return mesg;

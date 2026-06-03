@@ -43,6 +43,8 @@ public class ChenileServiceDefinition  {
     private String moduleName;
     private String version;
     private String serviceModule;
+    private String bluePrintName;
+    private Map<String,String> additionalAttributes = new HashMap<>();
     private List<OperationDefinition> operations;
     private List<String> interceptorComponentNames;
     @JsonIgnore
@@ -213,6 +215,22 @@ public class ChenileServiceDefinition  {
 	@JsonProperty("serviceModule")
 	public void setServiceModule(String serviceModule) {
 		this.serviceModule = serviceModule;
+	}
+
+	public String getBluePrintName() {
+		return bluePrintName;
+	}
+
+	public void setBluePrintName(String bluePrintName) {
+		this.bluePrintName = bluePrintName;
+	}
+
+	public Map<String, String> getAdditionalAttributes() {
+		return additionalAttributes;
+	}
+
+	public void setAdditionalAttributes(Map<String, String> additionalAttributes) {
+		this.additionalAttributes = additionalAttributes == null ? new HashMap<>() : new HashMap<>(additionalAttributes);
 	}
 
 	@JsonIgnore

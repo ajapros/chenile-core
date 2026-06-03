@@ -3,6 +3,7 @@ package org.chenile.http.test.controller;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.chenile.base.response.GenericResponse;
+import org.chenile.core.annotation.ExternalApi;
 import org.chenile.http.annotation.ChenileController;
 import org.chenile.http.annotation.EventsSubscribedTo;
 import org.chenile.http.annotation.InterceptedBy;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @ChenileController(value = "jsonController", serviceName = "jsonService")
+@ExternalApi(system = "json-client")
 public class JsonController extends ControllerSupport{
 	 @GetMapping("/c/getOne/{key}")
 	 @InterceptedBy("jsonInterceptor")
@@ -28,6 +30,7 @@ public class JsonController extends ControllerSupport{
 	 @PostMapping("/c/save")
 	 @InterceptedBy("jsonInterceptor")
 	 @EventsSubscribedTo({"event1","event2"})
+	 @ExternalApi(system = "json-client", operation = "save-json")
 	 public ResponseEntity<GenericResponse<JsonData>> save(
 			 HttpServletRequest request, @RequestBody JsonData jsonData) {
 		 return process("save",request,jsonData);

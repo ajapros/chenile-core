@@ -36,7 +36,7 @@ public class JsonServiceImpl implements JsonService{
 		ResponseMessage rm = new ResponseMessage();
         rm.setCode(200);
 		rm.setSeverity(ErrorType.WARN);
-		rm.setSubErrorCode(jsonData.getErrorNum());
+		rm.setSubErrorCode(String.valueOf(jsonData.getErrorNum()));
 		rm.setDescription(jsonData.getExceptionMessage());
 		jsonData.addWarningMessage(rm);
 		return jsonData;
@@ -49,7 +49,7 @@ public class JsonServiceImpl implements JsonService{
         ResponseMessage r = new ResponseMessage();
         r.setCode(501);
         r.setSeverity(ErrorType.ERROR);
-        r.setSubErrorCode(jsonData.getErrorNum());
+        r.setSubErrorCode(String.valueOf(jsonData.getErrorNum()));
         r.setDescription(jsonData.getExceptionMessage());
         serverException.addError(r);
         throw serverException;

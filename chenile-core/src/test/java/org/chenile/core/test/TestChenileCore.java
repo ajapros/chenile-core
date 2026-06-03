@@ -3,6 +3,7 @@ package org.chenile.core.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -355,10 +356,14 @@ public class TestChenileCore {
 		ChenileServiceDefinition serviceDefinition = new ChenileServiceDefinition();
 		serviceDefinition.setMonolithName("m1");
 		serviceDefinition.setServiceModule("svcmod");
+		serviceDefinition.setBluePrintName("bp1");
+		serviceDefinition.setAdditionalAttributes(Map.of("k1", "v1"));
 		String json = objectMapper.writeValueAsString(serviceDefinition);
 		assertTrue(json.contains("\"monolithName\":\"m1\""));
 		assertFalse(json.contains("\"moduleName\""));
 		assertTrue(json.contains("\"serviceModule\":\"svcmod\""));
+		assertTrue(json.contains("\"bluePrintName\":\"bp1\""));
+		assertTrue(json.contains("\"additionalAttributes\":{\"k1\":\"v1\"}"));
 		assertFalse(json.contains("\"versionProperty\""));
 
 		ChenileServiceDefinition deserialized = objectMapper.readValue("{\"moduleName\":\"legacy-m1\"}",

@@ -96,10 +96,7 @@ public class ResponseMessage {
 	public void setSubErrorCode(String subErrorCode) {
 		this.subErrorCode = subErrorCode;
 	}
-	public void setSubErrorCode(int subErrorCode) {
-		this.subErrorCode = String.valueOf(subErrorCode);
-	}
-	
+
 	public ResponseMessage clone() {
 		ResponseMessage m = new ResponseMessage();
 		m.setCode(code);
