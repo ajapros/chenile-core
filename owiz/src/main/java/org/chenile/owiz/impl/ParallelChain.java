@@ -71,7 +71,7 @@ public class ParallelChain<InputType> extends Chain<InputType> {
 		try {
 			futs = executorService.invokeAll(tasks, timeoutInMillis, TimeUnit.MILLISECONDS);
 		}catch(InterruptedException ee) {
-			throw new ErrorNumException(500,905,"Timed out waiting for downstream systems.");
+			throw new ErrorNumException(500,"905","Timed out waiting for downstream systems.");
 		}
 		int errCount = 0;
 		for (Future<InputType> f: futs) {
@@ -96,7 +96,7 @@ public class ParallelChain<InputType> extends Chain<InputType> {
 	}
 
 	protected ErrorNumException generateOverallException(String message) {
-		return new ErrorNumException(500,903,message);
+		return new ErrorNumException(500,"903",message);
 	}
 	
 	protected void handleErrors(InputType context, Throwable cause) {

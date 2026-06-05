@@ -59,15 +59,6 @@ public class ErrorNumException extends RuntimeException {
 		this.errors.add(responseMessage);
 	}
 
-	/**
-	 * @param errorNum - the root error code - same as Http Response code
-	 * @param subErrorNum - the sub error code
-	 * @param message - the message in english. Ideally message bundles must be used.
-	 * @param cause - the root cause of the error
-	 */
-	public ErrorNumException(int errorNum, int subErrorNum, String message, Throwable cause) {
-		this(errorNum, String.valueOf(subErrorNum), message, cause);
-	}
 
 	/**
 	 * @param errorNum - the root error code - same as Http Response code
@@ -84,15 +75,6 @@ public class ErrorNumException extends RuntimeException {
 		this.errors.add(responseMessage);
 	}
 
-	/**
-	 * @param errorNum - the root error code - same as Http Response code
-	 * @param subErrorNum - the sub error code
-	 * @param params - the params to be passed to the message bundle
-	 * @param cause - the root cause of the error
-	 */
-	public ErrorNumException(int errorNum, int subErrorNum, Object[] params, Throwable cause) {
-		this(errorNum, String.valueOf(subErrorNum), params, cause);
-	}
 
 	/**
 	 * @param errorNum - the root error code - same as Http Response code
@@ -131,14 +113,7 @@ public class ErrorNumException extends RuntimeException {
 		this.errors.add(responseMessage);
 	}
 
-	/**
-	 * @param errorNum - the root error code - same as Http Response code
-	 * @param subErrorNum - the sub error code
-	 * @param message - the message in english. Ideally message bundles must be used.
-	 */
-	public ErrorNumException(int errorNum, int subErrorNum, String message) {
-		this(errorNum, String.valueOf(subErrorNum), message);
-	}
+
 
 	/**
 	 * @param errorNum - the root error code - same as Http Response code
@@ -154,15 +129,6 @@ public class ErrorNumException extends RuntimeException {
 		this.errors.add(responseMessage);
 	}
 
-	/**
-	 /**
-	 * @param errorNum - the root error code - same as Http Response code
-	 * @param subErrorNum - the sub error code
-	 * @param params - the params to be passed to the message bundle
-	 */
-	public ErrorNumException(int errorNum, int subErrorNum, Object[] params) {
-		this(errorNum, String.valueOf(subErrorNum), params);
-	}
 
 	/**
 	 * @param errorNum - the root error code - same as Http Response code

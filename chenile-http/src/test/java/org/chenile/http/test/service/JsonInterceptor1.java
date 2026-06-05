@@ -17,6 +17,6 @@ public class JsonInterceptor1 extends BaseChenileInterceptor{
 		JsonData data = (JsonData) exchange.getResponse();
 		if (data == null) return;
 		// unconditionally throw an exception.
-		throw new ErrorNumException(501,data.getErrorNum() + 1,data.getExceptionMessage() +"1");
+		throw new ErrorNumException(501,String.valueOf(data.getErrorNum() + 1),data.getExceptionMessage() +"1");
 	}
 }
