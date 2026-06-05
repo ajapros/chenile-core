@@ -157,6 +157,22 @@ function getOperationUrl(service, suffix) {
   return operation?.url || "";
 }
 
+function deriveWorkflowOperationUrl(selectedService, workflowInfoService, suffix) {
+  const explicitUrl = getOperationUrl(workflowInfoService, suffix);
+  if (explicitUrl) {
+    return explicitUrl;
+  }
+  const lookupName =
+    selectedService?.lookupName || selectedService?.serviceId || selectedService?.id || "";
+  if (!lookupName) {
+    return "";
+  }
+  const servicePath = lookupName.endsWith("Service")
+    ? lookupName.slice(0, -"Service".length)
+    : lookupName;
+  return `/${servicePath}/info${suffix}`;
+}
+
 function App() {
   const [baseUrlInput, setBaseUrlInput] = useState(
     window.localStorage.getItem("chenile-admin-base-url") || DEFAULT_BASE_URL
@@ -337,8 +353,13 @@ function App() {
     if (!workflowInfoService) {
       return;
     }
-    const operationUrl = getOperationUrl(workflowInfoService, "/info/state-diagram");
+    const operationUrl = deriveWorkflowOperationUrl(
+      selectedService,
+      workflowInfoService,
+      "/state-diagram"
+    );
     if (!operationUrl) {
+      setWorkflowDiagramError("Workflow state-diagram endpoint is not available.");
       return;
     }
     setWorkflowDiagramLoading(true);
@@ -366,11 +387,13 @@ function App() {
     if (!workflowInfoService) {
       return;
     }
-    const operationUrl = getOperationUrl(
+    const operationUrl = deriveWorkflowOperationUrl(
+      selectedService,
       workflowInfoService,
-      "/info/test-state-diagrams"
+      "/test-state-diagrams"
     );
     if (!operationUrl) {
+      setTestDiagramError("Workflow test-diagram endpoint is not available.");
       return;
     }
     setTestDiagramLoading(true);
