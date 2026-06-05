@@ -11,7 +11,7 @@ public class JsonInterceptor extends BaseChenileInterceptor{
 		if (s != null && s.equals("throw-exception-pre-process")){
 			JsonData j = (JsonData) exchange.getBody();
 			if (j == null) return;
-			throw new ServerException(j.getErrorNum(),j.getExceptionMessage());
+			throw new ServerException(String.valueOf(j.getErrorNum()),j.getExceptionMessage());
 		}
 	}
 
@@ -24,7 +24,7 @@ public class JsonInterceptor extends BaseChenileInterceptor{
 		String s = exchange.getHeader(SOME_SPECIAL_HEADER,String.class);
 		if (s != null){
 			if(s.equals("throw-exception-post-process")){
-				throw new ServerException(j.getErrorNum(),j.getExceptionMessage())	;
+				throw new ServerException(String.valueOf(j.getErrorNum()),j.getExceptionMessage())	;
 			}else {
 					j.setSomeSpecialHeaderValue(s + SOME_CONSTANT);
 			}

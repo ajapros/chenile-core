@@ -59,7 +59,7 @@ public class ParallelChain<InputType> extends Chain<InputType> {
 	@Override
 	protected void doExecute(InputType context) throws Exception {
 		if (executorService == null ) {
-			throw new ServerException(902,new Object[] {getId()});
+			throw new ServerException("902",new Object[] {getId()});
 		}
 		List<ChainExecutor<InputType>> tasks = new ArrayList<>();
 		for (Command<InputType> cmd: obtainExecutionCommands(context)){

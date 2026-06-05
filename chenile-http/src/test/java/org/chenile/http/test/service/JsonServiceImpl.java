@@ -28,7 +28,7 @@ public class JsonServiceImpl implements JsonService{
 
     @Override
     public JsonData throwException(JsonData jsonData) {
-    	throw new ServerException(jsonData.getErrorNum(), jsonData.getExceptionMessage());
+    	throw new ServerException(String.valueOf(jsonData.getErrorNum()), jsonData.getExceptionMessage());
     }
 
 	@Override
@@ -45,7 +45,7 @@ public class JsonServiceImpl implements JsonService{
     @Override
     public JsonData throwMultipleErrorsInException(JsonData jsonData) {
         ServerException serverException = new ServerException
-                (jsonData.getErrorNum(), jsonData.getExceptionMessage());
+                (String.valueOf(jsonData.getErrorNum()), jsonData.getExceptionMessage());
         ResponseMessage r = new ResponseMessage();
         r.setCode(501);
         r.setSeverity(ErrorType.ERROR);

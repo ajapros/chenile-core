@@ -34,7 +34,7 @@ public class MockService {
 		return !flag;
 	}
 	
-	public String s5(int exceptionNum) {
+	public String s5(String exceptionNum) {
 		throw new ServerException(exceptionNum,"Error");
 	}
 	

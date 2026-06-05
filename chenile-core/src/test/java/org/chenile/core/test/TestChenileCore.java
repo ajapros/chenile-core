@@ -151,7 +151,7 @@ public class TestChenileCore {
 	}
 	
 	@Test public void testServiceInvokerWithExceptionHandled() {
-		int exceptionNum = 1089;
+		String exceptionNum = "1089";
 		ChenileExchange exchange = makeExchange("mockService","s5");
 		exchange.setHeader("exceptionNum",exceptionNum);
 		

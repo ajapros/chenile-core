@@ -16,7 +16,7 @@ public class S6BodyTypeSelector implements Command<ChenileExchange>{
 	public void execute(ChenileExchange exchange) throws Exception {
 		String eventId = exchange.getHeader("eventId",String.class);
 		if (eventId == null) {
-			throw new BadRequestException(10001, "event id must be passed");
+			throw new BadRequestException("10001", "event id must be passed");
 		}
 		
 		if (eventId.equals("e1")) {

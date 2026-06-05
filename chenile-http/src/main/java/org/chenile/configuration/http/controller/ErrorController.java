@@ -20,7 +20,7 @@ public class ErrorController extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleConflict(
             RuntimeException ex, WebRequest request) {
         logger.error("Error in processing the request.",ex);
-        ErrorNumException ene = new ServerException(1999,ex.getMessage(),ex);
+        ErrorNumException ene = new ServerException("1999",ex.getMessage(),ex);
         GenericResponse<Object> body = new GenericResponse<>(ene);
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }

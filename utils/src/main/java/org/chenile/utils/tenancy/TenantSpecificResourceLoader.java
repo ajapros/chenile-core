@@ -130,7 +130,7 @@ public class TenantSpecificResourceLoader {
 			filename = StrSubstitutor.replaceNamedKeysInTemplate(genericPath, valueMap,delimiter);
 			res = classLoader().getResource(filename);
 			if (res == null)
-				throw new ServerException(601, 
+				throw new ServerException("601",
 						"Class " + getClass().getName() + ": Unable to find a default template for " + key.name);
 			genericValue = populateValue(filename,res);
 			templateStore.put(genericKey, genericValue);

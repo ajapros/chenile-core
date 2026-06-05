@@ -23,7 +23,7 @@ public abstract class InterpolationCommand<InputType> extends CommandBase<InputT
 	 */
 	@Override
 	protected final void doExecute(InputType context) throws Exception {
-		throw new ServerException(901, new Object[] {getId(),getParentId()});		
+		throw new ServerException("901", new Object[] {getId(),getParentId()});
 	}
 	
 	protected abstract List<Command<InputType>> fetchCommands(InputType context);

@@ -51,9 +51,6 @@ public class EventLog {
 	public void setSubErrorNum(String subErrorNum) {
 		this.subErrorNum = subErrorNum;
 	}
-	public void setSubErrorNum(int subErrorNum) {
-		this.subErrorNum = String.valueOf(subErrorNum);
-	}
 	private StatusEnum status;
 	private String message;
 	private ErrorNumException exception;

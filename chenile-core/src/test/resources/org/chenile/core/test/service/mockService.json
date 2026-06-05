@@ -111,8 +111,8 @@
       {
         "name": "exceptionNum",
         "type": "HEADER",
-        "paramType": "int",
-        "paramClass": "int",
+        "paramType": "java.lang.String",
+        "paramClass": "java.lang.String",
         "description": "test exception"
       }
     ]}, {

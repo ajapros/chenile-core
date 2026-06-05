@@ -31,9 +31,6 @@ public class ServerException extends ErrorNumException{
      *
      * @param message
      */
-    public ServerException( int subErrorNum, String message) {
-        super(500, subErrorNum,message);
-    }
     public ServerException( String subErrorNum, String message) {
         super(500, subErrorNum,message);
     }
@@ -43,9 +40,6 @@ public class ServerException extends ErrorNumException{
 	 * @param subErrorNum
 	 * @param params
 	 */
-	public ServerException( int subErrorNum, Object[] params) {
-       super(500, subErrorNum,params);
-   }
 	public ServerException( String subErrorNum, Object[] params) {
        super(500, subErrorNum,params);
    }
@@ -56,16 +50,10 @@ public class ServerException extends ErrorNumException{
 	 * @param message
 	 * @param cause
 	 */
-	public ServerException(int subErrorNum, String message, Throwable cause) {
-		super(500, subErrorNum, message, cause);
-	}
 	public ServerException(String subErrorNum, String message, Throwable cause) {
 		super(500, subErrorNum, message, cause);
 	}
 	
-	public ServerException(int subErrorNum, Object[] params, Throwable cause) {
-		super(500, subErrorNum, params, cause);
-	}
 	public ServerException(String subErrorNum, Object[] params, Throwable cause) {
 		super(500, subErrorNum, params, cause);
 	}
