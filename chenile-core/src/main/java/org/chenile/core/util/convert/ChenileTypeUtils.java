@@ -20,6 +20,10 @@ public final class ChenileTypeUtils {
         try {
             javaType = ChenileGenericTypeParser.parse(s);
         }catch(Exception e){
+            Class<?> rawClass = tryResolveRawClass(s);
+            if (rawClass != null) {
+                return ParameterizedTypeReference.forType(rawClass);
+            }
             logger.warn("Cannot make a Parameterized type reference from provided string {}", s);
             return null;
         }
@@ -68,6 +72,21 @@ public final class ChenileTypeUtils {
             }
         }
         throw new IllegalArgumentException("Cannot extract raw class from type " + type.getTypeName());
+    }
+
+    private static Class<?> tryResolveRawClass(String typeName) {
+        if (typeName == null) {
+            return null;
+        }
+        String normalized = typeName.trim();
+        if (normalized.startsWith("class ")) {
+            normalized = normalized.substring(6).trim();
+        }
+        try {
+            return ChenileGenericTypeParser.parse(normalized).getRawClass();
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private static Type toReflectType(JavaType javaType) {
