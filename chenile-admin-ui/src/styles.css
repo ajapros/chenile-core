@@ -19,7 +19,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -91,7 +92,8 @@ code {
   font-weight: 600;
 }
 
-input {
+input,
+select {
   width: 100%;
   border: 1px solid #c5d2cc;
   border-radius: 14px;
@@ -165,7 +167,10 @@ button:disabled {
 .health-result,
 .version-row,
 .swagger-callout,
-.registry-callout {
+.registry-callout,
+.registry-health-card,
+.diagnostic-metric,
+.service-diagnostics {
   border: 1px solid rgba(23, 51, 46, 0.1);
   border-radius: 18px;
   background: #f9fbfa;
@@ -272,6 +277,94 @@ button:disabled {
   margin-top: 18px;
 }
 
+.registry-health-card {
+  margin-top: 18px;
+  padding: 16px;
+}
+
+.registry-health-card.clean {
+  border-color: rgba(31, 123, 85, 0.22);
+  background: #edf9f1;
+}
+
+.registry-health-card.warning {
+  border-color: rgba(183, 119, 42, 0.28);
+  background: #fff7e8;
+}
+
+.registry-health-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.registry-health-header span,
+.diagnostic-metric span,
+.service-diagnostics span {
+  display: block;
+  color: #60736d;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.registry-health-header strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.3rem;
+}
+
+.registry-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.diagnostic-metric {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.diagnostic-metric strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.4rem;
+}
+
+.warning-list {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  color: #694514;
+}
+
+.cleanup-guide {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.cleanup-guide p {
+  margin: 6px 0 0;
+  color: #54635e;
+}
+
+.registry-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.45fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.registry-filters label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
 .version-list,
 .service-list {
   display: grid;
@@ -300,6 +393,43 @@ button:disabled {
 
 .service-card h3 {
   margin: 0 0 4px;
+}
+
+.service-card-title {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-badge.clean {
+  color: #17613b;
+  background: #dcf5e6;
+}
+
+.status-badge.duplicate {
+  color: #744706;
+  background: #ffedc7;
+}
+
+.status-badge.changed {
+  color: #9b2828;
+  background: #ffe0e0;
+}
+
+.status-badge.unknown {
+  color: #4f5d58;
+  background: #edf1ef;
 }
 
 .service-card p,
@@ -355,6 +485,39 @@ button:disabled {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
+}
+
+.service-diagnostics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.service-diagnostics.clean {
+  border-color: rgba(31, 123, 85, 0.22);
+}
+
+.service-diagnostics.duplicate,
+.service-diagnostics.changed {
+  border-color: rgba(183, 119, 42, 0.28);
+}
+
+.service-diagnostics strong {
+  display: block;
+  margin-top: 4px;
+}
+
+.diagnostic-wide {
+  grid-column: 1 / -1;
+}
+
+.diagnostic-wide code {
+  display: block;
+  margin-top: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .workflow-info-header {
@@ -436,11 +599,14 @@ button:disabled {
   .hero,
   .content-grid,
   .health-toolbar,
-  .detail-grid {
+  .detail-grid,
+  .registry-filters {
     grid-template-columns: 1fr;
   }
 
-  .deployment-summary {
+  .deployment-summary,
+  .registry-health-grid,
+  .service-diagnostics {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -462,8 +628,14 @@ button:disabled {
 
   .service-card,
   .version-row,
-  .catalog-toggle {
+  .catalog-toggle,
+  .registry-health-header {
     flex-direction: column;
     align-items: start;
+  }
+
+  .registry-health-grid,
+  .service-diagnostics {
+    grid-template-columns: 1fr;
   }
 }

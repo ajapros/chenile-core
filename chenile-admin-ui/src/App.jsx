@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 
-const DEFAULT_BASE_URL = "http://localhost:8000";
+const DEFAULT_BASE_URL =
+  typeof window !== "undefined" && window.location.pathname.startsWith("/chenile/admin")
+    ? window.location.origin
+    : "http://localhost:8000";
 const REGISTRY_SERVICE_ID = "serviceregistryService";
 const SWAGGER_CANDIDATE_PATHS = [
   "/swagger-ui/index.html",
@@ -90,6 +93,10 @@ function valueOrDash(value) {
   return String(value);
 }
 
+function serviceVersionKey(serviceId, serviceVersion) {
+  return `${serviceId || ""}:${serviceVersion || ""}`;
+}
+
 function normalizeLocalService(service) {
   const serviceId = service.id || service.serviceId || service.name;
   return {
@@ -120,6 +127,59 @@ function normalizeRegistryService(service) {
     serviceVersion,
     sourceLabel: service.baseUrl || service.monolithName || service.moduleName || "Remote monolith",
   };
+}
+
+function buildDiagnosticIndex(diagnostics) {
+  const duplicateKeys = new Set();
+  const changedKeys = new Set();
+  const operationCounts = new Map();
+  const paramCounts = new Map();
+  for (const issue of diagnostics?.duplicateServiceVersions || []) {
+    duplicateKeys.add(serviceVersionKey(issue.serviceId, issue.serviceVersion));
+  }
+  for (const issue of diagnostics?.changedSameVersions || []) {
+    changedKeys.add(serviceVersionKey(issue.serviceId, issue.serviceVersion));
+  }
+  for (const issue of diagnostics?.duplicateOperationLinkDetails || []) {
+    const key = serviceVersionKey(issue.serviceId, issue.serviceVersion);
+    operationCounts.set(key, (operationCounts.get(key) || 0) + 1);
+  }
+  for (const issue of diagnostics?.duplicateParamLinkDetails || []) {
+    const key = serviceVersionKey(issue.serviceId, issue.serviceVersion);
+    paramCounts.set(key, (paramCounts.get(key) || 0) + 1);
+  }
+  return { duplicateKeys, changedKeys, operationCounts, paramCounts };
+}
+
+function diagnosticStatus(service, diagnosticIndex) {
+  if (!service || !diagnosticIndex) {
+    return "unknown";
+  }
+  const key = serviceVersionKey(service.serviceId, service.serviceVersion);
+  if (diagnosticIndex.changedKeys.has(key)) {
+    return "changed";
+  }
+  if (
+    diagnosticIndex.duplicateKeys.has(key) ||
+    diagnosticIndex.operationCounts.has(key) ||
+    diagnosticIndex.paramCounts.has(key)
+  ) {
+    return "duplicate";
+  }
+  return "clean";
+}
+
+function diagnosticStatusLabel(status) {
+  if (status === "changed") {
+    return "Changed Same Version";
+  }
+  if (status === "duplicate") {
+    return "Duplicate";
+  }
+  if (status === "clean") {
+    return "Clean";
+  }
+  return "Unknown";
 }
 
 function isRegistryHost(infoPayload) {
@@ -186,6 +246,11 @@ function App() {
   const [ecosystemServices, setEcosystemServices] = useState([]);
   const [ecosystemLoading, setEcosystemLoading] = useState(false);
   const [ecosystemError, setEcosystemError] = useState("");
+  const [registryDiagnostics, setRegistryDiagnostics] = useState(null);
+  const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
+  const [diagnosticsError, setDiagnosticsError] = useState("");
+  const [registryFilter, setRegistryFilter] = useState("");
+  const [diagnosticFilter, setDiagnosticFilter] = useState("all");
   const [selectedServiceName, setSelectedServiceName] = useState("");
   const [selectedService, setSelectedService] = useState(null);
   const [serviceLoading, setServiceLoading] = useState(false);
@@ -229,9 +294,44 @@ function App() {
       });
   }, [ecosystemServices]);
 
+  const diagnosticIndex = useMemo(
+    () => buildDiagnosticIndex(registryDiagnostics),
+    [registryDiagnostics]
+  );
+
   const activeServices = useMemo(() => {
-    return catalogMode === "ecosystem" ? sortedEcosystemServices : sortedLocalServices;
-  }, [catalogMode, sortedEcosystemServices, sortedLocalServices]);
+    const services =
+      catalogMode === "ecosystem" ? sortedEcosystemServices : sortedLocalServices;
+    if (catalogMode !== "ecosystem") {
+      return services;
+    }
+    const search = registryFilter.trim().toLowerCase();
+    return services.filter((service) => {
+      const status = diagnosticStatus(service, diagnosticIndex);
+      if (diagnosticFilter !== "all" && status !== diagnosticFilter) {
+        return false;
+      }
+      if (!search) {
+        return true;
+      }
+      return [
+        service.serviceId,
+        service.serviceVersion,
+        service.monolithName,
+        service.moduleName,
+        service.baseUrl,
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(search));
+    });
+  }, [
+    catalogMode,
+    sortedEcosystemServices,
+    sortedLocalServices,
+    registryFilter,
+    diagnosticFilter,
+    diagnosticIndex,
+  ]);
 
   const registryHostDetected = useMemo(() => isRegistryHost(info), [info]);
   const workflowInfoService = useMemo(
@@ -247,6 +347,8 @@ function App() {
     setCatalogMode("local");
     setEcosystemServices([]);
     setEcosystemError("");
+    setRegistryDiagnostics(null);
+    setDiagnosticsError("");
     setSelectedServiceName("");
     setSelectedService(null);
     setServiceError("");
@@ -266,6 +368,7 @@ function App() {
       setSwaggerUrl(detectedSwaggerUrl);
       if (isRegistryHost(payload)) {
         setEcosystemLoading(true);
+        setDiagnosticsLoading(true);
         try {
           const registryPayload = await fetchJson(
             buildRequestUrl(normalized, "/serviceregistry")
@@ -275,6 +378,16 @@ function App() {
           setEcosystemError(error.message);
         } finally {
           setEcosystemLoading(false);
+        }
+        try {
+          const diagnosticsPayload = await fetchJson(
+            buildRequestUrl(normalized, "/serviceregistry/diagnostics")
+          );
+          setRegistryDiagnostics(diagnosticsPayload || null);
+        } catch (error) {
+          setDiagnosticsError(error.message);
+        } finally {
+          setDiagnosticsLoading(false);
         }
       }
     } catch (error) {
@@ -512,6 +625,14 @@ function App() {
                 </div>
               ) : null}
 
+              {registryHostDetected ? (
+                <RegistryHealthPanel
+                  diagnostics={registryDiagnostics}
+                  loading={diagnosticsLoading}
+                  error={diagnosticsError}
+                />
+              ) : null}
+
               {swaggerUrl ? (
                 <div className="swagger-callout">
                   <span>Swagger/OpenAPI detected</span>
@@ -562,6 +683,31 @@ function App() {
                 </div>
               ) : null}
 
+              {catalogMode === "ecosystem" ? (
+                <div className="registry-filters">
+                  <label>
+                    Search registry
+                    <input
+                      value={registryFilter}
+                      onChange={(event) => setRegistryFilter(event.target.value)}
+                      placeholder="service, version, monolith, URL"
+                    />
+                  </label>
+                  <label>
+                    Diagnostic status
+                    <select
+                      value={diagnosticFilter}
+                      onChange={(event) => setDiagnosticFilter(event.target.value)}
+                    >
+                      <option value="all">All</option>
+                      <option value="changed">Changed Same Version</option>
+                      <option value="duplicate">Duplicate</option>
+                      <option value="clean">Clean</option>
+                    </select>
+                  </label>
+                </div>
+              ) : null}
+
               <div className="versions-block">
                 <h3>Available version properties</h3>
                 <div className="version-list">
@@ -582,7 +728,21 @@ function App() {
                 {activeServices.map((service) => (
                   <article key={service.uniqueKey} className="service-card">
                     <div>
-                      <h3>{service.displayName}</h3>
+                      <div className="service-card-title">
+                        <h3>{service.displayName}</h3>
+                        {catalogMode === "ecosystem" ? (
+                          <span
+                            className={`status-badge ${diagnosticStatus(
+                              service,
+                              diagnosticIndex
+                            )}`}
+                          >
+                            {diagnosticStatusLabel(
+                              diagnosticStatus(service, diagnosticIndex)
+                            )}
+                          </span>
+                        ) : null}
+                      </div>
                       <p>{service.operations?.length || 0} operations</p>
                       {catalogMode === "ecosystem" ? (
                         <p className="source-text">{service.sourceLabel}</p>
@@ -681,6 +841,13 @@ function App() {
 
               <div className="operations-block">
                 <h3>Operations</h3>
+                {selectedService.catalog === "ecosystem" ? (
+                  <ServiceDiagnosticSummary
+                    service={selectedService}
+                    diagnostics={registryDiagnostics}
+                    diagnosticIndex={diagnosticIndex}
+                  />
+                ) : null}
                 <table>
                   <thead>
                     <tr>
@@ -772,6 +939,134 @@ function DetailRow({ label, value }) {
     <div className="detail-row">
       <span>{label}</span>
       <strong>{valueOrDash(value)}</strong>
+    </div>
+  );
+}
+
+function RegistryHealthPanel({ diagnostics, loading, error }) {
+  if (loading) {
+    return <div className="registry-health-card">Loading registry diagnostics...</div>;
+  }
+  if (error) {
+    return <p className="error-text">{error}</p>;
+  }
+  if (!diagnostics) {
+    return null;
+  }
+  const clean =
+    diagnostics.clean ??
+    (diagnostics.duplicateServiceVersionGroups === 0 &&
+      diagnostics.duplicateOperationLinks === 0 &&
+      diagnostics.duplicateParamLinks === 0 &&
+      diagnostics.changedSameVersionGroups === 0);
+  return (
+    <section className={clean ? "registry-health-card clean" : "registry-health-card warning"}>
+      <div className="registry-health-header">
+        <div>
+          <span>Registry Health</span>
+          <strong>{clean ? "Clean" : "Needs Review"}</strong>
+        </div>
+        <code>{diagnostics.totalServices || 0} rows</code>
+      </div>
+      <div className="registry-health-grid">
+        <DiagnosticMetric
+          label="Duplicate service/version"
+          value={diagnostics.duplicateServiceVersionGroups}
+        />
+        <DiagnosticMetric
+          label="Changed same version"
+          value={diagnostics.changedSameVersionGroups}
+        />
+        <DiagnosticMetric
+          label="Duplicate operation links"
+          value={diagnostics.duplicateOperationLinks}
+        />
+        <DiagnosticMetric
+          label="Duplicate param links"
+          value={diagnostics.duplicateParamLinks}
+        />
+      </div>
+      {(diagnostics.warnings || []).length ? (
+        <ul className="warning-list">
+          {diagnostics.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
+      {!clean ? (
+        <div className="cleanup-guide">
+          <strong>Cleanup guide</strong>
+          <p>
+            Review duplicate rows with SQL before deleting anything. Start with
+            grouping <code>service_definition</code> by <code>service_id</code> and{" "}
+            <code>service_version</code>, then inspect duplicate rows in{" "}
+            <code>service_definition_operations</code>.
+          </p>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function DiagnosticMetric({ label, value }) {
+  return (
+    <div className="diagnostic-metric">
+      <span>{label}</span>
+      <strong>{value || 0}</strong>
+    </div>
+  );
+}
+
+function ServiceDiagnosticSummary({ service, diagnostics, diagnosticIndex }) {
+  const key = serviceVersionKey(service.serviceId, service.serviceVersion);
+  const status = diagnosticStatus(service, diagnosticIndex);
+  const duplicateGroup = (diagnostics?.duplicateServiceVersions || []).find(
+    (issue) => serviceVersionKey(issue.serviceId, issue.serviceVersion) === key
+  );
+  const changedGroup = (diagnostics?.changedSameVersions || []).find(
+    (issue) => serviceVersionKey(issue.serviceId, issue.serviceVersion) === key
+  );
+  const operationIssues = (diagnostics?.duplicateOperationLinkDetails || []).filter(
+    (issue) => serviceVersionKey(issue.serviceId, issue.serviceVersion) === key
+  );
+  const paramIssues = (diagnostics?.duplicateParamLinkDetails || []).filter(
+    (issue) => serviceVersionKey(issue.serviceId, issue.serviceVersion) === key
+  );
+
+  return (
+    <div className={`service-diagnostics ${status}`}>
+      <div>
+        <span>Diagnostic Status</span>
+        <strong>{diagnosticStatusLabel(status)}</strong>
+      </div>
+      <div>
+        <span>Service/version rows</span>
+        <strong>{duplicateGroup?.rowCount || 1}</strong>
+      </div>
+      <div>
+        <span>Definition variants</span>
+        <strong>{changedGroup?.fingerprintCount || duplicateGroup?.fingerprintCount || 1}</strong>
+      </div>
+      <div>
+        <span>Duplicate operation groups</span>
+        <strong>{operationIssues.length}</strong>
+      </div>
+      <div>
+        <span>Duplicate param groups</span>
+        <strong>{paramIssues.length}</strong>
+      </div>
+      {duplicateGroup?.rowIds?.length ? (
+        <div className="diagnostic-wide">
+          <span>Registry row IDs</span>
+          <code>{duplicateGroup.rowIds.join(", ")}</code>
+        </div>
+      ) : null}
+      {operationIssues.length ? (
+        <div className="diagnostic-wide">
+          <span>Duplicate operations</span>
+          <code>{operationIssues.map((issue) => issue.operation).join(", ")}</code>
+        </div>
+      ) : null}
     </div>
   );
 }

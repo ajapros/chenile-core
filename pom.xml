@@ -16,6 +16,7 @@
         <module>jpa-utils</module>
         <module>multi-datasource-utils</module>
         <module>chenile-mcp</module>
+        <module>chenile-admin-ui</module>
     </modules>
 
     <packaging>pom</packaging>

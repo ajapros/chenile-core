@@ -1,6 +1,33 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+function readRequestBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => resolve(chunks.length ? Buffer.concat(chunks) : undefined));
+    req.on("error", reject);
+  });
+}
+
+function proxyHeaders(req) {
+  const headers = {};
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value === undefined) {
+      continue;
+    }
+    if (
+      key === "accept" ||
+      key === "content-type" ||
+      key === "chenile-trajectory-id" ||
+      key.startsWith("x-chenile-")
+    ) {
+      headers[key] = Array.isArray(value) ? value.join(",") : value;
+    }
+  }
+  return headers;
+}
+
 function chenileProxyPlugin() {
   return {
     name: "chenile-dev-proxy",
@@ -19,14 +46,15 @@ function chenileProxyPlugin() {
           }
 
           const targetUrl = new URL(path, target.endsWith("/") ? target : `${target}/`);
-          const headers = {};
-          if (req.headers["chenile-trajectory-id"]) {
-            headers["chenile-trajectory-id"] = req.headers["chenile-trajectory-id"];
-          }
+          const method = req.method || "GET";
+          const body = method === "GET" || method === "HEAD"
+            ? undefined
+            : await readRequestBody(req);
 
           const response = await fetch(targetUrl, {
-            method: "GET",
-            headers
+            method,
+            headers: proxyHeaders(req),
+            body
           });
 
           res.statusCode = response.status;
@@ -51,6 +79,7 @@ function chenileProxyPlugin() {
 
 export default defineConfig({
   plugins: [react(), chenileProxyPlugin()],
+  base: "/chenile/admin/",
   server: {
     port: 4173
   }

@@ -1,6 +1,8 @@
 # Chenile Admin UI
 
-This is a standalone React frontend for inspecting a running Chenile system.
+This is a Maven-packaged React frontend for inspecting a running Chenile system.
+Applications can add the `org.chenile:chenile-admin-ui` dependency to serve it
+from the same JVM at `/chenile/admin`.
 
 ## What it does
 
@@ -24,11 +26,33 @@ npm run dev
 
 By default Vite runs on `http://localhost:4173`.
 
+## Use in a Chenile app
+
+Add the module as an application dependency:
+
+```xml
+<dependency>
+  <groupId>org.chenile</groupId>
+  <artifactId>chenile-admin-ui</artifactId>
+</dependency>
+```
+
+Start the application and open:
+
+```text
+http://host:port/chenile/admin
+```
+
+The UI defaults to the hosting origin when served from `/chenile/admin`.
+
 ## Build
 
 ```bash
 npm run build
 ```
+
+The Maven build runs `npm ci`, `npm run build`, and packages the output under
+`META-INF/resources/chenile/admin`.
 
 ## Notes
 
@@ -36,5 +60,6 @@ npm run build
 - In local development, the built-in Vite proxy handles cross-origin calls.
 - In production without that proxy, the backend must allow CORS or the UI must be served from the same origin.
 - The frontend accepts both raw JSON payloads and Chenile `GenericResponse`-wrapped payloads.
+- Treat the UI as opt-in public static content. Secure `/info`, `/service-info`, `/health-check`, `/serviceregistry`, and related APIs in the host app if topology or health data is sensitive.
 - Workflow tools only appear when the target deployment actually exposes the companion workflow-info service endpoints. If those endpoints are absent, the UI hides the feature entirely.
 - Ecosystem mode appears only when the target monolith is hosting the central service registry.
