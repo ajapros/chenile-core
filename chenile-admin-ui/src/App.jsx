@@ -189,6 +189,31 @@ function isRegistryHost(infoPayload) {
   });
 }
 
+function buildRegistryOnlyInfo(baseUrl) {
+  return {
+    monolithName: "Chenile Service Registry",
+    moduleName: "Chenile Service Registry",
+    version: "",
+    services: [
+      {
+        id: REGISTRY_SERVICE_ID,
+        name: REGISTRY_SERVICE_ID,
+        version: "",
+        baseUrl,
+        operations: [
+          { name: "list", httpMethod: "GET", url: "/serviceregistry" },
+          {
+            name: "diagnostics",
+            httpMethod: "GET",
+            url: "/serviceregistry/diagnostics",
+          },
+        ],
+      },
+    ],
+    versions: {},
+  };
+}
+
 function deriveWorkflowInfoLookupName(service) {
   const lookupName = service?.lookupName || service?.serviceId || service?.id;
   if (!lookupName || lookupName.endsWith("StateEntityInfoService")) {
@@ -359,34 +384,58 @@ function App() {
     setTestDiagramImages([]);
     setTestDiagramError("");
     setSwaggerUrl("");
+    setEcosystemLoading(false);
+    setDiagnosticsLoading(false);
     try {
-      const [payload, detectedSwaggerUrl] = await Promise.all([
-        fetchJson(buildRequestUrl(normalized, "/info")),
-        findSwaggerUrl(normalized),
-      ]);
-      setInfo(payload);
+      const detectedSwaggerUrl = await findSwaggerUrl(normalized);
       setSwaggerUrl(detectedSwaggerUrl);
-      if (isRegistryHost(payload)) {
+
+      let payload = null;
+      let infoError = null;
+      try {
+        payload = await fetchJson(buildRequestUrl(normalized, "/info"));
+        setInfo(payload);
+      } catch (error) {
+        infoError = error;
+      }
+
+      if (isRegistryHost(payload) || infoError) {
         setEcosystemLoading(true);
         setDiagnosticsLoading(true);
+        let registryLoaded = false;
         try {
           const registryPayload = await fetchJson(
             buildRequestUrl(normalized, "/serviceregistry")
           );
           setEcosystemServices(registryPayload || []);
+          registryLoaded = true;
+          if (!payload) {
+            setInfo(buildRegistryOnlyInfo(normalized));
+            setCatalogMode("ecosystem");
+          }
         } catch (error) {
           setEcosystemError(error.message);
+          if (!payload) {
+            throw new Error(
+              `Unable to load /info (${infoError.message}) or /serviceregistry (${error.message}).`
+            );
+          }
         } finally {
           setEcosystemLoading(false);
         }
-        try {
-          const diagnosticsPayload = await fetchJson(
-            buildRequestUrl(normalized, "/serviceregistry/diagnostics")
-          );
-          setRegistryDiagnostics(diagnosticsPayload || null);
-        } catch (error) {
-          setDiagnosticsError(error.message);
-        } finally {
+
+        if (registryLoaded) {
+          try {
+            const diagnosticsPayload = await fetchJson(
+              buildRequestUrl(normalized, "/serviceregistry/diagnostics")
+            );
+            setRegistryDiagnostics(diagnosticsPayload || null);
+          } catch (error) {
+            setDiagnosticsError(error.message);
+          } finally {
+            setDiagnosticsLoading(false);
+          }
+        } else {
           setDiagnosticsLoading(false);
         }
       }
