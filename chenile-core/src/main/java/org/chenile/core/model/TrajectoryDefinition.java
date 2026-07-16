@@ -1,6 +1,7 @@
 package org.chenile.core.model;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.chenile.core.service.HealthChecker;
@@ -18,7 +19,11 @@ import org.chenile.core.service.HealthChecker;
  * <p> Even health checks can be customized for a particular trajectory </p>
  */
 public class TrajectoryDefinition {
-
+	/**
+	 * This is a special ID used for the MAINSTREAM requests. All requests, by default, belong to this
+	 * unless specified otherwise.
+	 */
+	public static final String MAINSTREAM = "_MAINSTREAM_";
 	private String id;
 	/** 
 	 * a map between the service name and the service reference to use for this trajectory.
@@ -27,6 +32,20 @@ public class TrajectoryDefinition {
 	//private Map<String,String> serviceToServiceReferenceId = new HashMap<>();
 	//private Map<String,Object> serviceToServiceReference = new HashMap<>();
 	private Map<String,TrajectoryOverride> trajectoryOverrides = new HashMap<>();
+
+	public Map<String, Object> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, Object> attributes) {
+		this.attributes = attributes;
+	}
+
+	/**
+	 * Trajectories can contain additional attributes that can be used by the Trajectory consumers in
+	 * their own way. Chenile is opaque to how this is used but provides a way to store them here.
+	 */
+	private Map<String,Object> attributes = new LinkedHashMap<>();
 
 	public void setTrajectoryOverrides(Map<String, TrajectoryOverride> trajectoryOverrides) {
 		this.trajectoryOverrides = trajectoryOverrides;
