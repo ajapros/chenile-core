@@ -13,14 +13,15 @@ import org.junit.jupiter.api.Test;
 class CoreMessageBundleTest {
 
 	@Test
-	void cannotInvokeTargetRendersTheWrappedExceptionMessageInEveryBundle() {
+	void cannotInvokeTargetRendersTypeOperationAndMessageInEveryBundle() {
 		MultipleMessageSource messageSource = new MultipleMessageSource();
 		messageSource.setBasename("classpath*:messages");
 		messageSource.setFallbackToSystemLocale(false);
+		Object[] params = { "target method failed", "leadService.fetch", "IllegalStateException" };
 
 		for (Locale locale : new Locale[] { Locale.US, Locale.ENGLISH, Locale.ROOT }) {
-			assertEquals("CANNOT_INVOKE_TARGET: target method failed",
-					messageSource.getMessage("E509", new Object[] { "target method failed" }, locale),
+			assertEquals("Unexpected IllegalStateException while invoking leadService.fetch: target method failed",
+					messageSource.getMessage("E509", params, locale),
 					"E509 resolved for locale '" + locale + "'");
 		}
 	}

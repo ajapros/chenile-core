@@ -43,7 +43,7 @@ public class ServiceInvoker implements Command<ChenileExchange>{
 			retException = e;
 		}
 		if (retException != null){
-			chenileExchange.setException(surroundExceptionIfRequired(retException));
+			chenileExchange.setException(surroundExceptionIfRequired(retException, serviceOp));
 		}
 	}
 
@@ -52,12 +52,12 @@ public class ServiceInvoker implements Command<ChenileExchange>{
 				message, className, e);
 	}
 
-	private ErrorNumException surroundExceptionIfRequired(Throwable e){
+	private ErrorNumException surroundExceptionIfRequired(Throwable e, String serviceOp){
 		if (e instanceof ErrorNumException errorNumException){
 			return errorNumException;
 		}
 		return new ServerException(ErrorCodes.CANNOT_INVOKE_TARGET.getSubError(),
-				new Object[] {e.getMessage()},e);
+				new Object[] {e.getMessage(), serviceOp, e.getClass().getSimpleName()},e);
 	}
 
 	private void invokeApi(ChenileExchange exchange) throws IllegalAccessException, InvocationTargetException {
