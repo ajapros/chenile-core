@@ -28,9 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static org.chenile.cucumber.VariableHelper.substituteVariables;
 import static org.chenile.testutils.SpringMvcUtils.assertErrors;
 import static org.chenile.testutils.SpringMvcUtils.assertWarnings;
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -415,5 +416,74 @@ public class RestCukesSteps {
 
     private String substituteVariables(String string){
         return VariableHelper.substituteVariables(string);
+    }
+
+    @And("the rest response key {string} collection has an item {string}")
+    public void theRestResponseKeyCollectionHasAnItem(String key, String item) throws Exception {
+        ResultActions response = context.get("actions");
+        response.andExpect(jsonPath("$.payload." + key).value(hasItem(item)));
+    }
+
+    /**
+     * Checks that a scalar collection contains every value listed in the
+     * single-column table, without depending on collection order.
+     */
+    @And("the rest response key {string} collection has an item with values:")
+    public void theRestResponseKeyCollectionHasAnItemWithValues(
+            String keyCollection, DataTable dataTable) throws Exception {
+        List<String> expectedValues = dataTable.asList().stream()
+                .map(value -> substituteVariables(value))
+                .toList();
+        if (expectedValues.isEmpty()) {
+            throw new IllegalArgumentException("The values table must contain at least one row");
+        }
+
+        ResultActions response = context.get("actions");
+        response.andExpect(jsonPath("$.payload." + keyCollection)
+                .value(hasItems(expectedValues.toArray(new String[0]))));
+    }
+
+    /**
+     * Checks that one item in a response collection satisfies every key/value pair
+     * in the table. The framework's equivalent step currently supports only two
+     * rows, so this local variant accepts any positive number of rows.
+     *
+     * <pre>
+     * And the rest response key "items" collection has an item with keys and values:
+     *   | key  | value |
+     *   | type | city  |
+     *   | code | Bengaluru |
+     *   | rank | 1     |
+     * </pre>
+     */
+    @And("the rest response key {string} collection has an item with keys and values:")
+    public void theRestResponseKeyCollectionHasAnItemWithKeysAndValues(
+            String keyCollection, DataTable dataTable) throws Exception {
+        List<Map<String, String>> keyValuePairs = dataTable.asMaps();
+        if (keyValuePairs.isEmpty()) {
+            throw new IllegalArgumentException("The key/value table must contain at least one row");
+        }
+
+        StringBuilder filter = new StringBuilder();
+        for (Map<String, String> keyValuePair : keyValuePairs) {
+            if (filter.length() > 0) filter.append(" && ");
+            String key = keyValuePair.get("key");
+            String value = keyValuePair.get("value");
+            if (key == null || value == null) {
+                throw new IllegalArgumentException("Each table row must provide key and value columns");
+            }
+            filter.append("@['")
+                    .append(escapeJsonPathLiteral(key))
+                    .append("'] == '")
+                    .append(escapeJsonPathLiteral(substituteVariables(value)))
+                    .append("'");
+        }
+
+        ResultActions response = context.get("actions");
+        response.andExpect(jsonPath("$.payload." + keyCollection + "[?(" + filter + ")]").isNotEmpty());
+    }
+
+    private String escapeJsonPathLiteral(String value) {
+        return value.replace("\\", "\\\\").replace("'", "\\'");
     }
 }
