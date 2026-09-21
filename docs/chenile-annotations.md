@@ -109,7 +109,7 @@ serverless adapter without depending on `chenile-http`.
 
 The shared `OperationDefinitionProducerBase` in `chenile-core` resolves the
 transport-neutral method metadata: `@ChenileBody`, subscriptions, body-type
-selectors, interceptors, and Chenile extensions. HTTP's `MappingProducerBase`
+selectors, interceptors, and Chenile extensions. HTTP's `SpringMvcMappingProducer`
 inherits it and adds only Spring MVC request-body, URL, HTTP method, and response
 wrapper behavior.
 
@@ -269,7 +269,7 @@ That lets Chenile or downstream modules attach policy metadata without changing 
 
 ## How controller methods become `OperationDefinition`
 
-The conversion happens in `chenile-http/src/main/java/org/chenile/http/init/od/MappingProducerBase.java`.
+The conversion happens in `chenile-http/src/main/java/org/chenile/http/init/od/SpringMvcMappingProducer.java`.
 
 For each mapped controller method, it derives:
 
@@ -444,7 +444,7 @@ In both cases, the runtime model is the same.
 - `chenile-http/src/main/java/org/chenile/http/annotation/ChenileParamType.java`
 - `chenile-http/src/main/java/org/chenile/http/annotation/ChenileResponseCodes.java`
 - `chenile-http/src/main/java/org/chenile/http/init/HttpAnnotationChenileServiceInitializer.java`
-- `chenile-http/src/main/java/org/chenile/http/init/od/MappingProducerBase.java`
+- `chenile-http/src/main/java/org/chenile/http/init/od/SpringMvcMappingProducer.java`
 - `chenile-http/src/test/java/org/chenile/http/test/controller/JsonController.java`
 - `chenile-http/src/test/java/org/chenile/http/test/controller/CapacityController.java`
 - `chenile-http/src/test/resources/org/chenile/http/test/service/service.json`

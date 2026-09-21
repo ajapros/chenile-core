@@ -15,32 +15,64 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-/** HTTP binding specialization of the core operation producer. */
-public abstract class MappingProducerBase extends OperationDefinitionProducerBase {
-	private static final Logger logger = LoggerFactory.getLogger(MappingProducerBase.class);
+/**
+ * Produces Chenile HTTP operation metadata from Spring MVC mappings. Spring's
+ * composed mapping annotations, such as {@code GetMapping}, are resolved as a
+ * merged {@link RequestMapping}, so one producer covers every supported verb.
+ */
+public class SpringMvcMappingProducer extends OperationDefinitionProducerBase {
+	private static final Logger logger = LoggerFactory.getLogger(SpringMvcMappingProducer.class);
 
-	public MappingProducerBase(ApplicationContext applicationContext) {
+	public SpringMvcMappingProducer(ApplicationContext applicationContext) {
 		super(applicationContext);
+	}
+
+	public boolean supports(Method method) {
+		return AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class);
 	}
 
 	@Override
 	protected void configureTransport(OperationDefinition operation, Method method) {
-		String[] urls = url(method);
-		operation.setUrl(urls != null && urls.length > 0 ? urls[0] : null);
-		operation.setHttpMethod(httpMethod());
-		String[] consumes = consumes(method);
-		if (consumes != null && consumes.length > 0 && !consumes[0].isEmpty()) {
-			operation.setConsumes(MimeType.valueOf(consumes[0]));
+		RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
+		if (mapping == null) return;
+		String[] paths = mapping.path().length > 0 ? mapping.path() : mapping.value();
+		if (paths.length > 1) {
+			throw new IllegalArgumentException("Chenile operations support one URL: " + method);
 		}
-		String[] produces = produces(method);
-		if (produces != null && produces.length > 0 && !produces[0].isEmpty()) {
-			operation.setProduces(MimeType.valueOf(produces[0]));
+		operation.setUrl(paths.length == 0 ? null : paths[0]);
+		operation.setHttpMethod(toChenileHttpMethod(mapping.method(), method));
+		setMimeType(mapping.consumes(), operation::setConsumes, "consumes", method);
+		setMimeType(mapping.produces(), operation::setProduces, "produces", method);
+	}
+
+	private HTTPMethod toChenileHttpMethod(RequestMethod[] methods, Method javaMethod) {
+		if (methods.length != 1) {
+			throw new IllegalArgumentException("Chenile operations require exactly one HTTP method: " + javaMethod);
 		}
+		return switch (methods[0]) {
+			case GET -> HTTPMethod.GET;
+			case POST -> HTTPMethod.POST;
+			case PUT -> HTTPMethod.PUT;
+			case PATCH -> HTTPMethod.PATCH;
+			case DELETE -> HTTPMethod.DELETE;
+			default -> throw new IllegalArgumentException("Unsupported Chenile HTTP method " + methods[0] + ": " + javaMethod);
+		};
+	}
+
+	private void setMimeType(String[] values, java.util.function.Consumer<MimeType> setter,
+			String attribute, Method method) {
+		if (values.length > 1) {
+			throw new IllegalArgumentException("Chenile operations support one " + attribute + " value: " + method);
+		}
+		if (values.length == 1 && !values[0].isEmpty()) setter.accept(MimeType.from(values[0]));
 	}
 
 	@Override
@@ -96,9 +128,4 @@ public abstract class MappingProducerBase extends OperationDefinitionProducerBas
 		}
 		super.populateParams(method, operation);
 	}
-
-	protected abstract String[] url(Method method);
-	protected abstract HTTPMethod httpMethod();
-	protected abstract String[] consumes(Method method);
-	protected abstract String[] produces(Method method);
 }
