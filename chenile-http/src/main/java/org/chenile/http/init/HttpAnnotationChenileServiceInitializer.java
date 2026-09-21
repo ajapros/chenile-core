@@ -1,40 +1,20 @@
 package org.chenile.http.init;
 
-import org.chenile.base.exception.ServerException;
-import org.chenile.core.annotation.ChenileAnnotation;
-import org.chenile.core.errorcodes.ErrorCodes;
-import org.chenile.core.init.AbstractServiceInitializer;
+import org.chenile.core.init.AnnotationChenileServiceInitializer;
 import org.chenile.core.model.ChenileConfiguration;
 import org.chenile.core.model.ChenileServiceDefinition;
-import org.chenile.core.model.OperationDefinition;
-import org.chenile.core.service.HealthChecker;
-import org.chenile.core.util.MethodUtils;
 import org.chenile.http.annotation.ChenileController;
-import org.chenile.http.annotation.ChenileAdditionalAttribute;
 import org.chenile.http.init.od.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Uses a Spring controller with additional annotations to initiate a Chenile Service.
  * The controller must extend from ControllerSupport.
  */
-public class HttpAnnotationChenileServiceInitializer extends AbstractServiceInitializer {
-	private final Logger logger = LoggerFactory.getLogger(HttpAnnotationChenileServiceInitializer.class);
-
-
+public class HttpAnnotationChenileServiceInitializer extends AnnotationChenileServiceInitializer {
 	private DeleteMappingProducer deleteMappingProducer; 
 	private GetMappingProducer getMappingProducer ;
 	private PatchMappingProducer patchMappingProducer;
@@ -43,127 +23,31 @@ public class HttpAnnotationChenileServiceInitializer extends AbstractServiceInit
 
 
 	public HttpAnnotationChenileServiceInitializer(ApplicationContext ac, ChenileConfiguration chenileConfiguration){
-        super(chenileConfiguration,ac);
+		super(ac, chenileConfiguration);
 	}
 
-	public void init() {
+	@Override
+	protected boolean supportsController(Object controller) {
+		return controller.getClass().isAnnotationPresent(RestController.class);
+	}
+
+	@Override
+	protected String defaultServiceName(String beanName, ChenileController controller) {
+		return "_" + controller.value() + "_";
+	}
+
+	@Override
+	protected void init() {
 		deleteMappingProducer = new DeleteMappingProducer(applicationContext);
 		getMappingProducer = new GetMappingProducer(applicationContext);
 		patchMappingProducer = new PatchMappingProducer(applicationContext);
 		postMappingProducer = new PostMappingProducer(applicationContext);
 		putMappingProducer = new PutMappingProducer(applicationContext);
-		
-		Map<String,Object> beans = applicationContext.getBeansWithAnnotation(ChenileController.class);
-		
-		// register all of these beans
-		for(Entry<String, Object> e: beans.entrySet()) {
-			Object bean = e.getValue();
-			if (!bean.getClass().isAnnotationPresent(RestController.class)) continue;
-			ChenileController chenileController = bean.getClass().getAnnotation(ChenileController.class);
-			ChenileServiceDefinition csd = new ChenileServiceDefinition();
-			csd.setMonolithName(serviceConfiguration.getMonolithName());
-			csd.setRegisterInServiceRegistry(chenileController.registerInServiceRegistry());
-			String id = chenileController.value();
-			csd.setId(id);
-			String name = chenileController.serviceName();
-			if (name.isEmpty()) {
-				name = "_" + id + "_";
-			}
-			String serviceModule = chenileController.serviceModule();
-			if (serviceModule.isEmpty()) {
-				serviceModule = id;
-			}
-			csd.setServiceModule(serviceModule);
-			String bluePrintName = chenileController.bluePrintName();
-			if (!bluePrintName.isEmpty()) {
-				csd.setBluePrintName(bluePrintName);
-			}
-			Map<String,String> additionalAttributes = new HashMap<>();
-			for (ChenileAdditionalAttribute additionalAttribute : chenileController.additionalAttributes()) {
-				additionalAttributes.put(additionalAttribute.key(), additionalAttribute.value());
-			}
-			csd.setAdditionalAttributes(additionalAttributes);
-
-			Object serviceRef = lookup(name);
-			if (serviceRef != null) {
-				csd.setName(name);
-				csd.setServiceReference(serviceRef);
-			}else {
-				throw new ServerException(ErrorCodes.MISSING_SERVICE_REFERENCE.getSubError(),
-						new Object[]{id});
-			}
-
-			String healthCheckerName = chenileController.healthCheckerName();
-			if (healthCheckerName.isEmpty())
-				healthCheckerName = id + "HealthChecker";
-
-			Object hcref = lookup(healthCheckerName);
-			if (hcref != null){
-				csd.setHealthCheckerName(healthCheckerName);
-				csd.setHealthChecker((HealthChecker) hcref);
-			}
-			String mockName = chenileController.mockName();
-			if (mockName.isEmpty())
-				mockName = id + "Mock";
-
-			Object mockRef = lookup(mockName);
-			if (mockRef != null) {
-				csd.setMockName(mockName);
-				csd.setMockServiceReference(mockRef);
-			}
-			csd.setOperations(new ArrayList<>());
-			collectChenileAnnotations(bean,csd);
-			configureOperations(bean.getClass(),csd);
-			Class<?> clazz = chenileController.interfaceClass();
-			if (clazz == Object.class ){
-				// Interface class is not specified see if you can compute the interface class
-				clazz = computeInterfaceClass(csd);
-			}
-			csd.setInterfaceClass(clazz);
-			registerService(csd);
-		}
+		super.init();
 	}
 
-	private Class<?> computeInterfaceClass(ChenileServiceDefinition csd){
-		Object service = csd.getServiceReference();
-		Class<?>[] interfaces = ClassUtils.getAllInterfaces(service);
-		for (Class<?> inter : interfaces ){
-			boolean found = true;
-			for (OperationDefinition od: csd.getOperations()) {
-				Method m = MethodUtils.computeMethod(inter, od);
-				if (m == null) {
-					found = false;
-					break;
-				}
-			}
-			if(found) return inter;
-		}
-		return null;
-	}
-	
-	protected void collectChenileAnnotations(Object controller, ChenileServiceDefinition csd) {
-		Annotation[] annotations = controller.getClass().getAnnotations();
-		for (Annotation annotation: annotations) {
-			Class<? extends Annotation> klass = annotation.annotationType();
-			if (klass.isAnnotationPresent(ChenileAnnotation.class)) {
-				Map<String,Object> map = AnnotationUtils.getAnnotationAttributes(annotation);
-				String n = klass.getName();
-				n = n.substring(n.lastIndexOf('.')+1);
-				csd.putExtension(n,map);
-				csd.putExtensionAsAnnotation(klass,annotation);
-			}				
-		}
-	}
-
-	private Object lookup(String name) {
-		try {
-			return applicationContext.getBean(name);
-		}catch (NoSuchBeanDefinitionException exception){
-			return null;
-		}
-	}
-	
-	private void configureOperations(final Class<?> type, ChenileServiceDefinition csd) {
+	@Override
+	protected void configureOperations(final Class<?> type, ChenileServiceDefinition csd) {
 	    Class<?> klass = type;
 	    while (klass != Object.class) { // need to iterate thought hierarchy in order to retrieve methods from above the current instance
 	        // iterate though the list of methods declared in the class represented by klass variable, and add those annotated with the specified annotation

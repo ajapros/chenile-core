@@ -39,7 +39,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		Map<String, Object> beans = applicationContext.getBeansWithAnnotation(ChenileController.class);
 		for (Map.Entry<String, Object> entry : beans.entrySet()) {
 			Object controller = entry.getValue();
-			if (isRestController(controller)) continue;
+			if (!supportsController(controller)) continue;
 			ChenileController annotation = controller.getClass().getAnnotation(ChenileController.class);
 			ChenileServiceDefinition serviceDefinition = buildServiceDefinition(entry.getKey(), controller, annotation);
 			configureOperations(controller.getClass(), serviceDefinition);
@@ -50,7 +50,21 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		}
 	}
 
-	private ChenileServiceDefinition buildServiceDefinition(String beanName, Object controller,
+	/** Lets a transport adapter select the controller type it owns. */
+	protected boolean supportsController(Object controller) {
+		return !isRestController(controller);
+	}
+
+	/**
+	 * Resolves the default service-reference bean name when the controller has
+	 * not supplied one explicitly. The HTTP adapter retains its historical
+	 * underscore-delimited convention by overriding this hook.
+	 */
+	protected String defaultServiceName(String beanName, ChenileController annotation) {
+		return beanName;
+	}
+
+	protected ChenileServiceDefinition buildServiceDefinition(String beanName, Object controller,
 			ChenileController annotation) {
 		ChenileServiceDefinition serviceDefinition = new ChenileServiceDefinition();
 		serviceDefinition.setId(annotation.value());
@@ -58,7 +72,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		serviceDefinition.setRegisterInServiceRegistry(annotation.registerInServiceRegistry());
 
 		String serviceName = annotation.serviceName();
-		if (serviceName.isEmpty()) serviceName = beanName;
+		if (serviceName.isEmpty()) serviceName = defaultServiceName(beanName, annotation);
 		serviceDefinition.setName(serviceName);
 		Object serviceReference = lookup(serviceName);
 		if (serviceReference == null) {
@@ -96,7 +110,8 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		return serviceDefinition;
 	}
 
-	private void configureOperations(Class<?> type, ChenileServiceDefinition serviceDefinition) {
+	/** Builds transport-neutral operations. Transport adapters override this. */
+	protected void configureOperations(Class<?> type, ChenileServiceDefinition serviceDefinition) {
 		Class<?> current = type;
 		while (current != Object.class) {
 			for (Method method : current.getDeclaredMethods()) {
@@ -111,7 +126,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		}
 	}
 
-	private boolean isRestController(Object controller) {
+	protected boolean isRestController(Object controller) {
 		for (Annotation annotation : controller.getClass().getAnnotations()) {
 			if (annotation.annotationType().getName().equals("org.springframework.web.bind.annotation.RestController")) {
 				return true;
@@ -120,7 +135,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		return false;
 	}
 
-	private Class<?> computeInterfaceClass(ChenileServiceDefinition serviceDefinition) {
+	protected Class<?> computeInterfaceClass(ChenileServiceDefinition serviceDefinition) {
 		for (Class<?> candidate : ClassUtils.getAllInterfaces(serviceDefinition.getServiceReference())) {
 			boolean found = true;
 			for (OperationDefinition operation : serviceDefinition.getOperations()) {
@@ -134,7 +149,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		return null;
 	}
 
-	private Object lookup(String name) {
+	protected Object lookup(String name) {
 		try {
 			return applicationContext.getBean(name);
 		} catch (NoSuchBeanDefinitionException exception) {
@@ -142,7 +157,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		}
 	}
 
-	private void collectChenileAnnotations(Object source, ChenileServiceDefinition serviceDefinition) {
+	protected void collectChenileAnnotations(Object source, ChenileServiceDefinition serviceDefinition) {
 		for (Annotation annotation : source.getClass().getAnnotations()) {
 			Class<? extends Annotation> type = annotation.annotationType();
 			if (type.isAnnotationPresent(ChenileAnnotation.class)) {
@@ -152,7 +167,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		}
 	}
 
-	private String simpleName(Class<?> type) {
+	protected String simpleName(Class<?> type) {
 		return type.getName().substring(type.getName().lastIndexOf('.') + 1);
 	}
 }
