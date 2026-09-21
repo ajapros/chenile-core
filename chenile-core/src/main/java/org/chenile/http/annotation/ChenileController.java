@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.chenile.http.annotation;
 
@@ -11,9 +11,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotate all chenile controllers with this annotation. This makes a normal
- * Spring controller into a Chenile controller. Chenile controllers define a service
- * that maps to a Service Impl but also has other policies attached to it.
+ * Declares a Chenile controller. A controller is a Chenile service declaration;
+ * it is not necessarily an HTTP endpoint. When the same bean is also annotated
+ * with Spring's {@code @RestController}, chenile-http supplies the HTTP binding.
+ *
+ * <p>The package name is retained for source compatibility. The annotation is
+ * supplied by the chenile-core artifact so event-only and serverless
+ * applications do not need a chenile-http dependency.</p>
  */
 @Retention(RUNTIME)
 @Target(TYPE)
@@ -27,4 +31,10 @@ public @interface ChenileController {
 	String healthCheckerName() default "";
 	String mockName() default "";
 	Class<?> interfaceClass() default Object.class;
+
+	/**
+	 * Whether this service definition is published to the remote Chenile Service
+	 * Registry. It is always registered locally in {@code ChenileConfiguration}.
+	 */
+	boolean registerInServiceRegistry() default true;
 }

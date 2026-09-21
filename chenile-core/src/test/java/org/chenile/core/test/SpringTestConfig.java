@@ -57,6 +57,9 @@ public class SpringTestConfig {
 		return new T1MockService();
 	}
 
+	@Bean public HeadlessController headlessController() {
+		return new HeadlessController();
+	}
+
 
 }
-

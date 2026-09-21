@@ -477,6 +477,7 @@ These concepts are direct equivalents:
 
 - service JSON `id` -> `@ChenileController(value = "...")`
 - service JSON `name` -> `@ChenileController(serviceName = "...")`
+- service JSON `registerInServiceRegistry` -> `@ChenileController(registerInServiceRegistry = ...)`
 - operation JSON `url` + `httpMethod` -> `@GetMapping`, `@PostMapping`, `@PutMapping`, `@PatchMapping`, `@DeleteMapping`
 - operation JSON `interceptorComponentNames` -> `@InterceptedBy`
 - operation JSON `eventSubscribedTo` -> `@EventsSubscribedTo`
@@ -487,6 +488,10 @@ The main practical difference is this:
 
 - JSON path defines Chenile metadata explicitly in data files.
 - annotation path derives most metadata from controller method signatures plus Chenile-specific annotations.
+
+For a controller without Spring `@RestController`, use `@ChenileOperation` for each
+operation instead of a Spring mapping annotation. Such a controller has no HTTP URL
+and can subscribe to events with `@SubscribeTo`.
 
 ## Most relevant source files
 

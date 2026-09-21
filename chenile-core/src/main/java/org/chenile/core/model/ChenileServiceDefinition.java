@@ -44,6 +44,8 @@ public class ChenileServiceDefinition  {
     private String version;
     private String serviceModule;
     private String bluePrintName;
+	/** Whether this local definition is published to the remote service registry. */
+	private boolean registerInServiceRegistry = true;
     private Map<String,String> additionalAttributes = new HashMap<>();
     private List<OperationDefinition> operations;
     private List<String> interceptorComponentNames;
@@ -223,6 +225,14 @@ public class ChenileServiceDefinition  {
 
 	public void setBluePrintName(String bluePrintName) {
 		this.bluePrintName = bluePrintName;
+	}
+
+	public boolean isRegisterInServiceRegistry() {
+		return registerInServiceRegistry;
+	}
+
+	public void setRegisterInServiceRegistry(boolean registerInServiceRegistry) {
+		this.registerInServiceRegistry = registerInServiceRegistry;
 	}
 
 	public Map<String, String> getAdditionalAttributes() {

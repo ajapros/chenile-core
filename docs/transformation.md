@@ -100,7 +100,7 @@ A controller method can declare:
 @BodyTypeSelector("subclassBodyTypeSelector")
 ```
 
-During annotation-based registration, `MappingProducerBase.processBodyTypeSelector(...)` resolves the annotation values into the same kind of command chain and stores it on the `OperationDefinition`.
+During annotation-based registration, `OperationDefinitionProducerBase` resolves the annotation values into the same kind of command chain and stores it on the `OperationDefinition`.
 
 ### Same result
 
@@ -250,8 +250,8 @@ Use this model:
 - `chenile-core/src/main/java/org/chenile/core/transform/Transformer.java`
 - `chenile-core/src/main/java/org/chenile/core/transform/SubclassRegistry.java`
 - `chenile-core/src/main/java/org/chenile/core/transform/SubclassBodyTypeSelector.java`
-- `chenile-http/src/main/java/org/chenile/http/annotation/BodyTypeSelector.java`
-- `chenile-http/src/main/java/org/chenile/http/init/od/MappingProducerBase.java`
+- `chenile-core/src/main/java/org/chenile/http/annotation/BodyTypeSelector.java`
+- `chenile-core/src/main/java/org/chenile/core/init/OperationDefinitionProducerBase.java`
 - `chenile-core/src/main/java/org/chenile/core/init/AbstractServiceInitializer.java`
 - `chenile-http/src/test/java/org/chenile/http/test/controller/CapacityController.java`
 - `chenile-http/src/test/java/org/chenile/http/test/subclass/TestSubclassing.java`

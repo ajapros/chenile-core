@@ -50,10 +50,28 @@ public class TestChenileCore {
 	@Autowired private ChenileEntryPoint chenileEntryPoint;
 	@Autowired private ChenileExchangeBuilder chenileExchangeBuilder;
 	@Autowired private ChenileConfiguration chenileConfiguration;
+	@Autowired private HeadlessController headlessController;
 	@Autowired ContextContainer contextContainer;
 	
 	private ChenileExchange makeExchange(String serviceName,String operationName) {
 		return chenileExchangeBuilder.makeExchange(serviceName, operationName,null);
+	}
+
+	@Test public void testHeadlessChenileControllerRegistersAndConsumesEvents() {
+		ChenileServiceDefinition service = chenileConfiguration.getServices().get("headlessController");
+		assertNotNull(service);
+		assertFalse(service.isRegisterInServiceRegistry());
+		assertNull(service.getOperations().get(0).getUrl());
+		assertEquals(org.chenile.core.model.HttpBindingType.BODY,
+				service.getOperations().get(0).getParams().get(0).getType());
+		assertTrue(service.getOperations().get(0).getEventSubscribedTo().contains("headless-event"));
+
+		Foo event = new Foo();
+		event.bar = "headless";
+		List<ChenileExchange> exchanges = eventProcessor.handleEvent("headless-event", event, Map.of());
+		assertEquals(1, exchanges.size());
+		assertNull(exchanges.get(0).getException());
+		assertSame(event, headlessController.getLastEvent());
 	}
 	
 	@SuppressWarnings("unchecked")

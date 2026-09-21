@@ -18,7 +18,9 @@ A service in Chenile is metadata plus an implementation bean.
 - `chenile-core/src/main/java/org/chenile/core/model/ChenileServiceDefinition.java` describes a service-level contract.
 - `chenile-core/src/main/java/org/chenile/core/model/OperationDefinition.java` describes each operation: URL, HTTP method, input/output types, interceptors, security flags, events, and parameter bindings.
 
-Those definitions are created either from JSON resources by the initializers in `chenile-core`, or from annotated Spring controllers by `chenile-http/src/main/java/org/chenile/http/init/AnnotationChenileServiceInitializer.java`.
+Those definitions are created either from JSON resources or annotated headless
+controllers by initializers in `chenile-core`. `chenile-http` adds operation and URL
+metadata only for Chenile controllers that are also Spring `@RestController`s.
 
 For the JSON path specifically, see `docs/service-definition-json.md`.
 For the annotation path specifically, see `docs/chenile-annotations.md`.
@@ -152,7 +154,7 @@ Read these files in order:
 4. `chenile-http/src/main/java/org/chenile/http/handler/HttpEntryPoint.java`
 5. `chenile-core/src/main/java/org/chenile/core/interceptors/ConstructServiceReference.java`
 6. `chenile-core/src/main/java/org/chenile/core/interceptors/ServiceInvoker.java`
-7. `chenile-http/src/main/java/org/chenile/http/init/AnnotationChenileServiceInitializer.java`
+7. `chenile-http/src/main/java/org/chenile/http/init/HttpAnnotationChenileServiceInitializer.java`
 8. `chenile-core/src/main/resources/org/chenile/core/chenile-core.xml`
 9. `chenile-core/src/main/java/org/chenile/core/interceptors/interpolations/PreProcessorsInterpolation.java`
 10. `chenile-core/src/main/java/org/chenile/core/interceptors/interpolations/ServiceSpecificProcessorsInterpolation.java`

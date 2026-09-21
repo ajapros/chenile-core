@@ -1,214 +1,104 @@
 package org.chenile.http.init.od;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.*;
-
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.chenile.base.exception.ServerException;
-import org.chenile.base.response.GenericResponse;
-import org.chenile.core.annotation.ChenileAnnotation;
-import org.chenile.core.context.ChenileExchange;
-import org.chenile.core.errorcodes.ErrorCodes;
-import org.chenile.core.init.AbstractServiceInitializer;
-import org.chenile.core.model.ChenileServiceDefinition;
+import org.chenile.core.init.OperationDefinitionProducerBase;
 import org.chenile.core.model.HTTPMethod;
-import org.chenile.core.model.HttpBindingType;
 import org.chenile.core.model.MimeType;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
-import org.chenile.http.annotation.*;
-import org.chenile.owiz.Command;
+import org.chenile.http.annotation.ChenileParamType;
+import org.chenile.http.annotation.ChenileResponseCodes;
+import org.chenile.http.annotation.ParamInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
-public abstract class MappingProducerBase {
-	private static Logger logger = LoggerFactory.getLogger(MappingProducerBase.class);
-	protected ApplicationContext applicationContext;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+
+/** HTTP binding specialization of the core operation producer. */
+public abstract class MappingProducerBase extends OperationDefinitionProducerBase {
+	private static final Logger logger = LoggerFactory.getLogger(MappingProducerBase.class);
+
 	public MappingProducerBase(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-	}
-	
-	
-	protected void processChenileOperation(ChenileServiceDefinition csd,Method method, OperationDefinition od) {
-		processInterceptedBy(csd,method,od);
-		processBodyTypeSelector(csd,method,od);
-		processEventsSubscribedTo(csd,method,od);
-		collectChenileAnnotations(method,od);
-		processChenileResponseCodes(method,od);
+		super(applicationContext);
 	}
 
-	protected void processChenileResponseCodes(Method method, OperationDefinition od) {
-		if(method.isAnnotationPresent(ChenileResponseCodes.class)) {
-			ChenileResponseCodes co = method.getAnnotation(ChenileResponseCodes.class);
-			od.setSuccessHttpStatus(co.success());
-			od.setWarningHttpStatus(co.warning());
+	@Override
+	protected void configureTransport(OperationDefinition operation, Method method) {
+		String[] urls = url(method);
+		operation.setUrl(urls != null && urls.length > 0 ? urls[0] : null);
+		operation.setHttpMethod(httpMethod());
+		String[] consumes = consumes(method);
+		if (consumes != null && consumes.length > 0 && !consumes[0].isEmpty()) {
+			operation.setConsumes(MimeType.valueOf(consumes[0]));
 		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	protected void processInterceptedBy(ChenileServiceDefinition csd,Method method, OperationDefinition od) {
-		if(method.isAnnotationPresent(InterceptedBy.class)) {
-			InterceptedBy co = method.getAnnotation(InterceptedBy.class);
-			if (co.value() != null) {
-				List<Command<ChenileExchange>> cmds = new ArrayList<>();
-				for (String interceptorName: co.value()) {
-					Command<ChenileExchange> cmd = (Command<ChenileExchange>) applicationContext.getBean(interceptorName);
-					cmds.add(cmd);
-				}
-				od.setInterceptorComponentNames(Arrays.asList(co.value()));
-				od.setInterceptorCommands(cmds);
-			}
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	protected void processBodyTypeSelector(ChenileServiceDefinition csd,Method method, OperationDefinition od) {
-		if(method.isAnnotationPresent(BodyTypeSelector.class)) {
-			BodyTypeSelector co = method.getAnnotation(BodyTypeSelector.class);
-			if (co.value() != null) {
-				od.setBodyTypeSelectorComponentNames(co.value());
-				Command<ChenileExchange> bts = AbstractServiceInitializer.constructBodyTypeInterceptorsChain(co.value(),
-						applicationContext);
-				od.setBodyTypeSelector(bts);
-			}
+		String[] produces = produces(method);
+		if (produces != null && produces.length > 0 && !produces[0].isEmpty()) {
+			operation.setProduces(MimeType.valueOf(produces[0]));
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	protected void processEventsSubscribedTo(ChenileServiceDefinition csd,Method method, OperationDefinition od) {
-		if(method.isAnnotationPresent(EventsSubscribedTo.class)) {
-			EventsSubscribedTo est = method.getAnnotation(EventsSubscribedTo.class);
-			if (est.value() != null) {
-                Set<String> set = new HashSet<>(Arrays.asList(est.value()));
-				od.setEventSubscribedTo(set);
-			}
+	@Override
+	protected void processOperationAnnotations(Method method, OperationDefinition operation) {
+		super.processOperationAnnotations(method, operation);
+		ChenileResponseCodes responseCodes = method.getAnnotation(ChenileResponseCodes.class);
+		if (responseCodes != null) {
+			operation.setSuccessHttpStatus(responseCodes.success());
+			operation.setWarningHttpStatus(responseCodes.warning());
 		}
 	}
 
-	/**
-	 * The paramClass Annotation tells Chenile that the actual signature of the service's operation
-	 * is different from the one that is defined in the controller.If the parameter is of type
-	 * String then the Chenile Param type will override it. Else, the actual type is preserved.
-	 * @param od the operation definition
-	 * @param pd the param definition that might have been annotated with ChenileParamType
-	 * @param param the parameter defined by the Java reflection API
-	 */
-	protected void processParamClassType(OperationDefinition od, ParamDefinition pd,Parameter param) {
-		if(param.isAnnotationPresent(ChenileParamType.class)) {
-			ChenileParamType co = param.getAnnotation(ChenileParamType.class);
-			if (co.value() != null) {
-				pd.setParamClass(co.value());
-				Class<?> clazz = od.getInput();
-				// reflect the correct param class type in the OperationDefinition as well.
-				// do this only if the od.getInput() is of type String. Else leave it alone
-				if (clazz.equals(String.class)){
-					od.setInput(co.value());
-				}
+	@Override
+	protected boolean includeParameter(Parameter parameter) {
+		return !HttpServletRequest.class.isAssignableFrom(parameter.getType());
+	}
+
+	@Override
+	protected boolean isBodyParameter(Parameter parameter) {
+		return super.isBodyParameter(parameter) || parameter.isAnnotationPresent(RequestBody.class);
+	}
+
+	@Override
+	protected void customizeParam(OperationDefinition operation, ParamDefinition param, Parameter parameter) {
+		if (parameter.isAnnotationPresent(ParamInfo.class)) {
+			ParamInfo info = parameter.getAnnotation(ParamInfo.class);
+			param.setName(info.name());
+			param.setDescription(info.description());
+		}
+		if (parameter.isAnnotationPresent(ChenileParamType.class)) {
+			ChenileParamType type = parameter.getAnnotation(ChenileParamType.class);
+			if (type.value() != null) {
+				param.setParamClass(type.value());
+				if (operation.getInput().equals(String.class)) operation.setInput(type.value());
 			}
 		}
+		logger.info("The Parameterized type for {} is {}", operation.getName(), param.getParamType());
 	}
-	
-	protected void collectChenileAnnotations(Method method, OperationDefinition od) {
-		Annotation[] annotations = method.getAnnotations();
-		for (Annotation annotation: annotations) {
-			Class<? extends Annotation> klass = annotation.annotationType();
-			if (klass.isAnnotationPresent(ChenileAnnotation.class)) {
-				Map<String,Object> map = AnnotationUtils.getAnnotationAttributes(annotation);
-				String n = klass.getName();
-				n = n.substring(n.lastIndexOf('.')+1);
-				od.putExtension(n,map);
-				od.putExtensionAsAnnotation(klass,annotation);
-			}				
+
+	@Override
+	protected void populateOutputTypes(OperationDefinition operation, Method method) {
+		ResolvableType type = ResolvableType.forMethodReturnType(method).getGeneric().getGeneric();
+		operation.setOutputAsParameterizedReference(ParameterizedTypeReference.forType(type.getType()));
+		operation.setOutput(type.getRawClass());
+	}
+
+	@Override
+	protected void populateParams(Method method, OperationDefinition operation) {
+		if (method.getParameterCount() == 0 ||
+				!HttpServletRequest.class.isAssignableFrom(method.getParameterTypes()[0])) {
+			throw new ServerException(org.chenile.core.errorcodes.ErrorCodes.INVALID_CONTROLLER_ARGS.getSubError(),
+					new Object[]{operation.getServiceName(), method.getName()});
 		}
+		super.populateParams(method, operation);
 	}
-	
-	protected void populateParams(ChenileServiceDefinition csd,Method method, OperationDefinition od){
-		processChenileOperation(csd,method,od);
-		
-		List<ParamDefinition> paramList = new ArrayList<>();
-		Parameter[] params = method.getParameters();
-		int index = 0;
-		Parameter param;
-		for(index = 0; index < params.length;index++) {
-			param = params[index];
-			if (index == 0) {
-				// first parameter must always be HTTPServletRequest.
-				// This parameter does not need to be passed to the underlying service
-				if (!param.getType().isAssignableFrom(HttpServletRequest.class)) {
-					throw new ServerException(ErrorCodes.INVALID_CONTROLLER_ARGS.getSubError(),
-							new Object[] {csd.getId(),method.getName()});
-				}
-				continue;
-			}
-			ParamDefinition pd = new ParamDefinition();
-			pd.setName(param.getName());
-			pd.setParamType(param.getParameterizedType());
-			logger.info("The Parameterized type for {} is {}",od.getName(),pd.getParamType());
-			if (param.isAnnotationPresent(RequestBody.class)) {
-				pd.setType(HttpBindingType.BODY);
-				od.setInput(param.getType());
-			}else {
-				pd.setType(HttpBindingType.HEADER);
-			}
-			if (param.isAnnotationPresent(ParamInfo.class)){
-				ParamInfo pi = param.getAnnotation(ParamInfo.class);
-				pd.setName(pi.name());
-				pd.setDescription(pi.description());
-			}
-			processParamClassType(od,pd,param);
-			paramList.add(pd);
-		}
-		od.setParams(paramList);
-	}
-	
-	protected abstract String[] url(Method method) ;
+
+	protected abstract String[] url(Method method);
 	protected abstract HTTPMethod httpMethod();
 	protected abstract String[] consumes(Method method);
 	protected abstract String[] produces(Method method);
-	
-	public void produceOperationDefinition(ChenileServiceDefinition csd,Method method) {
-		OperationDefinition od = new OperationDefinition();
-		od.setName(method.getName());
-		String[] urls = url(method);
-		String url = null;
-		if (urls != null && urls.length > 0) {
-			url = urls[0];
-		}
-		od.setHttpMethod(httpMethod());
-		String[] c = consumes(method);
-		if (c != null && c.length > 0 && !c[0].isEmpty()) {
-			od.setConsumes(MimeType.valueOf(c[0]));
-		}
-		c = produces(method);
-		if (c != null && c.length > 0 && !c[0].isEmpty()) {
-			od.setProduces(MimeType.valueOf(c[0]));
-		}
-
-		populateOutputTypes(od,method);
-		od.setUrl(url);
-		populateParams(csd,method,od);
-		csd.getOperations().add(od);
-	}
-
-	private static void populateOutputTypes(OperationDefinition od,
-								 Method method){
-		// output type needs to be calculated by removing the surrounding ResponseEntity and
-		// GenericResponse. That is why we call getGeneric() twice to remove the two of them
-		ResolvableType genericType = ResolvableType.forMethodReturnType(method);
-		ResolvableType t = genericType.getGeneric();
-		t = t.getGeneric();
-		od.setOutputAsParameterizedReference(ParameterizedTypeReference.forType(t.getType()));
-		od.setOutput(t.getRawClass());
-	}
 }

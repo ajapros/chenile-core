@@ -174,6 +174,12 @@ public class ChenileCoreConfiguration {
     public ChenileServiceInitializer chenileServiceInitializer(ApplicationContext ac, ChenileConfiguration chenileConfiguration)throws IOException {
     	return new ChenileServiceInitializer(toResources(chenileServiceJsonResources),ac,chenileConfiguration);
     }
+
+	@Bean(name = "coreAnnotationChenileServiceInitializer")
+	public AnnotationChenileServiceInitializer annotationChenileServiceInitializer(ApplicationContext ac,
+			ChenileConfiguration chenileConfiguration) {
+		return new AnnotationChenileServiceInitializer(ac, chenileConfiguration);
+	}
     
     @Bean
     public ChenileEventInitializer chenileEventInitializer() {

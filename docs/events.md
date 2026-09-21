@@ -265,7 +265,7 @@ Use this model:
 - `chenile-core/src/main/java/org/chenile/core/init/ChenileEventInitializer.java`
 - `chenile-core/src/main/java/org/chenile/core/init/ChenileEventSubscribersInitializer.java`
 - `chenile-core/src/main/java/org/chenile/core/event/EventProcessor.java`
-- `chenile-http/src/main/java/org/chenile/http/annotation/EventsSubscribedTo.java`
+- `chenile-core/src/main/java/org/chenile/http/annotation/EventsSubscribedTo.java`
 - `chenile-core/src/test/resources/org/chenile/core/test/event/foo.json`
 - `chenile-http/src/test/resources/org/chenile/http/test/event/event1.json`
 - `chenile-core/src/test/resources/org/chenile/core/test/service/mockService.json`

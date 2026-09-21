@@ -31,8 +31,8 @@ import java.util.Map.Entry;
  * Uses a Spring controller with additional annotations to initiate a Chenile Service.
  * The controller must extend from ControllerSupport.
  */
-public class AnnotationChenileServiceInitializer extends AbstractServiceInitializer {
-	private final Logger logger = LoggerFactory.getLogger(AnnotationChenileServiceInitializer.class);
+public class HttpAnnotationChenileServiceInitializer extends AbstractServiceInitializer {
+	private final Logger logger = LoggerFactory.getLogger(HttpAnnotationChenileServiceInitializer.class);
 
 
 	private DeleteMappingProducer deleteMappingProducer; 
@@ -42,7 +42,7 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 	private PutMappingProducer putMappingProducer;
 
 
-	public AnnotationChenileServiceInitializer(ApplicationContext ac, ChenileConfiguration chenileConfiguration){
+	public HttpAnnotationChenileServiceInitializer(ApplicationContext ac, ChenileConfiguration chenileConfiguration){
         super(chenileConfiguration,ac);
 	}
 
@@ -58,9 +58,11 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		// register all of these beans
 		for(Entry<String, Object> e: beans.entrySet()) {
 			Object bean = e.getValue();
+			if (!bean.getClass().isAnnotationPresent(RestController.class)) continue;
 			ChenileController chenileController = bean.getClass().getAnnotation(ChenileController.class);
 			ChenileServiceDefinition csd = new ChenileServiceDefinition();
 			csd.setMonolithName(serviceConfiguration.getMonolithName());
+			csd.setRegisterInServiceRegistry(chenileController.registerInServiceRegistry());
 			String id = chenileController.value();
 			csd.setId(id);
 			String name = chenileController.serviceName();

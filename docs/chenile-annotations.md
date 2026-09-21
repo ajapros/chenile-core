@@ -22,16 +22,20 @@ That is the key equivalence to understand.
 
 ## The annotation registration path
 
-The main registration class is `chenile-http/src/main/java/org/chenile/http/init/AnnotationChenileServiceInitializer.java`.
+Chenile service declaration is owned by `chenile-core`; HTTP exposure is an optional
+second step supplied by `chenile-http`.
 
-At application startup it:
+At application startup, the core initializer:
 
 1. scans the Spring context for beans annotated with `@ChenileController`
 2. creates a `ChenileServiceDefinition` for each controller
-3. scans the controller methods for Spring mapping annotations like `@GetMapping` and `@PostMapping`
-4. uses mapping producers to convert those methods into `OperationDefinition` objects
-5. resolves service bean, mock bean, and health checker bean references
-6. registers the service into `ChenileConfiguration`
+3. registers non-REST controller methods annotated with `@ChenileOperation`
+4. resolves service bean, mock bean, and health checker bean references
+5. registers the service into `ChenileConfiguration`
+
+For controllers also annotated with Spring `@RestController`,
+`chenile-http/src/main/java/org/chenile/http/init/HttpAnnotationChenileServiceInitializer.java`
+continues to discover Spring mapping annotations and create HTTP operations.
 
 This is the annotation equivalent of `ChenileServiceInitializer` loading a service JSON file.
 
@@ -39,7 +43,9 @@ This is the annotation equivalent of `ChenileServiceInitializer` loading a servi
 
 ### `@ChenileController`
 
-Defined in `chenile-http/src/main/java/org/chenile/http/annotation/ChenileController.java`.
+Defined in the `chenile-core` artifact at
+`chenile-core/src/main/java/org/chenile/http/annotation/ChenileController.java`.
+Its Java package is retained so existing imports remain source compatible.
 
 Example:
 
@@ -57,12 +63,15 @@ Important fields:
 - `healthCheckerName`
 - `mockName`
 - `interfaceClass`
+- `registerInServiceRegistry`
 
 What they mean:
 
 - `value` is the Chenile service id
 - `serviceName` is the Spring bean name of the actual service implementation
 - `healthCheckerName` and `mockName` match the equivalent JSON fields
+- `registerInServiceRegistry` controls publication to the remote Chenile Service
+  Registry and defaults to `true`; it never disables local Chenile registration
 
 Equivalent JSON:
 
@@ -74,6 +83,35 @@ Equivalent JSON:
 ```
 
 One practical note: in annotation-based setups the controller bean and the service bean are different things. The controller is used to derive metadata and receive HTTP traffic, while the service bean is the actual target invoked by `ServiceInvoker`.
+
+### Headless Chenile controllers
+
+`@ChenileController` does not require Spring `@RestController`. A controller without
+that Spring annotation is a normal Chenile service with no servlet requirement and no
+HTTP endpoint. If `serviceName` is omitted, the controller bean itself is invoked.
+
+```java
+@ChenileController(value = "orderEvents", registerInServiceRegistry = false)
+public class OrderEventsController {
+    @ChenileOperation
+    @SubscribeTo("order-created")
+    public void consume(@ChenileBody OrderCreated event) {
+        // Runs through the normal Chenile exchange and interceptor pipeline.
+    }
+}
+```
+
+`@ChenileOperation` is defined in `org.chenile.core.annotation`. Its first parameter
+is not implicitly treated as a body. Mark the body parameter explicitly with
+`@ChenileBody`; all unmarked parameters are resolved from exchange headers. A
+headless controller can therefore be used by events, schedulers, file watchers, or a
+serverless adapter without depending on `chenile-http`.
+
+The shared `OperationDefinitionProducerBase` in `chenile-core` resolves the
+transport-neutral method metadata: `@ChenileBody`, subscriptions, body-type
+selectors, interceptors, and Chenile extensions. HTTP's `MappingProducerBase`
+inherits it and adds only Spring MVC request-body, URL, HTTP method, and response
+wrapper behavior.
 
 ### Spring mapping annotations
 
@@ -135,7 +173,7 @@ Equivalent JSON:
 "interceptorComponentNames": ["jsonInterceptor", "jsonInterceptor1"]
 ```
 
-At registration time, `MappingProducerBase.processInterceptedBy(...)` resolves those bean names to interceptor commands and stores them on the `OperationDefinition`.
+At registration time, `OperationDefinitionProducerBase` resolves those bean names to interceptor commands and stores them on the `OperationDefinition`.
 
 That means `operationSpecificProcessorsInterpolation` sees the same data whether it came from JSON or annotations.
 
@@ -395,13 +433,17 @@ In both cases, the runtime model is the same.
 
 ## Most relevant source files
 
-- `chenile-http/src/main/java/org/chenile/http/annotation/ChenileController.java`
-- `chenile-http/src/main/java/org/chenile/http/annotation/InterceptedBy.java`
-- `chenile-http/src/main/java/org/chenile/http/annotation/EventsSubscribedTo.java`
-- `chenile-http/src/main/java/org/chenile/http/annotation/BodyTypeSelector.java`
+- `chenile-core/src/main/java/org/chenile/http/annotation/ChenileController.java`
+- `chenile-core/src/main/java/org/chenile/core/annotation/ChenileOperation.java`
+- `chenile-core/src/main/java/org/chenile/core/init/AnnotationChenileServiceInitializer.java`
+- `chenile-core/src/main/java/org/chenile/http/annotation/InterceptedBy.java`
+- `chenile-core/src/main/java/org/chenile/http/annotation/EventsSubscribedTo.java`
+- `chenile-core/src/main/java/org/chenile/http/annotation/BodyTypeSelector.java`
+- `chenile-core/src/main/java/org/chenile/core/annotation/ChenileBody.java`
+- `chenile-core/src/main/java/org/chenile/core/init/OperationDefinitionProducerBase.java`
 - `chenile-http/src/main/java/org/chenile/http/annotation/ChenileParamType.java`
 - `chenile-http/src/main/java/org/chenile/http/annotation/ChenileResponseCodes.java`
-- `chenile-http/src/main/java/org/chenile/http/init/AnnotationChenileServiceInitializer.java`
+- `chenile-http/src/main/java/org/chenile/http/init/HttpAnnotationChenileServiceInitializer.java`
 - `chenile-http/src/main/java/org/chenile/http/init/od/MappingProducerBase.java`
 - `chenile-http/src/test/java/org/chenile/http/test/controller/JsonController.java`
 - `chenile-http/src/test/java/org/chenile/http/test/controller/CapacityController.java`
