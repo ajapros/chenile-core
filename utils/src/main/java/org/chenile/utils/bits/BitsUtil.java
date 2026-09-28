@@ -27,16 +27,4 @@ public class BitsUtil {
         array[byteIndex] |= (byte) mask;
     }
 
-    public static void main(String[] args){
-        byte[] bytes = new byte[100] ;
-        setScope(bytes,8);
-        setScope(bytes,85);
-        setScope(bytes,102);
-        setScope(bytes,299);
-        System.out.println("checking if 8th byte is set: " + isScopeEnabled(bytes,8));
-        System.out.println("checking if 9th byte is set: " + isScopeEnabled(bytes,9));
-        System.out.println("Checking if 85th byte is set: " + isScopeEnabled(bytes,85));
-        System.out.println("Checking if 102 byte is set: " + isScopeEnabled(bytes,102));
-        System.out.println("Checking if 299 byte is set: " + isScopeEnabled(bytes,299));
-    }
 }
