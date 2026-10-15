@@ -32,8 +32,8 @@ public class HttpModuleBuilder extends SimpleUrlHandlerMapping {
 			// ignore if the service does not belong to the current monolith.
 			if (!s.getMonolithName().equals(serviceConfiguration.getMonolithName())) continue;
 			for (OperationDefinition operationDefinition : s.getOperations()) {
-				if (operationDefinition.getUrl() == null) continue;
-				urlMap.put(operationDefinition.getUrl(), new HttpEntryPoint(s, operationDefinition, chenileEntryPoint));
+				HttpEntryPoint handler = new HttpEntryPoint(s, operationDefinition, chenileEntryPoint);
+				for (String url : operationDefinition.getUrls()) urlMap.put(url, handler);
 			}
 		}
 		setUrlMap(urlMap);

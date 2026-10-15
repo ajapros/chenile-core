@@ -58,8 +58,11 @@ public class SpringMvcMappingProducerTest {
 	}
 
 	@Test
-	public void rejectsMultipleUrls() throws Exception {
-		assertRejected("multipleUrls", "one URL");
+	public void retainsMultipleUrlsOnOneOperation() throws Exception {
+        OperationDefinition operation = produce("multipleUrls");
+        assertEquals("/first", operation.getUrl());
+        assertEquals(java.util.List.of("/first", "/second"), operation.getUrls());
+        assertEquals(HTTPMethod.GET, operation.getHttpMethod());
 	}
 
 	private OperationDefinition produce(String methodName) throws Exception {

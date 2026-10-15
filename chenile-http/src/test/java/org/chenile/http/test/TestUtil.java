@@ -27,10 +27,14 @@ public class TestUtil {
    @Autowired private MockMvc mvc;
    @Autowired private EventProcessor eventProcessor;
     public void testService(String url) throws Exception {
+        testServicePath(url + "myid");
+    }
+
+    public void testServicePath(String url) throws Exception {
 	   String id = "myid";
 	   String headerValue = "my.value";
         mvc.perform( MockMvcRequestBuilders
-            .get(url + id)
+            .get(url)
             .header(JsonInterceptor.SOME_SPECIAL_HEADER, headerValue)
             .accept(MediaType.APPLICATION_JSON))
             // .andDo(print())

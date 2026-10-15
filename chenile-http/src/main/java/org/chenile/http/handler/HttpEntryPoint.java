@@ -23,6 +23,9 @@ import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.io.File;
@@ -173,8 +176,7 @@ public class HttpEntryPoint implements HttpRequestHandler {
 	public static Map<String, Object> getHeaders(OperationDefinition od, 
 			HttpServletRequest httpServletRequest) {
 		Map<String, Object> headers = new HashMap<>();
-		String pathInfo = httpServletRequest.getRequestURI();
-		headers.putAll(extractPathVariables(od.getUrl(),pathInfo));
+		headers.putAll(requestPathVariables(od, httpServletRequest));
 
 		headers.putAll(Collections.list(httpServletRequest.getParameterNames()).stream()
 				.collect(Collectors.toMap(parameterName -> parameterName, httpServletRequest::getParameterValues)));
@@ -196,6 +198,35 @@ public class HttpEntryPoint implements HttpRequestHandler {
 
 		return headers;
 	}
+
+    private static Map<String, Object> requestPathVariables(OperationDefinition operation, HttpServletRequest request) {
+        // Spring MVC has already extracted variables from the actual matched mapping.
+        Object variables = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+        if (variables instanceof Map<?, ?> values) {
+            Map<String, Object> result = new HashMap<>();
+            values.forEach((key, value) -> result.put(key.toString(), value));
+            return result;
+        }
+        // SimpleUrlHandlerMapping exposes the winning pattern, including for JSON-configured aliases.
+        Object matched = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        String path = UrlPathHelper.defaultInstance.getLookupPathForRequest(request);
+        AntPathMatcher matcher = new AntPathMatcher();
+        if (matched != null) {
+            String pattern = matched.toString();
+            if (matcher.match(pattern, path))
+                return new HashMap<>(matcher.extractUriTemplateVariables(pattern, path));
+            return extractPathVariables(pattern, request.getRequestURI());
+        }
+
+        // Also support callers that invoke the entry point without a Spring HandlerMapping.
+        for (String pattern : operation.getUrls()) {
+            if (matcher.match(pattern, path))
+                return new HashMap<>(matcher.extractUriTemplateVariables(pattern, path));
+        }
+        // Retain the historical prefix-tolerant extraction for existing single-URL callers.
+        return operation.getUrls().size() == 1
+                ? extractPathVariables(operation.getUrl(), request.getRequestURI()) : Map.of();
+    }
 
 	public static Map<String, Object> extractPathVariables(String url, String pathInfo) {
 		Map<String,Object> pathVars = new HashMap<>();

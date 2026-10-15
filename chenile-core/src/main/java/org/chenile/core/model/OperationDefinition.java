@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,6 +54,7 @@ public class OperationDefinition {
      * The URL to which this operation listens. It is handled at the level of chenile-http
      */
     protected String url;
+    private List<String> urls = new ArrayList<>();
     /**
      * Attach this operation to a file watch. The file watch can be associated with file watchers
      * in a designated folder. Whenever a file appears in the folder, it is automatically processed
@@ -274,12 +276,26 @@ public class OperationDefinition {
         this.componentName = componentName;
     }
 
+    /** Canonical URL retained for existing callers and single-url configurations. */
     public String getUrl() {
-        return url;
+        return url != null ? url : (urls.isEmpty() ? null : urls.getFirst());
     }
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    /** All HTTP bindings, with the explicit canonical URL first and duplicates removed. */
+    public List<String> getUrls() {
+        Set<String> bindings = new LinkedHashSet<>();
+        if (url != null) bindings.add(url);
+        bindings.addAll(urls);
+        return List.copyOf(bindings);
+    }
+
+    public void setUrls(List<String> urls) {
+        this.urls = urls == null ? new ArrayList<>() : new ArrayList<>(urls.stream()
+                .filter(java.util.Objects::nonNull).distinct().toList());
     }
 
     public List<ParamDefinition> getParams() {

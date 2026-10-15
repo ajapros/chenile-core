@@ -20,14 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 @ChenileController(value = "jsonController", serviceName = "jsonService")
 @ExternalApi(system = "json-client")
 public class JsonController extends ControllerSupport{
-	 @GetMapping("/c/getOne/{key}")
+	 @GetMapping({"/c/getOne/{key}", "/c/getOne/{key}/details"})
 	 @InterceptedBy("jsonInterceptor")
 	 public ResponseEntity<GenericResponse<JsonData>> getOne(
 			 HttpServletRequest request, @PathVariable String key){
 		return process("getOne",request,key);
 	}
 	 
-	 @PostMapping("/c/save")
+	 @PostMapping({"/c/save", "/c/v1/save"})
 	 @InterceptedBy("jsonInterceptor")
 	 @EventsSubscribedTo({"event1","event2"})
 	 @ExternalApi(system = "json-client", operation = "save-json")

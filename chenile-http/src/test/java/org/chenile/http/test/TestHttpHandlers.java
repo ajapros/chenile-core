@@ -23,12 +23,14 @@ public class TestHttpHandlers {
    @DisplayName("Tests the basic Get functionality.")
     public void testService() throws Exception {
 	  testUtil.testService("/system/property/");
+      testUtil.testServicePath("/system/property/myid/details");
     }
 
    @Test @Order(2)
    @DisplayName("Tests the basic Post functionality. Payload is created from JSON")
     public void testPostService() throws Exception {
 	   	testUtil.testPostService("/system/property");
+        testUtil.testPostService("/v1/system/property");
     }
 
    @Test @Order(3)

@@ -431,6 +431,45 @@ JSON is usually better when:
 
 In both cases, the runtime model is the same.
 
+## Multiple URLs for an operation
+
+A Spring MVC operation may declare aliases on the same method:
+
+```java
+@GetMapping({"/customers/{id}", "/customers/{id}/details"})
+public ResponseEntity<GenericResponse<Customer>> getCustomer(
+        HttpServletRequest request, @PathVariable String id) {
+    return process(request, id);
+}
+```
+
+Chenile keeps one operation definition, including its interceptors and event
+subscriptions, and records all URL bindings. Spring MVC path variables come from
+its actual matched route; JSON-configured handlers likewise use the winning URL
+pattern rather than always extracting against the first URL.
+
+Existing JSON definitions with a single `url` continue to work. To add aliases:
+
+```json
+{
+  "name": "getCustomer",
+  "httpMethod": "GET",
+  "url": "/customers/{id}",
+  "urls": ["/customers/{id}/details"]
+}
+```
+
+`urls` may also be used on its own. `getUrls()` returns the ordered union of
+`url` and `urls`, with duplicates removed. `getUrl()` retains the explicit `url`
+when supplied, or returns the first `urls` entry. JSON property order does not
+change that precedence. Existing Java `setUrl(...)` callers need no changes.
+An operation with neither property has no HTTP binding and remains available
+through its configured non-HTTP entry points.
+
+Aliases share the operation's HTTP method and other metadata. This does not add
+support for multiple HTTP methods or media types on one operation. Route collision
+behavior between different operations is unchanged.
+
 ## Most relevant source files
 
 - `chenile-core/src/main/java/org/chenile/http/annotation/ChenileController.java`

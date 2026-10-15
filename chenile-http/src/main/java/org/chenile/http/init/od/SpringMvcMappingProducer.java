@@ -44,10 +44,7 @@ public class SpringMvcMappingProducer extends OperationDefinitionProducerBase {
 		RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
 		if (mapping == null) return;
 		String[] paths = mapping.path().length > 0 ? mapping.path() : mapping.value();
-		if (paths.length > 1) {
-			throw new IllegalArgumentException("Chenile operations support one URL: " + method);
-		}
-		operation.setUrl(paths.length == 0 ? null : paths[0]);
+		operation.setUrls(java.util.Arrays.asList(paths));
 		operation.setHttpMethod(toChenileHttpMethod(mapping.method(), method));
 		setMimeType(mapping.consumes(), operation::setConsumes, "consumes", method);
 		setMimeType(mapping.produces(), operation::setProduces, "produces", method);

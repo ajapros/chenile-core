@@ -29,11 +29,13 @@ public class TestAnnotationController {
    @Test @Order(1)
     public void testService() throws Exception {
 	  testUtil.testService("/c/getOne/");
+      testUtil.testServicePath("/c/getOne/myid/details");
     }
 
    @Test @Order(2)
     public void testPostService() throws Exception {
 	   	testUtil.testPostService("/c/save");
+        testUtil.testPostService("/c/v1/save");
     }
 
    @Test @Order(3)
