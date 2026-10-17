@@ -7,6 +7,7 @@ import org.chenile.core.interceptors.BaseChenileInterceptor;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -39,11 +40,13 @@ public class Transformer extends BaseChenileInterceptor {
         if (targetType == null || body == null) return;
 
         //if (body.getClass().isAssignableFrom(targetType.getType())) return;
-        if (!(body instanceof String)) return;
+        if (!(body instanceof String || body instanceof java.util.Map<?, ?>
+                || body instanceof java.util.Collection<?> || body instanceof JsonNode)) return;
         // unset API Invocation so that it can be recomputed
         exchange.setApiInvocation(null);
         try {
-            Object newBody = om.readValue((String) body, targetType);
+            Object newBody = body instanceof String text ? om.readValue(text, targetType)
+                    : om.convertValue(body, targetType);
             exchange.setBody(newBody);
         } catch (Exception e) {
             throwBadRequestException(exchange,e);

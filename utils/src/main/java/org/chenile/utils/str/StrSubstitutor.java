@@ -1,5 +1,7 @@
 package org.chenile.utils.str;
 
+import org.chenile.core.context.ContextContainer;
+
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -23,6 +25,10 @@ public class StrSubstitutor {
 		}		
 		return template;
 	}
-	
-	
+
+	public static String replaceHeaderKeysInTemplate(String template, String delimiter) {
+		ContextContainer cc = ContextContainer.getInstance();
+		return replaceNamedKeysInTemplate(template,cc.toMap(),delimiter);
+	}
+
 }
