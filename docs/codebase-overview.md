@@ -164,3 +164,8 @@ Then use the tests as executable examples:
 - `chenile-http/src/test/java/org/chenile/http/test/TestChenileHttp.java`
 - `chenile-http/src/test/java/org/chenile/http/test/TestAnnotationController.java`
 - `chenile-core/src/test/java/org/chenile/core/test/TestChenileCore.java`
+
+## Service response metadata
+
+See [Response headers](response-headers.md) for `ResponseHeadersAware`, exchange response metadata,
+and consistent emission through both HTTP adapters without changing service result types.

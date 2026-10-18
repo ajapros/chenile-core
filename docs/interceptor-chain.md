@@ -302,3 +302,10 @@ Use this model when reading Chenile:
 - `owiz/src/main/java/org/chenile/owiz/config/impl/HandleCommand.java`
 - `owiz/src/main/java/org/chenile/owiz/config/impl/HandleAttachment.java`
 - `owiz/src/main/java/org/chenile/owiz/impl/Chain.java`
+
+## Response headers on the return journey
+
+`GenericResponseBuilder` extracts `ResponseHeadersAware` metadata on success before wrapping the
+service result. It stores validated headers separately from request headers in `ChenileExchange`.
+Failures clear success metadata. Both HTTP adapters emit the exchange response headers and repeated
+warning values. See [Response headers](response-headers.md) for the service contract and precedence.

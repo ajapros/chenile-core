@@ -48,6 +48,40 @@ public class ChenileExchange implements Serializable, ChainContextContainer<Chen
 	 * Incoming request headers. Some headers can be added as we navigate through the interception chain
 	 */
 	private Map<String, Object> headers = new HashMap<>();
+    private final Map<String, List<String>> responseHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+    /** A detached, immutable snapshot. Request headers are never included. */
+    public Map<String, List<String>> getResponseHeaders() {
+        Map<String, List<String>> snapshot = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        responseHeaders.forEach((name, values) -> snapshot.put(name, List.copyOf(values)));
+        return Collections.unmodifiableMap(snapshot);
+    }
+
+    public void setResponseHeader(String name, String value) {
+        validateResponseHeader(name, value);
+        responseHeaders.put(name, new ArrayList<>(List.of(value)));
+    }
+
+    public void addResponseHeader(String name, String value) {
+        validateResponseHeader(name, value);
+        responseHeaders.computeIfAbsent(name, key -> new ArrayList<>()).add(value);
+    }
+
+    public void clearResponseHeaders() {
+        responseHeaders.clear();
+    }
+
+    private static void validateResponseHeader(String name, String value) {
+        if (name == null || !name.matches("[!#$%&'*+.^_`|~0-9A-Za-z-]+"))
+            throw new IllegalArgumentException("Invalid response header name");
+        if (Set.of("content-length", "content-type", "transfer-encoding", "connection",
+                "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailer", "upgrade")
+                .contains(name.toLowerCase(Locale.ROOT)))
+            throw new IllegalArgumentException("Response header is managed by the HTTP adapter: " + name);
+        if (value == null || value.chars().anyMatch(c -> (c < 32 && c != 9) || c == 127))
+            throw new IllegalArgumentException("Invalid response header value for " + name);
+    }
+
 	/**
 	 * This is used to handle multipart messages from HTTP.
 	 */
@@ -353,6 +387,7 @@ public class ChenileExchange implements Serializable, ChainContextContainer<Chen
 			this.responseMessages = new ArrayList<>();
 			return;
 		}
+		clearResponseHeaders();
 		ErrorNumException ene = createErrorNumExceptionIfRequired(e);
 		if (this.responseMessages == null){
 			this.responseMessages = new ArrayList<>();

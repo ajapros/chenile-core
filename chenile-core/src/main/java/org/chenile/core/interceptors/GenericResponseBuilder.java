@@ -4,6 +4,7 @@ import org.chenile.base.exception.ErrorNumException;
 import org.chenile.base.response.GenericResponse;
 import org.chenile.base.response.ResponseMessage;
 import org.chenile.base.response.WarningAware;
+import org.chenile.base.response.ResponseHeadersAware;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.model.OperationDefinition;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,12 @@ public class GenericResponseBuilder extends BaseChenileInterceptor {
 		if (chenileExchange.getException() != null) {
 			processFailure(chenileExchange);
 		} else {
-			processSuccess(chenileExchange);
+            try {
+                processSuccess(chenileExchange);
+            } catch (RuntimeException exception) {
+                chenileExchange.setException(exception);
+                processFailure(chenileExchange);
+            }
 		}
 	}
 
@@ -39,6 +45,7 @@ public class GenericResponseBuilder extends BaseChenileInterceptor {
 	}
 
 	private void processFailure(ChenileExchange exchange) {
+		exchange.clearResponseHeaders();
 		ErrorNumException errorNumException = exchange.getException();
 		GenericResponse<Object> genericResponse = new
 				GenericResponse<Object>(errorNumException.getResponseMessage());
@@ -65,7 +72,12 @@ public class GenericResponseBuilder extends BaseChenileInterceptor {
 
 	private void processSuccess(ChenileExchange exchange) {
 		Object response = exchange.getResponse();
-		int httpResponseCode = getSuccessHttpStatus(exchange).value();
+        if (response instanceof ResponseHeadersAware aware) {
+            var headers = aware.getResponseHeaders();
+            if (headers != null) headers.forEach((name, values) ->
+                    values.forEach(value -> exchange.addResponseHeader(name, value)));
+        }
+        int httpResponseCode = getSuccessHttpStatus(exchange).value();
 		GenericResponse<Object> genericResponse = new GenericResponse<Object>(response);
 		genericResponse.setCode(httpResponseCode);
 		exchange.setResponse(genericResponse);

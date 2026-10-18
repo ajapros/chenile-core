@@ -1,7 +1,6 @@
 package org.chenile.http.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.chenile.base.response.ResponseMessage;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.context.ChenileExchangeBuilder;
 import org.chenile.core.context.HeaderUtils;
@@ -12,14 +11,12 @@ import org.chenile.core.model.ParamDefinition;
 import org.chenile.http.Constants;
 import org.chenile.http.annotation.ChenileController;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * This class must be extended by Chenile controllers who use annotation to configure a service.
@@ -49,7 +46,7 @@ public class ControllerSupport {
 		chenileEntryPoint.execute(chenileExchange);
 		T response = (T) chenileExchange.getResponse();
 		BodyBuilder bodyBuilder = ResponseEntity.status(chenileExchange.getHttpResponseStatusCode());
-		enhanceBodyWithWarnings(bodyBuilder,chenileExchange);
+		HttpResponseHeaders.write(chenileExchange, (name, value) -> bodyBuilder.header(name, value));
 		return bodyBuilder.body(response);	
 	}
 
@@ -57,14 +54,6 @@ public class ControllerSupport {
 		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
 		assert ste.length >= 3;
 		return process(ste[2].getMethodName(), request,args);
-	}
-	
-	private void enhanceBodyWithWarnings(BodyBuilder bodyBuilder, ChenileExchange chenileExchange) {
-		List<ResponseMessage>x =  chenileExchange.getResponseMessages();
-		if (x == null) return;		
-		for (ResponseMessage message: x) {
-			bodyBuilder.header(HttpHeaders.WARNING,message.getDescription());
-		}	
 	}
 	
 	private ChenileExchange makeExchange(HttpServletRequest request, String opName,Object[] args) {

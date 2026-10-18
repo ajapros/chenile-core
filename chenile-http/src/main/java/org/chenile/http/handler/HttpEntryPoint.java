@@ -7,7 +7,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.chenile.base.exception.ServerException;
-import org.chenile.base.response.ResponseMessage;
 import org.chenile.base.response.WarningAware;
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.context.HeaderUtils;
@@ -16,7 +15,6 @@ import org.chenile.core.errorcodes.ErrorCodes;
 import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.http.Constants;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.HttpRequestHandler;
@@ -88,6 +86,7 @@ public class HttpEntryPoint implements HttpRequestHandler {
 			HttpServletResponse httpServletResponse) throws Exception{
 		int status = exchange.getHttpResponseStatusCode();
 		httpServletResponse.setStatus(status);
+        HttpResponseHeaders.write(exchange, httpServletResponse::addHeader);
 		httpServletResponse.setContentType(operationDefinition.getProduces().getType());
 		switch(operationDefinition.getProduces()) {
 			case JSON :
@@ -106,6 +105,7 @@ public class HttpEntryPoint implements HttpRequestHandler {
 			HttpServletResponse httpServletResponse) throws ServletException,IOException {
 		httpServletResponse.setContentType(operationDefinition.getProduces().getType());
 		httpServletResponse.setStatus(exchange.getHttpResponseStatusCode());
+        HttpResponseHeaders.write(exchange, httpServletResponse::addHeader);
 		httpServletResponse.getWriter().write(om.writeValueAsString(exchange.getResponse()));
 		httpServletResponse.flushBuffer();
 	}
@@ -145,19 +145,9 @@ public class HttpEntryPoint implements HttpRequestHandler {
 	private void processResponse(ChenileExchange exchange,  HttpServletRequest httpServletRequest, 
 			HttpServletResponse httpServletResponse) throws Exception {
 		Object response = exchange.getResponse();
-		processWarningsIfAny(exchange,httpServletResponse);		
 		httpServletResponse.getWriter().write(om.writeValueAsString(response));	
 	}
 	
-	private void processWarningsIfAny(ChenileExchange exchange, HttpServletResponse httpServletResponse) {
-		List<ResponseMessage>x =  exchange.getResponseMessages();
-		if (x == null) return;
-		
-		for (ResponseMessage message: x) {
-			httpServletResponse.setHeader(HttpHeaders.WARNING,message.getDescription());
-		}
-	}
-
 	public HttpStatus getSuccessHttpStatus(Object response) {
 		List<ResponseMessage> x = WarningAware.obtainWarnings(response);
 		if (x == null || x.isEmpty())
