@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.service.HealthChecker;
+import org.chenile.core.service.ServiceSelector;
 import org.chenile.owiz.Command;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
@@ -33,6 +34,9 @@ public class ChenileServiceDefinition  {
 	@JsonIgnore
 	private Object serviceReference;
 	private String name;
+	private String serviceSelector;
+	@JsonIgnore
+	private ServiceSelector serviceSelectorComponent;
 	private String mockName;
 	@JsonIgnore
 	private Object mockServiceReference;
@@ -97,6 +101,23 @@ public class ChenileServiceDefinition  {
     public void setName(String name) {
         this.name = name;
     }
+
+	public String getServiceSelector() {
+		return serviceSelector;
+	}
+
+	public void setServiceSelector(String serviceSelector) {
+		this.serviceSelector = serviceSelector;
+	}
+
+	@JsonIgnore
+	public ServiceSelector getServiceSelectorComponent() {
+		return serviceSelectorComponent;
+	}
+
+	public void setServiceSelectorComponent(ServiceSelector serviceSelectorComponent) {
+		this.serviceSelectorComponent = serviceSelectorComponent;
+	}
 
     public String getId() {
         return id;

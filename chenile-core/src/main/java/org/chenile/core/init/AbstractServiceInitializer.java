@@ -14,6 +14,7 @@ import org.chenile.core.model.HttpBindingType;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.core.model.ParamDefinition;
 import org.chenile.core.service.HealthChecker;
+import org.chenile.core.service.ServiceSelector;
 import org.chenile.core.util.MethodUtils;
 import org.chenile.core.util.convert.ChenileTypeUtils;
 import org.chenile.owiz.Command;
@@ -67,6 +68,7 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
     protected void registerService(ChenileServiceDefinition csd) {
 		csd.setBaseUrl(serviceConfiguration.getBaseUrl());
         csd.setMonolithName(serviceConfiguration.getMonolithName());
+        configureServiceSelector(csd);
         String serviceModule = computeServiceModule(csd);
         csd.setServiceModule(serviceModule);
         csd.setVersion(resolveVersion(serviceModule));
@@ -98,6 +100,17 @@ public abstract class AbstractServiceInitializer implements InitializingBean {
         String id = csd.getId();
     	serviceConfiguration.setService(id, csd);
     } 
+
+	protected void configureServiceSelector(ChenileServiceDefinition csd) {
+		String selectorName = csd.getServiceSelector();
+		if (selectorName == null || selectorName.isBlank()) return;
+
+		Object selector = applicationContext.getBean(selectorName);
+		if (!(selector instanceof ServiceSelector serviceSelector)) {
+			throw new ServerException(NOT_INSTANCE_SERVICE_SELECTOR.getSubError(), new Object[]{selectorName});
+		}
+		csd.setServiceSelectorComponent(serviceSelector);
+	}
 
 	private String computeServiceModule(ChenileServiceDefinition csd) {
 		String serviceModule = csd.getServiceModule();

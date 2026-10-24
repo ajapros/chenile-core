@@ -10,6 +10,8 @@ import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.TrajectoryDefinition;
 import org.chenile.core.util.MethodUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
 import static org.chenile.core.errorcodes.ErrorCodes.*;
 
 /**
@@ -22,6 +24,7 @@ import static org.chenile.core.errorcodes.ErrorCodes.*;
  */
 public class ConstructServiceReference extends BaseChenileInterceptor{
 	@Autowired ChenileConfiguration chenileConfiguration;
+	@Autowired ApplicationContext applicationContext;
 	
 	public ConstructServiceReference() {
 	}
@@ -34,9 +37,28 @@ public class ConstructServiceReference extends BaseChenileInterceptor{
 			return;
 		}
 		if (trajectoryDoesNotOverrideService(exchange)) {
+			String selectedServiceName = selectServiceName(exchange, serviceDefinition);
+			if (selectedServiceName != null) {
+				populateServiceRef(exchange, selectedServiceName, lookupService(selectedServiceName));
+				return;
+			}
 			exchange.setServiceReferenceId(serviceDefinition.getId());
 			exchange.setServiceReference(serviceDefinition.getServiceReference());
 			exchange.setMethod(exchange.getOperationDefinition().getMethod());
+		}
+	}
+
+	private String selectServiceName(ChenileExchange exchange, ChenileServiceDefinition serviceDefinition) {
+		if (serviceDefinition.getServiceSelectorComponent() == null) return null;
+		return serviceDefinition.getServiceSelectorComponent()
+				.selectServiceReferenceName(exchange, serviceDefinition);
+	}
+
+	private Object lookupService(String serviceName) {
+		try {
+			return applicationContext.getBean(serviceName);
+		} catch (NoSuchBeanDefinitionException exception) {
+			throw new ServerException(NOT_CONFIGURED_IN_SPRING.getSubError(), new Object[]{serviceName}, exception);
 		}
 	}
 	

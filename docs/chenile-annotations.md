@@ -51,7 +51,10 @@ Example:
 
 ```java
 @RestController
-@ChenileController(value = "jsonController", serviceName = "jsonService")
+@ChenileController(
+		value = "jsonController",
+		serviceName = "jsonService",
+		serviceSelector = "customerServiceSelector")
 public class JsonController extends ControllerSupport {
 }
 ```
@@ -60,6 +63,7 @@ Important fields:
 
 - `value`
 - `serviceName`
+- `serviceSelector`
 - `healthCheckerName`
 - `mockName`
 - `interfaceClass`
@@ -69,6 +73,10 @@ What they mean:
 
 - `value` is the Chenile service id
 - `serviceName` is the Spring bean name of the actual service implementation
+- `serviceSelector` optionally names a Spring bean implementing
+  `ServiceSelector`. It can return a different implementation bean name for
+  each exchange; returning `null` uses `serviceName`. Mock and trajectory
+  overrides keep precedence over the selector.
 - `healthCheckerName` and `mockName` match the equivalent JSON fields
 - `registerInServiceRegistry` controls publication to the remote Chenile Service
   Registry and defaults to `true`; it never disables local Chenile registration

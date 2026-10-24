@@ -1,6 +1,7 @@
 package org.chenile.core.test;
 
 
+import org.chenile.core.service.ServiceSelector;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -59,6 +60,25 @@ public class SpringTestConfig {
 
 	@Bean public HeadlessController headlessController() {
 		return new HeadlessController();
+	}
+
+	@Bean public ServiceSelectorController serviceSelectorController() {
+		return new ServiceSelectorController();
+	}
+
+	@Bean public SelectableService defaultSelectableService() {
+		return new SelectableService("default");
+	}
+
+	@Bean public SelectableService alternateSelectableService() {
+		return new SelectableService("alternate");
+	}
+
+	@Bean public ServiceSelector testServiceSelector() {
+		return (exchange, serviceDefinition) ->
+				Boolean.TRUE.equals(exchange.getHeader("selectAlternate"))
+						? "alternateSelectableService"
+						: null;
 	}
 
 

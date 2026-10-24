@@ -114,9 +114,14 @@ The trajectory is applied in:
 
 1. if a service reference is already set, leave it alone
 2. if mock mode is enabled, use the mock bean
-3. otherwise check the trajectory id from headers
-4. if the trajectory overrides the current service id, use the override bean
-5. otherwise use the normal service bean from `ChenileServiceDefinition`
+3. check the trajectory id from headers and use an override when configured
+4. otherwise invoke the service's optional `ServiceSelector`
+5. if the selector returns a bean name, use that Spring bean; if it returns
+   `null` or is not configured, use the normal service bean from
+   `ChenileServiceDefinition`
+
+The selector is a configurable service-level strategy. Trajectory overrides
+retain precedence over it, and mock invocation retains precedence over both.
 
 This is why trajectories fit naturally into the interceptor chain: they modify dispatch just before invocation.
 

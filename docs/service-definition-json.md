@@ -33,9 +33,10 @@ After a JSON file is deserialized:
 2. service-level interceptor bean names are resolved to command instances
 3. operation-level interceptor bean names are resolved
 4. body-type selector beans are resolved
-5. the service bean, mock bean, and health-checker bean are looked up from Spring
-6. each operation is validated against the actual Java service implementation
-7. the service is registered into `ChenileConfiguration`
+5. an optional service selector bean is resolved
+6. the service bean, mock bean, and health-checker bean are looked up from Spring
+7. each operation is validated against the actual Java service implementation
+8. the service is registered into `ChenileConfiguration`
 
 The JSON is therefore not just static metadata. It is actively validated against the Spring application context and the target Java methods.
 
@@ -49,6 +50,7 @@ A simplified shape looks like this:
 {
   "name": "jsonService",
   "id": "jsonService",
+  "serviceSelector": "customerServiceSelector",
   "mockName": "jsonServiceMock",
   "healthCheckerName": "jsonHealthChecker",
   "interceptorComponentNames": ["serviceInterceptor"],
@@ -78,6 +80,15 @@ A simplified shape looks like this:
 The Spring bean name of the actual service implementation. During initialization, Chenile looks up this bean from the application context and stores it as the default service reference.
 
 This field must match a bean that exists in Spring.
+
+### `serviceSelector`
+
+Optional Spring bean name implementing
+`org.chenile.core.service.ServiceSelector`. The selector receives the exchange
+and service definition, then returns the bean name of the implementation to use
+for this invocation. Returning `null` retains the configured `name` service
+reference. The same field is available as `@ChenileController(serviceSelector
+= "...")` for annotation-defined services.
 
 ### `id`
 

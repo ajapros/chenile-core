@@ -1,0 +1,11 @@
+{
+  "name": "defaultSelectableService",
+  "id": "jsonSelectorService",
+  "serviceSelector": "testServiceSelector",
+  "operations": [
+    {
+      "name": "choose",
+      "params": []
+    }
+  ]
+}

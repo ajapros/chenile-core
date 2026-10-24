@@ -70,6 +70,10 @@ public class AnnotationChenileServiceInitializer extends AbstractServiceInitiali
 		serviceDefinition.setId(annotation.value());
 		serviceDefinition.setMonolithName(serviceConfiguration.getMonolithName());
 		serviceDefinition.setRegisterInServiceRegistry(annotation.registerInServiceRegistry());
+		if (!annotation.serviceSelector().isBlank()) {
+			serviceDefinition.setServiceSelector(annotation.serviceSelector());
+			configureServiceSelector(serviceDefinition);
+		}
 
 		String serviceName = annotation.serviceName();
 		if (serviceName.isEmpty()) serviceName = defaultServiceName(beanName, annotation);

@@ -25,6 +25,8 @@ import java.lang.annotation.Target;
 public @interface ChenileController {
 	String value();
 	String serviceName() default "";
+	/** Spring bean name of a {@code ServiceSelector} used to select the implementation per request. */
+	String serviceSelector() default "";
 	String serviceModule() default "";
 	String bluePrintName() default "";
 	ChenileAdditionalAttribute[] additionalAttributes() default {};

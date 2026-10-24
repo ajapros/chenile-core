@@ -73,6 +73,36 @@ public class TestChenileCore {
 		assertNull(exchanges.get(0).getException());
 		assertSame(event, headlessController.getLastEvent());
 	}
+
+	@SuppressWarnings("unchecked")
+	@Test public void testServiceSelectorCanChooseImplementationAndFallBackToDefault() throws Exception {
+		ChenileServiceDefinition service = chenileConfiguration.getServices().get("selectorController");
+		assertEquals("testServiceSelector", service.getServiceSelector());
+		assertNotNull(service.getServiceSelectorComponent());
+
+		ChenileExchange defaultExchange = makeExchange("selectorController", "choose");
+		chenileEntryPoint.execute(defaultExchange);
+		assertEquals("default", ((GenericResponse<String>) defaultExchange.getResponse()).getData());
+		assertEquals("selectorController", defaultExchange.getServiceReferenceId());
+
+		ChenileExchange selectedExchange = makeExchange("selectorController", "choose");
+		selectedExchange.setHeader("selectAlternate", true);
+		chenileEntryPoint.execute(selectedExchange);
+		assertEquals("alternate", ((GenericResponse<String>) selectedExchange.getResponse()).getData());
+		assertEquals("alternateSelectableService", selectedExchange.getServiceReferenceId());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test public void testServiceSelectorFromJsonDefinition() throws Exception {
+		ChenileServiceDefinition service = chenileConfiguration.getServices().get("jsonSelectorService");
+		assertEquals("testServiceSelector", service.getServiceSelector());
+		assertNotNull(service.getServiceSelectorComponent());
+
+		ChenileExchange exchange = makeExchange("jsonSelectorService", "choose");
+		exchange.setHeader("selectAlternate", true);
+		chenileEntryPoint.execute(exchange);
+		assertEquals("alternate", ((GenericResponse<String>) exchange.getResponse()).getData());
+	}
 	
 	@SuppressWarnings("unchecked")
 	@Test
