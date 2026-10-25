@@ -88,6 +88,9 @@ public class ChenileCoreConfiguration {
 	@Value("${chenile.post.processors}")
 	private String postProcessors;
 	
+	@Value("${chenile.interceptors.validate-on-startup:true}")
+	private boolean validateInterceptorsOnStartup;
+
 	@Value("${chenile.exception.handler:chenileExceptionHandler}")
 	private String exceptionHandlerName;
 	
@@ -153,6 +156,11 @@ public class ChenileCoreConfiguration {
         configuration.setEventLoggerName(eventLoggerName);
         return configuration;
     }
+
+	@Bean
+	public ChenileInterceptorValidator chenileInterceptorValidator(ChenileConfiguration chenileConfiguration) {
+		return new ChenileInterceptorValidator(chenileConfiguration, validateInterceptorsOnStartup);
+	}
 
 	@Bean
 	ContextContainer  contextContainer(){

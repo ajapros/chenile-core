@@ -138,6 +138,14 @@ Source:
 
 Returns deployable-wide post-processors configured in `chenile.properties`.
 
+Since 2.1.35, `ChenileInterceptorValidator` resolves pre-processors, post-processors and the exception handler once
+all singletons exist, before the application takes traffic. Resolution is all or nothing:
+
+- A missing bean fails with E526; a bean that is not a `Command` fails with E527.
+- Nothing is cached until every name resolves, so a bad name cannot leave a partial list behind.
+- `chenile.interceptors.validate-on-startup=false` defers resolution to the first request, with the same
+  all-or-nothing rules.
+
 Source:
 
 - `chenileConfiguration.getPostProcessorCommands()`

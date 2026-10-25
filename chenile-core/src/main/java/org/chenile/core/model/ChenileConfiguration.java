@@ -1,6 +1,7 @@
 package org.chenile.core.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,9 @@ public class ChenileConfiguration {
 
 	private String baseUrl;
 	private String monolithName;
-	private List<Command<ChenileExchange>> preProcessorCommands;
-	private List<Command<ChenileExchange>> postProcessorCommands;
+	private volatile List<Command<ChenileExchange>> preProcessorCommands;
+	private volatile List<Command<ChenileExchange>> postProcessorCommands;
+	private volatile ChenileExceptionHandler chenileExceptionHandler;
 	private String preProcessorNames;
 	private String postProcessorNames;
 	private String version;
@@ -83,32 +85,79 @@ public class ChenileConfiguration {
 
 	public void addPreProcessors(String preProcessors) {
 		this.preProcessorNames = preProcessors;
+		this.preProcessorCommands = null;
 	}
 
 	public void addPostProcessors(String postProcessors) {
 		this.postProcessorNames = postProcessors;
+		this.postProcessorCommands = null;
 	}
 	
-	@SuppressWarnings("unchecked")
+	/**
+	 * The deployable-wide pre-processors configured in <code>chenile.pre.processors</code>.
+	 * Resolved once, all or nothing: if any configured name cannot be resolved, a
+	 * {@link ConfigurationException} is thrown and nothing is cached, so a later call
+	 * fails the same way instead of silently running a partial list.
+	 * Normally resolved at startup by {@link #validateInterceptors()}.
+	 * @return the pre-processor commands, or null if none are configured
+	 */
 	public List<Command<ChenileExchange>> getPreProcessorCommands(){
-		if (preProcessorCommands != null) return preProcessorCommands;
-		if (preProcessorNames == null || preProcessorNames.length() == 0) return null;
-		preProcessorCommands = new ArrayList<Command<ChenileExchange>>();
-		for(String processor: preProcessorNames.split(",")) {
-			preProcessorCommands.add((Command<ChenileExchange>)applicationContext.getBean(processor));
-		}
-		return preProcessorCommands;
+		List<Command<ChenileExchange>> commands = preProcessorCommands;
+		if (commands != null) return commands;
+		commands = resolveCommands(preProcessorNames, "chenile.pre.processors");
+		if (commands != null) preProcessorCommands = commands;
+		return commands;
 	}
-	
-	@SuppressWarnings("unchecked")
+
+	/**
+	 * The deployable-wide post-processors configured in <code>chenile.post.processors</code>.
+	 * Same all-or-nothing semantics as {@link #getPreProcessorCommands()}.
+	 * @return the post-processor commands, or null if none are configured
+	 */
 	public List<Command<ChenileExchange>> getPostProcessorCommands(){
-		if (postProcessorCommands != null) return postProcessorCommands;
-		if(postProcessorNames == null|| postProcessorNames.length() == 0) return null;
-		postProcessorCommands = new ArrayList<Command<ChenileExchange>>();
-		for(String processor: postProcessorNames.split(",")) {
-			postProcessorCommands.add((Command<ChenileExchange>)applicationContext.getBean(processor));
+		List<Command<ChenileExchange>> commands = postProcessorCommands;
+		if (commands != null) return commands;
+		commands = resolveCommands(postProcessorNames, "chenile.post.processors");
+		if (commands != null) postProcessorCommands = commands;
+		return commands;
+	}
+
+	/**
+	 * Resolves every deployable-wide interceptor (pre-processors, post-processors and the
+	 * exception handler) so that a misspelt or mistyped bean name fails the application at
+	 * startup rather than the first request. Called by
+	 * {@link org.chenile.core.init.ChenileInterceptorValidator}.
+	 * @throws ConfigurationException if any of them cannot be resolved
+	 */
+	public void validateInterceptors() {
+		getPreProcessorCommands();
+		getPostProcessorCommands();
+		getChenileExceptionHandler();
+	}
+
+	/**
+	 * Builds the complete command list in a local variable and returns it only if every
+	 * name resolved. Blank entries and surrounding spaces ("a, b,") are tolerated.
+	 */
+	@SuppressWarnings("unchecked")
+	private List<Command<ChenileExchange>> resolveCommands(String names, String property) {
+		if (names == null || names.isBlank()) return null;
+		List<Command<ChenileExchange>> commands = new ArrayList<>();
+		for (String raw : names.split(",")) {
+			String name = raw.trim();
+			if (name.isEmpty()) continue;
+			if (!applicationContext.containsBean(name)) {
+				throw new ConfigurationException(ErrorCodes.INTERCEPTOR_NOT_FOUND.getSubError(),
+						new Object[]{name, property});
+			}
+			Object bean = applicationContext.getBean(name);
+			if (!(bean instanceof Command)) {
+				throw new ConfigurationException(ErrorCodes.NOT_INSTANCE_INTERCEPTOR.getSubError(),
+						new Object[]{name, property, bean.getClass().getName()});
+			}
+			commands.add((Command<ChenileExchange>) bean);
 		}
-		return postProcessorCommands;
+		return commands.isEmpty() ? null : Collections.unmodifiableList(commands);
 	}
 
 	public Map<String, ChenileEventDefinition> getEvents() {
@@ -128,12 +177,26 @@ public class ChenileConfiguration {
 	}
 
 	public void setChenileExceptionHandlerName(String exceptionHandlerName) {
-		this.chenileExceptionHandlerName = exceptionHandlerName;		
+		this.chenileExceptionHandlerName = exceptionHandlerName;
+		this.chenileExceptionHandler = null;
 	}
 	
 	
 	public ChenileExceptionHandler getChenileExceptionHandler() {
-		return (ChenileExceptionHandler) applicationContext.getBean(this.chenileExceptionHandlerName);
+		ChenileExceptionHandler handler = chenileExceptionHandler;
+		if (handler != null) return handler;
+		String name = chenileExceptionHandlerName;
+		if (name == null || !applicationContext.containsBean(name)) {
+			throw new ConfigurationException(ErrorCodes.INTERCEPTOR_NOT_FOUND.getSubError(),
+					new Object[]{name, "chenile.exception.handler"});
+		}
+		Object bean = applicationContext.getBean(name);
+		if (!(bean instanceof ChenileExceptionHandler h)) {
+			throw new ConfigurationException(ErrorCodes.NOT_INSTANCE_INTERCEPTOR.getSubError(),
+					new Object[]{name, "chenile.exception.handler", bean.getClass().getName()});
+		}
+		chenileExceptionHandler = h;
+		return h;
 	}
 
 	public String getVersion() {
