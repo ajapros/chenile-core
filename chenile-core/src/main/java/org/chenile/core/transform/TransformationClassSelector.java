@@ -5,6 +5,7 @@ import org.chenile.core.context.ChenileExchange;
 import org.chenile.core.errorcodes.ErrorCodes;
 import org.chenile.core.interceptors.BaseChenileInterceptor;
 import org.chenile.core.model.ChenileServiceDefinition;
+import org.chenile.core.model.HttpBindingType;
 import org.chenile.core.model.OperationDefinition;
 import org.chenile.owiz.Command;
 import tools.jackson.core.type.TypeReference;
@@ -46,17 +47,33 @@ public class TransformationClassSelector extends BaseChenileInterceptor {
 
     private void setDefaultBodyType(ChenileExchange exchange) {
         OperationDefinition od = exchange.getOperationDefinition();
-        if (od.getInput() != null) {
-            TypeReference<?> ref = convertClassToTypeReference(od.getInput());
+        Type inputType = null;
+        if (od.getParams() != null) {
+            inputType = od.getParams().stream()
+                    .filter(param -> param.getType() == HttpBindingType.BODY)
+                    .map(param -> param.getParamType())
+                    .filter(type -> type != null)
+                    .findFirst()
+                    .orElse(null);
+        }
+        if (inputType == null) {
+            inputType = od.getInput();
+        }
+        if (inputType != null) {
+            TypeReference<?> ref = convertTypeToTypeReference(inputType);
             exchange.setBodyType(ref);
         }
     }
 
     public static TypeReference<?> convertClassToTypeReference(Class<?> clazz) {
+        return convertTypeToTypeReference(clazz);
+    }
+
+    public static TypeReference<?> convertTypeToTypeReference(Type type) {
         return new TypeReference<Object>() {
             @Override
             public Type getType() {
-                return clazz;
+                return type;
             }
         };
     }
