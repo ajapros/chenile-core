@@ -40,6 +40,26 @@ class TransformerTest {
         assertEquals(List.of(new Payload("customer-7")), exchange.getBody());
     }
 
+    @Test void keepsExplicitOperationInputWhenBodyParameterUsesABroaderType() {
+        var bodyParameter = new ParamDefinition();
+        bodyParameter.setType(HttpBindingType.BODY);
+        bodyParameter.setParamType(BroadBody.class);
+
+        var operation = new OperationDefinition();
+        operation.setInput(Payload.class);
+        operation.setParams(List.of(bodyParameter));
+
+        var exchange = new ChenileExchange();
+        exchange.setServiceDefinition(new ChenileServiceDefinition());
+        exchange.setOperationDefinition(operation);
+
+        new TransformationClassSelector().doPreProcessing(exchange);
+
+        assertEquals(Payload.class, exchange.getBodyType().getType());
+    }
+
+    public abstract static class BroadBody { }
+
     @Test void preservesAlreadyTypedListElements() {
         var payload = new Payload("customer-7");
         var body = List.of(payload);

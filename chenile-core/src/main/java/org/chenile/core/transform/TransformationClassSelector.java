@@ -7,6 +7,7 @@ import org.chenile.core.interceptors.BaseChenileInterceptor;
 import org.chenile.core.model.ChenileServiceDefinition;
 import org.chenile.core.model.HttpBindingType;
 import org.chenile.core.model.OperationDefinition;
+import org.chenile.core.util.convert.ChenileTypeUtils;
 import org.chenile.owiz.Command;
 import tools.jackson.core.type.TypeReference;
 
@@ -47,17 +48,23 @@ public class TransformationClassSelector extends BaseChenileInterceptor {
 
     private void setDefaultBodyType(ChenileExchange exchange) {
         OperationDefinition od = exchange.getOperationDefinition();
-        Type inputType = null;
+        Type inputType = od.getInput();
         if (od.getParams() != null) {
-            inputType = od.getParams().stream()
+            Type bodyParameterType = od.getParams().stream()
                     .filter(param -> param.getType() == HttpBindingType.BODY)
                     .map(param -> param.getParamType())
                     .filter(type -> type != null)
                     .findFirst()
                     .orElse(null);
-        }
-        if (inputType == null) {
-            inputType = od.getInput();
+            if (bodyParameterType != null) {
+                Class<?> bodyRawType = ChenileTypeUtils.toRawClass(bodyParameterType);
+                Class<?> operationInputType = od.getInput();
+                if (operationInputType == null
+                        || operationInputType == String.class
+                        || operationInputType.equals(bodyRawType)) {
+                    inputType = bodyParameterType;
+                }
+            }
         }
         if (inputType != null) {
             TypeReference<?> ref = convertTypeToTypeReference(inputType);
