@@ -250,6 +250,27 @@ That is the same convergence pattern seen elsewhere in Chenile:
 - multiple authoring styles
 - one runtime model
 
+## Chenile events and external events
+
+Other than HTTP, Chenile treats everything as an event. A Chenile event is internal: an event id, a payload and
+headers, raised inside the application. External happenings are mapped onto it:
+
+| External event | Mapped by | Event id |
+|---|---|---|
+| a cron schedule becomes due | chenile-others `chenile-scheduler` / `chenile-scheduler-db` | the schedule's `eventId` |
+| a file lands in a watched folder | chenile-others `chenile-filewatch` | the file watch's `eventId` (defaults to its `fileWatchId`) |
+| a message arrives on a topic | chenile-messaging (e.g. Kafka) | `chenile.kafka.consumer.topic-bindings`, or the topic itself |
+| a trigger is posted or raised in code | `POST /trigger`, `TriggerService.trigger(...)` | the input's `eventId` |
+
+The internal sources (scheduler, file watch, `/trigger`, code) raise events through `TriggerService`, from the
+`chenile-trigger` module in this repository (`org.chenile.trigger`). It validates the input (event id required,
+headers must start with `x-`, tenant must match the caller), sets `x-chenile-event-source` and
+`x-chenile-trigger-id`, deduplicates by idempotency key and reports status. `DirectTriggerService` is the default:
+it calls `EventProcessor.handleEvent` at once, restores the caller's `ContextContainer` afterwards, and treats "no
+subscriber" or a subscriber exception as a failure. Process management's durable `EventTriggerService` replaces it
+when present (`@ConditionalOnMissingBean`, through `org.chenile.configuration.trigger.DirectTriggerAutoConfiguration`).
+The standard header names are in `TriggerHeaders`.
+
 ## Mental model
 
 Use this model:
@@ -259,6 +280,8 @@ Use this model:
 - `EventProcessor` turns the event into a normal Chenile exchange and sends it through the same pipeline as any other invocation
 
 ## Most relevant source files
+
+- `chenile-trigger/src/main/java/org/chenile/trigger/TriggerService.java`, `DirectTriggerService.java`, `TriggerHeaders.java`
 
 - `chenile-core/src/main/java/org/chenile/core/model/ChenileEventDefinition.java`
 - `chenile-core/src/main/java/org/chenile/core/model/SubscriberVO.java`
