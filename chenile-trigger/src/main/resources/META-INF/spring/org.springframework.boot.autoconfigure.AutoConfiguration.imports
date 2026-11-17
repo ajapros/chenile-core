@@ -1,1 +1,1 @@
-org.chenile.trigger.autoconfigure.DirectTriggerAutoConfiguration
+org.chenile.configuration.trigger.DirectTriggerAutoConfiguration

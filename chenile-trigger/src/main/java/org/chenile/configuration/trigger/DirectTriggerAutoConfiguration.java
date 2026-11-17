@@ -1,4 +1,4 @@
-package org.chenile.trigger.autoconfigure;
+package org.chenile.configuration.trigger;
 
 import java.time.Duration;
 import org.chenile.core.event.EventProcessor;
@@ -16,6 +16,10 @@ import org.springframework.context.annotation.Bean;
  *
  * <p>Properties: {@code chenile.trigger.dedupe.retention}, an ISO-8601 duration (default PT24H), and {@code
  * chenile.trigger.dedupe.max-entries} (default 100000).
+ *
+ * <p>It is registered as an auto-configuration (META-INF/spring/...AutoConfiguration.imports), so the
+ * condition is evaluated after the application's own beans. {@code @SpringBootApplication}'s scan skips
+ * auto-configuration classes, so living under org.chenile.configuration does not make it a scanned bean.
  */
 @AutoConfiguration
 public class DirectTriggerAutoConfiguration {
