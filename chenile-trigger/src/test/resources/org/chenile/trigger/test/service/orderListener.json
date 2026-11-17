@@ -1,0 +1,34 @@
+{
+  "name": "orderListener",
+  "id": "orderListener",
+  "operations": [
+    {
+      "name": "orderPlaced",
+      "url": "/orderPlaced",
+      "httpMethod": "POST",
+      "produces": "JSON",
+      "consumes": "JSON",
+      "secure": false,
+      "input": "org.chenile.trigger.test.service.OrderPlaced",
+      "eventSubscribedTo": ["orderPlaced"],
+      "params": [
+        { "name": "order", "type": "BODY", "description": "the placed order" },
+        { "name": "headers", "type": "HEADERS", "paramClass": "java.util.Map", "description": "every header of the event" }
+      ]
+    },
+    {
+      "name": "orderRejected",
+      "url": "/orderRejected",
+      "httpMethod": "POST",
+      "produces": "JSON",
+      "consumes": "JSON",
+      "secure": false,
+      "input": "org.chenile.trigger.test.service.OrderPlaced",
+      "eventSubscribedTo": ["orderRejected"],
+      "params": [
+        { "name": "order", "type": "BODY", "description": "the rejected order" },
+        { "name": "headers", "type": "HEADERS", "paramClass": "java.util.Map", "description": "every header of the event" }
+      ]
+    }
+  ]
+}
